@@ -50,7 +50,8 @@ SRC					:=		Request.cpp		\
 #	$(addprefix $(NEW_DIR), $(SRC_NEW))
 
 
-SRCS				=		$(SRC)
+SRCS				=		$(SRC)	\
+							$(addprefix $(NEW_DIR), $(SRC_NEW))
 
 
 #	#################################################################################	#
