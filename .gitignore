@@ -1,0 +1,7 @@
+error
+a.out
+doc
+*.txt
+webserv
+.objs
+deps
