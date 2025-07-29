@@ -28,16 +28,18 @@ HEADERS_DIR			:=		./inc/
 HEADERS_D			:=		./incs/
 
 
-HEADERS				:=		Request.hpp		\
-							Response.hpp	\
+HEADERS				:=		Config.hpp			\
+							AConfigParsing.hpp	\
+							MyException.hpp		\
 							Server.hpp	
 
 
 
-SRC					:=		Request.cpp		\
-							Response.cpp	\
-							Server.cpp		\
-							main.cpp
+SRC					:=		Config.cpp			\
+							AConfigParsing.cpp	\
+							main.cpp			\
+							MyException.cpp		\
+							Server.cpp
 
 
 # for a new SRC add a new :
