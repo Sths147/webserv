@@ -12,6 +12,8 @@ SRC_DIR				:=		./src/
 HEADERS_DIR			:=		./inc/
 
 # Sub Directories
+CONFIG_DIR			:=		Config/
+UTILS_DIR			:=		utils/
 
 # for a new DIR add a new :
 # NEW_DIR			:=		new/
@@ -29,17 +31,24 @@ HEADERS_D			:=		./incs/
 
 
 HEADERS				:=		Config.hpp			\
-							AConfigParsing.hpp	\
+							ConfigLocation.cpp	\
+							ConfigServer.hpp	\
+							ConfigUtils.cpp		\
 							MyException.hpp		\
-							Server.hpp	
+							Server.hpp
 
 
 
-SRC					:=		Config.cpp			\
-							AConfigParsing.cpp	\
-							main.cpp			\
-							MyException.cpp		\
-							Server.cpp
+SRC					:=		Server.cpp			\
+							main.cpp
+
+SRC_CONFIG			:=		Config.cpp			\
+							ConfigLocation.cpp	\
+							ConfigServer.cpp	\
+							ConfigUtils.cpp
+
+SRC_UTILS			:=		MyException.cpp
+
 
 
 # for a new SRC add a new :
@@ -52,8 +61,9 @@ SRC					:=		Config.cpp			\
 #	$(addprefix $(NEW_DIR), $(SRC_NEW))
 
 
-SRCS				=		$(SRC)	\
-							$(addprefix $(NEW_DIR), $(SRC_NEW))
+SRCS				=		$(addprefix $(UTILS_DIR), $(SRC_UTILS))		\
+							$(addprefix $(CONFIG_DIR), $(SRC_CONFIG))	\
+							$(SRC)
 
 
 #	#################################################################################	#

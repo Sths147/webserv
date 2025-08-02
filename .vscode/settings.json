@@ -91,7 +91,8 @@
 	"typeinfo": "cpp",
 	"ctime": "cpp",
 	"iomanip": "cpp",
-	"sstream": "cpp"
+	"sstream": "cpp",
+	"fstream": "cpp"
 },
 "C_Cpp.errorSquiggles": "disabled",
 }

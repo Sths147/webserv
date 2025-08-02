@@ -7,6 +7,7 @@
 
 Server::Server(std::string nameFile) : _conf(nameFile)
 {
+	this->_conf.parsingFile();
 
 }
 
