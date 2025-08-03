@@ -118,8 +118,7 @@ void Config::parsingFile( void )
 	int server = -1, location = -1, in_server = 0;
 
 	while (std::getline(ss, line)) {
-		// size_t pos = 0;
-		std::string directive = ConfigUtils::parseDirective(line);
+		std::string directive = ConfigUtils::parseToken(line, 0);
 
 		if (directive == "server"){
 
@@ -142,7 +141,31 @@ void Config::parsingFile( void )
 
 		} else if (in_server){
 
-			std::cout << "other directive " << directive << std::endl;
+			if (directive == "listen") {
+				std::string arg = ConfigUtils::parseToken(line, ConfigUtils::get_pos());
+				if (ConfigUtils::get_pos() == line.find_first_of(';'))
+					ConfigUtils::check_after_bracket_semicolon(line, ConfigUtils::get_pos() + 1);
+
+				std::cout << arg << line[ConfigUtils::get_pos()]<< std::endl;
+			} else if (directive == "host") {
+
+			} else if (directive == "server_name") {
+
+			} else if (directive == "client_max_body_size") {
+
+			} else if (directive == "root") {
+
+			} else if (directive == "index") { // maybe more than one
+
+			} else if (directive == "allow_methods") { // maybe more than one
+
+			} else if (directive == "error_page"){ // maybe more than one
+
+			} else {
+				// here we got "}" or error
+				std::cout << "other directive " << directive << " line : '" << line << "'"<< std::endl;
+			}
+
 
 		} else {
 
