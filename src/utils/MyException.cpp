@@ -1,4 +1,6 @@
 
+
+
 #include <iostream>
 
 #include "MyException.hpp"
@@ -12,28 +14,26 @@ MyException ::~MyException() throw() {}
 // what qui renvoie le message personnalisé
 const char*  MyException::what() const throw()
 {
-    return this->_message.c_str();
+	return this->_message.c_str();
 }
 
 
-void putRed( std::string &str){
+
+
+
+
+
+
+
+void putRed( std::string &str ){
 	std::cout << RED << str << RESET << std::endl;
 }
-
-
-
-void putGreen( std::string &str){
+void putGreen( std::string &str ){
 	std::cout << GREEN << str << RESET << std::endl;
 }
-
-
-void putBlue( std::string &str){
+void putBlue( std::string &str ){
 	std::cout << BLUE << str << RESET << std::endl;
 }
-
-
-void putYellow( std::string &str){
+void putYellow( std::string &str ){
 	std::cout << YELLOW << str << RESET << std::endl;
 }
-
-

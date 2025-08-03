@@ -1,5 +1,6 @@
 #include "Config.hpp"
 #include "MyException.hpp"
+#define SPACE " \t\n\r\f\v"
 
 #include <fstream>
 
@@ -20,7 +21,7 @@ Config::Config(std::string &nameFile) : _file("")
 	{
 
 		// 4. Stock stock all the content maybe usefull. (without empty line and commentary)
-		size_t first_char_pos = tmp.find_first_not_of(" \t\n\r\f\v");
+		size_t first_char_pos = tmp.find_first_not_of(SPACE);
 		if (first_char_pos != std::string::npos && tmp[first_char_pos] != '#'){
 				this->_file += tmp + "\n";
 		}
@@ -47,45 +48,109 @@ Config::Config(std::string &nameFile) : _file("")
 
 }
 
-#include <sstream> // Nécessaire pour stringstream
+static void serverDirectiveParsing(std::string &line){
+	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
+		char c = line[i];
+
+		if (c == ' ' || c == '\t')
+			continue;
+		if (c == '{'){
+			size_t index;
+			for (index = i + 1; index < line.size(); index++)
+			{
+				c = line[index];
+				if (c == ' ' || c == '\t' || c == '\r')
+					continue;
+				if (c == '#')
+					break;
+				else
+					throw (MyException("Error : bad format on this line...\n", line));
+
+			}
+			if (c == '#' || index >= line.size())
+				break;
+		}
+	}
+}
+
+static std::string locationDirectiveParsing(std::string &line){
+	std::string token;
+	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
+		char c = line[i];
+
+		if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ';' || c == '}')
+			continue;
+		if (c == '/'){
+			size_t index;
+			token += c;
+			for (index = i + 1; index < line.size(); index++)
+			{
+				c = line[index];
+				if (isalpha(c) || c == '/'){
+					token += c;
+					continue;
+				}
+				if (c == ' ' &&  index + 1 < line.size() && line[index + 1] == '{') {
+
+					if (ConfigUtils::find_first_not_of_space(line, index + 2) == std::string::npos || line[ConfigUtils::get_pos()] == '#') {
+						return (token);
+					} else {
+						throw (MyException("t Error : bad format on this line...\n", line));
+					}
+				}
+				else
+					throw (MyException("e Error : bad format on this line...\n", line));
+			}
+			if (c == '{' || index >= line.size())
+				break;
+			i = index;
+		}
+	}
+	return (token);
+}
+
+#include <sstream> // pour stringstream
 void Config::parsingFile( void )
 {
 
 	std::stringstream ss(this->_file);
-	std::string line("");
-	int	bracket = 0, location_block = 0;
+	std::string line;
+	int server = -1, location = -1, in_server = 0;
 
 	while (std::getline(ss, line)) {
+		// size_t pos = 0;
+		std::string directive = ConfigUtils::parseDirective(line);
 
-		if (ConfigUtils::find(line, "server {") != std::string::npos) {
-			bracket++;
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "listen") != std::string::npos) {
+		if (directive == "server"){
 
-			// this->_file.pos
+			// std::cout << "server directive creat a vector server" << std::endl;
+			server++;
+			in_server = 1;
+			serverDirectiveParsing(line);
+			this->_vConfServP.push_back(ConfigServer());
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "host") != std::string::npos) {
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "server_name") != std::string::npos) {
+		} else if (in_server && directive == "location"){
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "client_max_body_size") != std::string::npos) {
+			// std::cout << "location directive " << directive << std::endl;
+			location++;
+			std::string perm = locationDirectiveParsing(line);
+			// std::cout << perm << std::endl;
+			this->_vConfServP[server].set_new_location(perm);
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "root") != std::string::npos) {
+			//do all the pars for location
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "index") != std::string::npos) {
+		} else if (in_server){
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "allow_methods") != std::string::npos) {
+			std::cout << "other directive " << directive << std::endl;
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "error_page") != std::string::npos) {
+		} else {
 
-		} else if (location_block == 0 && bracket > 0 && ConfigUtils::find(line, "location") != std::string::npos) {
+			throw (MyException("Error : Server directive not found can't save config...\n", line));
 
-			ConfigUtils::get_pos();
-			location_block = 1;
-
-		} else if (ConfigUtils::find(line, "}") != std::string::npos) {
-			if (location_block == 1)
-			ConfigUtils::get_pos();
 		}
+
+
 	}
 
 }
