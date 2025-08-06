@@ -29,13 +29,15 @@ HEADERS_D			:=		./incs/
 
 
 HEADERS				:=		Request.hpp		\
-							Response.hpp	\
-							Server.hpp	
+							header.hpp		\
+# 							Response.hpp	\
+# 							Server.hpp	
 
 
 
 SRC					:=		Request.cpp		\
-							Response.cpp	\
+							main.cpp		\
+# 							Response.cpp	\
 							Server.cpp		\
 							main.cpp
 
