@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/06 12:21:19 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/06 12:25:14 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ Request::Request()
 Request::Request(std::vector<char>&buff)
 : _return_code(200) , _finished(0) ,_type(get_request_type(buff)), _target(get_request_target(buff)), _http_type(get_http_type(buff)), _header(parse_header(buff)), _body(buff)
 {
-	std::cout << "Finished : " << _finished << " and return code " << _return_code << " Ignorer, pour compilation" << std::endl;
+	(void)_return_code;
+	(void)_finished;
 }
 
 Request::~Request()
