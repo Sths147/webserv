@@ -125,6 +125,9 @@ void Config::parsingFile( void )
 	while (std::getline(ss, line)) {
 		std::string directive = ConfigUtils::parse_token(line, 0);
 
+		if (directive != "\0")
+			std::cout << "\ndirective == " << directive << "\nin location : "<< in_location << std::endl;
+
 		if (directive == "server"){
 
 			// std::cout << "server directive creat a vector server" << std::endl;
@@ -146,15 +149,38 @@ void Config::parsingFile( void )
 
 			//do all the pars for location
 
-		} else if (in_location){
+		} else if (in_location) {
+
+				// std::cout << "directive in_location : " << directive << std::endl;
 
 			if (directive == "root") {
 
+				std::string arg =  ConfigUtils::get_one_token(line);
+				std::cout << arg << "\n";
+
 			} else if (directive == "index") { // maybe more than one
+
+				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+				for (size_t i = 0; i < arg.size(); i++)
+				{
+					std::cout << "'" << arg[i] << "'" << "\n";
+				}
 
 			} else if (directive == "allow_methods") { // maybe more than one
 
-			} else if (directive == "error_page"){ // maybe more than one
+				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+				for (size_t i = 0; i < arg.size(); i++)
+				{
+					std::cout << "'" << arg[i] << "'" << "\n";
+				}
+
+			} else if (directive == "error_page") { // maybe more than one
+
+				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+				for (size_t i = 0; i < arg.size(); i++)
+				{
+					std::cout << "'" << arg[i] << "'" << "\n";
+				}
 
 			} else {
 				if (directive != "\0")
@@ -167,7 +193,7 @@ void Config::parsingFile( void )
 
 		} else if (in_server) {
 
-				// std::cout << "directive : " << directive << std::endl;
+				// std::cout << "directive in_server : " << directive << std::endl;
 
 			if (directive == "listen") {
 
@@ -193,34 +219,31 @@ void Config::parsingFile( void )
 
 			} else if (directive == "index") { // maybe more than one
 
-				std::cout << "directive == index\n";
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				for (size_t i = 0; i < arg.size(); i++)
 				{
-					std::cout << arg[i] << "\n";
+					std::cout << "'" << arg[i] << "'" << "\n";
 				}
 
 				// this->_vConfServP[server].set_root(arg);//todo check if its good path ?
 
 			} else if (directive == "allow_methods") { // maybe more than one
 
-				std::cout << "directive == allow_methods\n";
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				for (size_t i = 0; i < arg.size(); i++)
 				{
-					std::cout << arg[i] << "\n";
+					std::cout << "'" << arg[i] << "'" << "\n";
 				}
 
-			} else if (directive == "error_page"){ // maybe more than one
+			} else if (directive == "error_page") { // maybe more than one
 
-				std::cout << "directive == error_page\n";
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				for (size_t i = 0; i < arg.size(); i++)
 				{
-					std::cout << arg[i] << "\n";
+					std::cout << "'" << arg[i] << "'"<< "\n";
 				}
 
 			} else {

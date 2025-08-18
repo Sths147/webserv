@@ -1,6 +1,4 @@
 
-
-
 #include "ConfigUtils.hpp"
 #include "MyException.hpp"
 
@@ -18,7 +16,7 @@ void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t p
 	return  ;
 }
 
-void ConfigUtils::check_bracket(const std::string &str){
+void ConfigUtils::check_bracket(const std::string &str) {
 	if (ConfigUtils::find_first_not_of_space(str) != std::string::npos && str[ConfigUtils::get_pos()] == '}'){
 		ConfigUtils::check_after_bracket_semicolon(str, ConfigUtils::get_pos() + 1);
 	} else {
@@ -27,11 +25,11 @@ void ConfigUtils::check_bracket(const std::string &str){
 }
 
 
-size_t ConfigUtils::find_first_not_of_space(const std::string &str){
+size_t ConfigUtils::find_first_not_of_space(const std::string &str) {
 	_pos = str.find_first_not_of(SPACE);
 	return (_pos);
 }
-size_t ConfigUtils::find_first_not_of_space(const std::string &str, size_t pos){
+size_t ConfigUtils::find_first_not_of_space(const std::string &str, size_t pos) {
 	_pos = str.find_first_not_of(SPACE, pos);
 	return (_pos);
 }
@@ -79,8 +77,7 @@ std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input
 	return (vec);
 }
 
-std::string	ConfigUtils::get_one_token(const std::string &str)
-{
+std::string	ConfigUtils::get_one_token(const std::string &str) {
 	std::string arg = ConfigUtils::parse_token(str, _pos);
 	if (_pos == str.find_first_of(';'))
 		ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
@@ -88,8 +85,7 @@ std::string	ConfigUtils::get_one_token(const std::string &str)
 }
 
 
-std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str)
-{
+std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
 	std::vector<std::string> vec = ConfigUtils::parse_multi_token(str, _pos);
 	if (_pos == str.find_first_of(';'))
 		ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
