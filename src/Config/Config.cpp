@@ -32,7 +32,7 @@ Config::Config(std::string &nameFile) : _file("")
 	}
 
 	// Debug Print all the content stocked
-	std::cout << YELLOW <<"the file.conf :\n" << RESET << this->_file << YELLOW <<"eof" << RESET<< std::endl;
+	// std::cout << YELLOW <<"the file.conf :\n" << RESET << this->_file << YELLOW <<"eof" << RESET<< std::endl;
 
 	// 5. Check if we read all the file or not.
 	if (sfile.bad()) {
@@ -49,6 +49,7 @@ Config::Config(std::string &nameFile) : _file("")
 }
 
 static void serverDirectiveParsing(std::string &line){
+
 	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
 		char c = line[i];
 
@@ -64,16 +65,18 @@ static void serverDirectiveParsing(std::string &line){
 				if (c == '#')
 					break;
 				else
-					throw (MyException("Error : bad format on this line...\n", line));
+					throw (MyException("Error : bad format on this line...", line));
 
 			}
 			if (c == '#' || index >= line.size())
 				break;
 		}
 	}
+
 }
 
 static std::string locationDirectiveParsing(std::string &line){
+
 	std::string token;
 	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
 		char c = line[i];
@@ -95,11 +98,11 @@ static std::string locationDirectiveParsing(std::string &line){
 					if (ConfigUtils::find_first_not_of_space(line, index + 2) == std::string::npos || line[ConfigUtils::get_pos()] == '#') {
 						return (token);
 					} else {
-						throw (MyException("Error : bad format on this line...\n", line));
+						throw (MyException("Error : bad format on this line...", line));
 					}
 				}
 				else
-					throw (MyException("Error : bad format on this line...\n", line));
+					throw (MyException("Error : bad format on this line...", line));
 			}
 			if (c == '{' || index >= line.size())
 				break;
@@ -107,6 +110,7 @@ static std::string locationDirectiveParsing(std::string &line){
 		}
 	}
 	return (token);
+
 }
 
 #include <sstream> // for stringstream
@@ -136,6 +140,7 @@ void Config::parsingFile( void )
 			in_location = 1;
 			std::string perm = locationDirectiveParsing(line);
 			// std::cout << perm << std::endl;
+
 			this->_vConfServP[server].set_new_location(perm);
 
 			//do all the pars for location
@@ -162,13 +167,18 @@ void Config::parsingFile( void )
 		} else if (in_server) {
 
 			if (directive == "listen") {
+
 				std::string arg = ConfigUtils::parseToken(line, ConfigUtils::get_pos());
 				if (ConfigUtils::get_pos() == line.find_first_of(';'))
 					ConfigUtils::check_after_bracket_semicolon(line, ConfigUtils::get_pos() + 1);
 
+				if (!ConfigUtils::isOnlyDigit(arg))
+					throw (MyException("Error : only digit in port...", arg));
+				if (arg.length() > 6)
+					throw (MyException("Error : port to high...", arg));
+				this->_vConfServP[server].set_listen(arg);
+				// std::cout << "arg listen : " <<  arg << " reste : " << line[ConfigUtils::get_pos()] << std::endl;
 
-
-				std::cout << "arg listen : " <<  arg << " reste : " << line[ConfigUtils::get_pos()] << std::endl;
 			} else if (directive == "host") {
 
 			} else if (directive == "server_name") {

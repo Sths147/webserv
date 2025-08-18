@@ -55,3 +55,11 @@ std::string	ConfigUtils::parseToken(const std::string& input, const size_t pos) 
 	}
 	return token;
 }
+
+
+bool ConfigUtils::isOnlyDigit(const std::string& str){
+	for (int i = 0; str[i]; i++)
+		if (!std::isdigit(str[i]))
+			return (false);
+	return (true);
+}

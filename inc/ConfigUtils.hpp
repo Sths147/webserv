@@ -9,6 +9,7 @@
 class ConfigUtils
 {
 	private:
+
 		static size_t _pos;
 		ConfigUtils(/* args */);
 		~ConfigUtils();
@@ -23,6 +24,7 @@ class ConfigUtils
 		static	size_t		find_first_not_of_space(const std::string &str, size_t pos);
 		static	size_t		get_pos( void );
 		static	std::string	parseToken(const std::string& input, const size_t pos);
+		static	bool		isOnlyDigit(const std::string& str);
 
 };
 

@@ -13,7 +13,7 @@ class ConfigServer
 {
 	private:
 
-		std::string _listen; // 0 a 65535
+		int _listen; // 0 to 65535
 		std::string _host;
 		std::string _server_name;
 		std::string _client_max_body_size;

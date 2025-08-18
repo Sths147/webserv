@@ -7,7 +7,16 @@ ConfigServer::ConfigServer( const ConfigServer &other) {(void)other;}
 ConfigServer::~ConfigServer() {}
 
 /* --- set this class--- */
-void	ConfigServer::set_listen( const std::string &str){ this->_listen = str;}
+#include <cstdlib>
+#include "MyException.hpp"
+void	ConfigServer::set_listen( const std::string &str){
+	this->_listen = std::atoi(str.c_str());
+	if (this->_listen > 65535)
+		throw (MyException("Error : port to high...", str));
+	// std::cout << this->_listen;
+}
+
+
 void	ConfigServer::set_host( const std::string &str){ this->_host = str;}
 void	ConfigServer::set_server_name( const std::string &str){ this->_server_name = str;}
 void	ConfigServer::set_client_max_body_size( const std::string &str){ this->_client_max_body_size = str;}
