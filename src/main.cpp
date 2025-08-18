@@ -32,6 +32,9 @@ class Server
 
 int main()
 {
+
+
+
 	int sockfd;
 	int	one = 1;
 	struct sockaddr_in	address;
@@ -41,9 +44,11 @@ int main()
 	if (sockfd < 0)
 		perror("error opening socket");
 	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+
 	address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
+
 	bind(sockfd, (struct sockaddr *)&address, addrlen);
 	listen(sockfd, 1024);
 	write(1, "server listening on port 8010\n", 30);

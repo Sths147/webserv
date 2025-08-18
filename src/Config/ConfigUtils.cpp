@@ -40,7 +40,7 @@ size_t ConfigUtils::get_pos( void ) {
 }
 
 
-std::string	ConfigUtils::parseToken(const std::string& input, const size_t pos) {
+std::string	ConfigUtils::parse_token(const std::string& input, const size_t pos) {
 	std::string token;
 
 	ConfigUtils::find_first_not_of_space(input, pos);
@@ -53,13 +53,76 @@ std::string	ConfigUtils::parseToken(const std::string& input, const size_t pos) 
 		token += c;
 		_pos++;
 	}
-	return token;
+	return (token);
+}
+
+std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input, const size_t pos) {
+	std::vector<std::string> vec;
+	std::string token;
+
+	ConfigUtils::find_first_not_of_space(input, pos);
+	while (_pos < input.size()) {
+		char c = ';';
+		while (_pos < input.size()) {
+			c = input[_pos];
+			_pos++;
+			if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ';' || c == '{' || c == '}')
+				break;
+			token += c;
+		}
+		vec.push_back(token);
+		if (c == ';')
+			break;
+		token.clear();
+		ConfigUtils::find_first_not_of_space(input, _pos);
+	}
+	return (vec);
+}
+
+std::string	ConfigUtils::get_one_token(const std::string &str)
+{
+	std::string arg = ConfigUtils::parse_token(str, _pos);
+	if (_pos == str.find_first_of(';'))
+		ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
+	return (arg);
 }
 
 
-bool ConfigUtils::isOnlyDigit(const std::string& str){
-	for (int i = 0; str[i]; i++)
-		if (!std::isdigit(str[i]))
-			return (false);
-	return (true);
+std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str)
+{
+	std::vector<std::string> vec = ConfigUtils::parse_multi_token(str, _pos);
+	if (_pos == str.find_first_of(';'))
+		ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
+	return (vec);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// bool ConfigUtils::isOnlyDigit(const std::string& str){
+// 	for (int i = 0; str[i]; i++)
+// 		if (!std::isdigit(str[i]))
+// 			return (false);
+// 	return (true);
+// }
+
+// std::vector<std::string> ConfigUtils::split(const std::string &str, char delim)
+// {
+// 		std::vector<std::string> tokens;
+// 		std::stringstream ss(str);
+// 		std::string str;
+
+// 		while (std::getline(ss, str, delim)) {
+// 			tokens.push_back(str);
+// 		}
+// 		return tokens;
+// }

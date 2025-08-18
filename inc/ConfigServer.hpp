@@ -8,13 +8,22 @@
 #include "ConfigUtils.hpp"
 #include "ConfigLocation.hpp"
 
+// struct Listen
+// {
+// 	std::string strip;
+// 	std::string strport;
+
+// 	// unsigned int ip;
+// 	// unsigned int port;
+// 	Listen(int i, int p) : ip(i), port(p){}
+// };
+
 
 class ConfigServer
 {
 	private:
 
-		int _listen; // 0 to 65535
-		std::string _host;
+		std::vector<std::string> _listen; // 65535
 		std::string _server_name;
 		std::string _client_max_body_size;
 		std::string _root;
@@ -30,7 +39,6 @@ class ConfigServer
 
 		/* --- set this server --- */
 		void	set_listen( const std::string &str);
-		void	set_host( const std::string &str);
 		void	set_server_name( const std::string &str);
 		void	set_client_max_body_size( const std::string &str);
 		void	set_root( const std::string &str);

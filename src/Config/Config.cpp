@@ -119,10 +119,11 @@ void Config::parsingFile( void )
 
 	std::stringstream ss(this->_file);
 	std::string line;
-	int server = -1, location = -1, in_server = 0, in_location = 0;
+	int		server = -1, location = -1;
+	bool	in_server = 0, in_location = 0;
 
 	while (std::getline(ss, line)) {
-		std::string directive = ConfigUtils::parseToken(line, 0);
+		std::string directive = ConfigUtils::parse_token(line, 0);
 
 		if (directive == "server"){
 
@@ -133,7 +134,7 @@ void Config::parsingFile( void )
 			this->_vConfServP.push_back(ConfigServer());
 
 
-		} else if (in_server && directive == "location"){
+		} else if (!in_location && in_server && directive == "location"){
 
 			// std::cout << "location directive " << directive << std::endl;
 			location++;
@@ -166,46 +167,75 @@ void Config::parsingFile( void )
 
 		} else if (in_server) {
 
+				// std::cout << "directive : " << directive << std::endl;
+
 			if (directive == "listen") {
 
-				std::string arg = ConfigUtils::parseToken(line, ConfigUtils::get_pos());
-				if (ConfigUtils::get_pos() == line.find_first_of(';'))
-					ConfigUtils::check_after_bracket_semicolon(line, ConfigUtils::get_pos() + 1);
+				std::string arg = ConfigUtils::get_one_token(line);
+				this->_vConfServP[server].set_listen(arg); //todo stocker
 
-				if (!ConfigUtils::isOnlyDigit(arg))
-					throw (MyException("Error : only digit in port...", arg));
-				if (arg.length() > 6)
-					throw (MyException("Error : port to high...", arg));
-				this->_vConfServP[server].set_listen(arg);
 				// std::cout << "arg listen : " <<  arg << " reste : " << line[ConfigUtils::get_pos()] << std::endl;
-
-			} else if (directive == "host") {
 
 			} else if (directive == "server_name") {
 
+				std::string arg =  ConfigUtils::get_one_token(line);
+				this->_vConfServP[server].set_server_name(arg);
+
 			} else if (directive == "client_max_body_size") {
+
+				std::string arg =  ConfigUtils::get_one_token(line);
+				this->_vConfServP[server].set_client_max_body_size(arg);//todo convert in bytes
 
 			} else if (directive == "root") {
 
+				std::string arg =  ConfigUtils::get_one_token(line);
+				this->_vConfServP[server].set_root(arg);//todo check if its good path ?
+
 			} else if (directive == "index") { // maybe more than one
+
+				std::cout << "directive == index\n";
+
+				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+				for (size_t i = 0; i < arg.size(); i++)
+				{
+					std::cout << arg[i] << "\n";
+				}
+
+				// this->_vConfServP[server].set_root(arg);//todo check if its good path ?
 
 			} else if (directive == "allow_methods") { // maybe more than one
 
+				std::cout << "directive == allow_methods\n";
+
+				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+				for (size_t i = 0; i < arg.size(); i++)
+				{
+					std::cout << arg[i] << "\n";
+				}
+
 			} else if (directive == "error_page"){ // maybe more than one
 
+				std::cout << "directive == error_page\n";
+
+				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+				for (size_t i = 0; i < arg.size(); i++)
+				{
+					std::cout << arg[i] << "\n";
+				}
+
 			} else {
+
 				if (directive != "\0")
 					throw (MyException("Error : unknown directive...", directive));
 				ConfigUtils::check_bracket(line);
 				in_server = 0;
 				// here we got "}" or error
-				// std::cout << "other directive " << directive << " line : '" << line << "'"<< std::endl;
+				// std::cout << "other directive " << directive << " line : '" << line << "'"<< std::endl; //SUPP
 			}
-
 
 		} else {
 
-			throw (MyException("Error : Directive found not in a Server/location...\n", line));
+			throw (MyException("Error : Directive found not in a Server/location...", line));
 
 		}
 
