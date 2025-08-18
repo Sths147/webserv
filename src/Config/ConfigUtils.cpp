@@ -13,10 +13,19 @@ void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t p
 	if (ConfigUtils::find_first_not_of_space(str, pos) != std::string::npos) {
 		if (str[_pos] == '#')
 			return ;
-		throw (MyException("Error : extra charater...", str));
+		throw (MyException("2 Error : extra charater... ", str));
 	}
 	return  ;
 }
+
+void ConfigUtils::check_bracket(const std::string &str){
+	if (ConfigUtils::find_first_not_of_space(str) != std::string::npos && str[ConfigUtils::get_pos()] == '}'){
+		ConfigUtils::check_after_bracket_semicolon(str, ConfigUtils::get_pos() + 1);
+	} else {
+		throw (MyException("Error : unknown directive...", str));
+	}
+}
+
 
 size_t ConfigUtils::find_first_not_of_space(const std::string &str){
 	_pos = str.find_first_not_of(SPACE);

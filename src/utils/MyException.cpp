@@ -7,7 +7,7 @@
 
 // Constructeur qui prend le message personnalisé
 MyException::MyException(const std::string &msg) : _message(RED + msg + RESET) {}
-MyException::MyException(const std::string &msg1, const std::string &msg2) : _message(RED + msg1 + msg2 + RESET) {}
+MyException::MyException(const std::string &msg1, const std::string &msg2) : _message(RED + msg1 + '"' + msg2 + '"' + RESET) {}
 
 MyException ::~MyException() throw() {}
 

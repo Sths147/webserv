@@ -31,9 +31,9 @@ HEADERS_D			:=		./incs/
 
 
 HEADERS				:=		Config.hpp			\
-							ConfigLocation.cpp	\
+							ConfigLocation.hpp	\
 							ConfigServer.hpp	\
-							ConfigUtils.cpp		\
+							ConfigUtils.hpp		\
 							MyException.hpp		\
 							Server.hpp
 

@@ -16,6 +16,7 @@ class ConfigUtils
 	public:
 
 		static	void		check_after_bracket_semicolon(const std::string &str, size_t pos);
+		static	void		check_bracket(const std::string &str);
 
 
 		static	size_t		find_first_not_of_space(const std::string &str);

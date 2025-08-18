@@ -115,7 +115,7 @@ void Config::parsingFile( void )
 
 	std::stringstream ss(this->_file);
 	std::string line;
-	int server = -1, location = -1, in_server = 0;
+	int server = -1, location = -1, in_server = 0, in_location = 0;
 
 	while (std::getline(ss, line)) {
 		std::string directive = ConfigUtils::parseToken(line, 0);
@@ -133,20 +133,42 @@ void Config::parsingFile( void )
 
 			// std::cout << "location directive " << directive << std::endl;
 			location++;
+			in_location = 1;
 			std::string perm = locationDirectiveParsing(line);
 			// std::cout << perm << std::endl;
 			this->_vConfServP[server].set_new_location(perm);
 
 			//do all the pars for location
 
-		} else if (in_server){
+		} else if (in_location){
+
+			if (directive == "root") {
+
+			} else if (directive == "index") { // maybe more than one
+
+			} else if (directive == "allow_methods") { // maybe more than one
+
+			} else if (directive == "error_page"){ // maybe more than one
+
+			} else {
+				if (directive != "\0")
+					throw (MyException("Error : unknown directive...", directive));
+				ConfigUtils::check_bracket(line);
+				in_location = 0;
+				// here we got "}" or error
+				// std::cout << "other directive " << directive << " line : '" << line << "'"<< std::endl;
+			}
+
+		} else if (in_server) {
 
 			if (directive == "listen") {
 				std::string arg = ConfigUtils::parseToken(line, ConfigUtils::get_pos());
 				if (ConfigUtils::get_pos() == line.find_first_of(';'))
 					ConfigUtils::check_after_bracket_semicolon(line, ConfigUtils::get_pos() + 1);
 
-				std::cout << arg << line[ConfigUtils::get_pos()]<< std::endl;
+
+
+				std::cout << "arg listen : " <<  arg << " reste : " << line[ConfigUtils::get_pos()] << std::endl;
 			} else if (directive == "host") {
 
 			} else if (directive == "server_name") {
@@ -162,14 +184,18 @@ void Config::parsingFile( void )
 			} else if (directive == "error_page"){ // maybe more than one
 
 			} else {
+				if (directive != "\0")
+					throw (MyException("Error : unknown directive...", directive));
+				ConfigUtils::check_bracket(line);
+				in_server = 0;
 				// here we got "}" or error
-				std::cout << "other directive " << directive << " line : '" << line << "'"<< std::endl;
+				// std::cout << "other directive " << directive << " line : '" << line << "'"<< std::endl;
 			}
 
 
 		} else {
 
-			throw (MyException("Error : Server directive not found can't save config...\n", line));
+			throw (MyException("Error : Directive found not in a Server/location...\n", line));
 
 		}
 
