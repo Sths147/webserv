@@ -40,12 +40,16 @@ HEADERS				:=		Config.hpp			\
 
 
 SRC					:=		Server.cpp			\
-							main.cpp
+							mainflotest.cpp
+							# main.cpp
+							# main2.cpp
+
 
 SRC_CONFIG			:=		Config.cpp			\
 							ConfigLocation.cpp	\
 							ConfigServer.cpp	\
 							ConfigUtils.cpp
+
 
 SRC_UTILS			:=		MyException.cpp
 

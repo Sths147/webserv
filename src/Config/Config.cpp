@@ -95,11 +95,11 @@ static std::string locationDirectiveParsing(std::string &line){
 					if (ConfigUtils::find_first_not_of_space(line, index + 2) == std::string::npos || line[ConfigUtils::get_pos()] == '#') {
 						return (token);
 					} else {
-						throw (MyException("t Error : bad format on this line...\n", line));
+						throw (MyException("Error : bad format on this line...\n", line));
 					}
 				}
 				else
-					throw (MyException("e Error : bad format on this line...\n", line));
+					throw (MyException("Error : bad format on this line...\n", line));
 			}
 			if (c == '{' || index >= line.size())
 				break;
@@ -109,7 +109,7 @@ static std::string locationDirectiveParsing(std::string &line){
 	return (token);
 }
 
-#include <sstream> // pour stringstream
+#include <sstream> // for stringstream
 void Config::parsingFile( void )
 {
 

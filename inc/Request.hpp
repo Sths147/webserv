@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 10:20:10 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/06 11:57:08 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/18 07:43:25 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "header.hpp"
+// #include "header.hpp"
 
 class Request
 {
@@ -22,7 +22,7 @@ class Request
         const std::string                           _http_type;
         const std::map<std::string, std::string>    _header;
         const std::vector<char>                     _body;
-    
+
     public:
         Request();
         Request(std::vector<char>&);
