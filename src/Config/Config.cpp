@@ -202,7 +202,15 @@ void Config::parsingFile( void )
 			if (directive == "listen") {
 
 				std::string arg = ConfigUtils::get_one_token(line);
-				this->_vConfServP[server].set_listen(arg); //todo stocker
+
+				try
+				{
+					this->_vConfServP[server].set_listen(arg);
+				}
+				catch(const std::string& str)
+				{
+					throw (MyException(str, line));
+				}
 
 				// std::cout << "arg listen : " <<  arg << " reste : " << line[ConfigUtils::get_pos()] << std::endl;
 
@@ -265,17 +273,17 @@ void Config::parsingFile( void )
 	}
 
 
-	// for (int i = 0; i <= server; i++)
-	// {
-	// 	std::cout << YELLOW <<"Print all content of the server n" << i << RESET << std::endl;
-	// 	this->_vConfServP[0].print_listen();
-	// 	this->_vConfServP[0].print_server_name();
-	// 	this->_vConfServP[0].print_client_max_body_size();
-	// 	this->_vConfServP[0].print_root();
-	// 	this->_vConfServP[0].print_index();
-	// 	this->_vConfServP[0].print_allow_methods();
-	// 	this->_vConfServP[0].print_error_page();
-	// }
+	for (int i = 0; i <= server; i++)
+	{
+		std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
+		this->_vConfServP[0].print_listen();
+		// this->_vConfServP[0].print_server_name();
+		// this->_vConfServP[0].print_client_max_body_size();
+		// this->_vConfServP[0].print_root();
+		// this->_vConfServP[0].print_index();
+		// this->_vConfServP[0].print_allow_methods();
+		// this->_vConfServP[0].print_error_page();
+	}
 
 
 

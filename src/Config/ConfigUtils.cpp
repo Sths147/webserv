@@ -94,33 +94,15 @@ std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
 	return (vec);
 }
 
+#include <sstream> // pour stringstream
+std::vector<std::string> ConfigUtils::split(const std::string &topars, char delim)
+{
+	std::vector<std::string> tokens;
+	std::stringstream ss(topars.c_str());
+	std::string str;
 
-
-
-
-
-
-
-
-
-
-
-
-// bool ConfigUtils::isOnlyDigit(const std::string& str){
-// 	for (int i = 0; str[i]; i++)
-// 		if (!std::isdigit(str[i]))
-// 			return (false);
-// 	return (true);
-// }
-
-// std::vector<std::string> ConfigUtils::split(const std::string &str, char delim)
-// {
-// 		std::vector<std::string> tokens;
-// 		std::stringstream ss(str);
-// 		std::string str;
-
-// 		while (std::getline(ss, str, delim)) {
-// 			tokens.push_back(str);
-// 		}
-// 		return tokens;
-// }
+	while (std::getline(ss, str, delim)) {
+		tokens.push_back(str);
+	}
+	return (tokens);
+}

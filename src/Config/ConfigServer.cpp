@@ -17,12 +17,67 @@ void	ConfigServer::print_listen( void ){
 	std::cout << "\nlisten :"<< std::endl;
 	for (size_t i = 0; i < this->_listen.size(); i++)
 	{
-		std::cout << "'" << this->_listen[i] << "'" << std::endl;
+		std::cout	<< "ip:'" << this->_listen[i].ip << "'\t"
+					<< "port:'" << this->_listen[i].port << "'" << std::endl;
 	}
 }
+
+
+static unsigned int	ipconvert(std::string& str)
+{
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		char c = str[i];
+		if (!(std::isdigit(c) || c == '.'))
+			throw (std::string("Error : invalid character on ip of this line "));
+	}
+
+	std::vector<std::string> vecstring = ConfigUtils::split(str, '.');
+	if (vecstring.size() != 4 || vecstring[0] == "\0" || vecstring[1] == "\0" || vecstring[2] == "\0" || vecstring[3] == "\0"
+		|| vecstring[0].size() > 3|| vecstring[1].size() > 3|| vecstring[2].size() > 3|| vecstring[3].size() > 3)
+		throw (std::string("Error : bad format on ip of this line "));
+
+		// std::cout << "\na = " << a << ", b = " << b << ", c = " << c << ", d = " << d <<std::endl;
+
+	unsigned int	a = std::atoi(vecstring[0].c_str());
+	unsigned int	b = std::atoi(vecstring[1].c_str());
+	unsigned int	c = std::atoi(vecstring[2].c_str());
+	unsigned int	d = std::atoi(vecstring[3].c_str());
+
+	if (a > 255 || b > 255 || c > 255 || d > 255)
+		throw std::string("Error: invalid IP part (must be between 0 and 255)");
+
+	return ((a << 24) | (b << 16) | (c << 8) | d);
+}
+
+
 void	ConfigServer::set_listen( const std::string &str)
 {
-	this->_listen.push_back(str);//todo stocker
+	if (str.find_first_of(':') != std::string::npos && str.find_first_of(':') != str.find_last_of(':'))
+		throw (std::string("Error : Multi ':' on this line ")); // listen :80:;
+
+	std::vector<std::string> vecstring = ConfigUtils::split(str, ':');
+
+	if (vecstring.size() == 0 || (vecstring.size() == 1 && vecstring[0] == "\0"))
+		throw (std::string("Error : No value on this line ")); // listen :;
+	unsigned int ip = 0, port = 80;
+	if (vecstring[0] != "\0"){
+		std::cout << "\tip = " << vecstring[0];
+		ip = ipconvert(vecstring[0]);
+	}
+	if (vecstring[1] != "\0"){
+		// std::cout << "\tport = " << vecstring[1];
+		for (size_t i = 0; i < vecstring[1].size(); i++)
+			if (!std::isdigit(vecstring[1][i]))
+				throw(std::string("Error : the port on this line doesnt have onlydigit "));
+		port = std::atoi(vecstring[1].c_str());
+	}
+
+
+
+	(void)str;
+	Listen tmp(0, port);
+	this->_listen.push_back(tmp);//todo stocker
 }
 
 
