@@ -57,22 +57,24 @@ std::string	ConfigUtils::parse_token(const std::string& input, const size_t pos)
 std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input, const size_t pos) {
 	std::vector<std::string> vec;
 	std::string token;
+	char c;
 
 	ConfigUtils::find_first_not_of_space(input, pos);
 	while (_pos < input.size()) {
-		char c = ';';
 		while (_pos < input.size()) {
 			c = input[_pos];
-			_pos++;
 			if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ';' || c == '{' || c == '}')
 				break;
 			token += c;
+			_pos++;
 		}
-		vec.push_back(token);
+		ConfigUtils::find_first_not_of_space(input, _pos);
+		if (token != "\0"){
+			vec.push_back(token);
+			token.clear();
+		}
 		if (c == ';')
 			break;
-		token.clear();
-		ConfigUtils::find_first_not_of_space(input, _pos);
 	}
 	return (vec);
 }

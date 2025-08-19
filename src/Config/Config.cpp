@@ -32,7 +32,7 @@ Config::Config(std::string &nameFile) : _file("")
 	}
 
 	// Debug Print all the content stocked
-	// std::cout << YELLOW <<"the file.conf :\n" << RESET << this->_file << YELLOW <<"eof" << RESET<< std::endl;
+	std::cout << YELLOW <<"the file.conf :\n" << RESET << this->_file << YELLOW <<"eof" << RESET<< std::endl;
 
 	// 5. Check if we read all the file or not.
 	if (sfile.bad()) {
@@ -123,10 +123,10 @@ void Config::parsingFile( void )
 	bool	in_server = 0, in_location = 0;
 
 	while (std::getline(ss, line)) {
-		std::string directive = ConfigUtils::parse_token(line, 0);
 
-		if (directive != "\0")
-			std::cout << "\ndirective == " << directive << "\nin location : "<< in_location << std::endl;
+		std::string directive = ConfigUtils::parse_token(line, 0);
+		// if (directive != "\0") // without the close bracket line
+		// 	std::cout << "\ndirective == " << directive << "\nin location : "<< in_location << std::endl;
 
 		if (directive == "server"){
 
@@ -136,51 +136,47 @@ void Config::parsingFile( void )
 			serverDirectiveParsing(line);
 			this->_vConfServP.push_back(ConfigServer());
 
-
 		} else if (!in_location && in_server && directive == "location"){
 
 			// std::cout << "location directive " << directive << std::endl;
 			location++;
 			in_location = 1;
 			std::string perm = locationDirectiveParsing(line);
+			this->_vConfServP[server].set_new_location(perm);
 			// std::cout << perm << std::endl;
 
-			this->_vConfServP[server].set_new_location(perm);
 
-			//do all the pars for location
+
+
 
 		} else if (in_location) {
+
+
 
 				// std::cout << "directive in_location : " << directive << std::endl;
 
 			if (directive == "root") {
 
 				std::string arg =  ConfigUtils::get_one_token(line);
-				std::cout << arg << "\n";
+				// std::cout << arg << "\n";
 
 			} else if (directive == "index") { // maybe more than one
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-				for (size_t i = 0; i < arg.size(); i++)
-				{
-					std::cout << "'" << arg[i] << "'" << "\n";
-				}
+				// for (size_t i = 0; i < arg.size(); i++)
+				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else if (directive == "allow_methods") { // maybe more than one
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-				for (size_t i = 0; i < arg.size(); i++)
-				{
-					std::cout << "'" << arg[i] << "'" << "\n";
-				}
+				// for (size_t i = 0; i < arg.size(); i++)
+				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else if (directive == "error_page") { // maybe more than one
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-				for (size_t i = 0; i < arg.size(); i++)
-				{
-					std::cout << "'" << arg[i] << "'" << "\n";
-				}
+				// for (size_t i = 0; i < arg.size(); i++)
+				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else {
 				if (directive != "\0")
@@ -191,7 +187,15 @@ void Config::parsingFile( void )
 				// std::cout << "other directive " << directive << " line : '" << line << "'"<< std::endl;
 			}
 
+
+
+
+
+
+
 		} else if (in_server) {
+
+
 
 				// std::cout << "directive in_server : " << directive << std::endl;
 
@@ -204,7 +208,9 @@ void Config::parsingFile( void )
 
 			} else if (directive == "server_name") {
 
-				std::string arg =  ConfigUtils::get_one_token(line);
+				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+				// for (size_t i = 0; i < arg.size(); i++)
+				// {std::cout << "'" << arg[i] << "'" << "\n";}
 				this->_vConfServP[server].set_server_name(arg);
 
 			} else if (directive == "client_max_body_size") {
@@ -221,10 +227,8 @@ void Config::parsingFile( void )
 
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-				for (size_t i = 0; i < arg.size(); i++)
-				{
-					std::cout << "'" << arg[i] << "'" << "\n";
-				}
+				// for (size_t i = 0; i < arg.size(); i++)
+				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 				// this->_vConfServP[server].set_root(arg);//todo check if its good path ?
 
@@ -232,19 +236,15 @@ void Config::parsingFile( void )
 
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-				for (size_t i = 0; i < arg.size(); i++)
-				{
-					std::cout << "'" << arg[i] << "'" << "\n";
-				}
+				// for (size_t i = 0; i < arg.size(); i++)
+				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else if (directive == "error_page") { // maybe more than one
 
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-				for (size_t i = 0; i < arg.size(); i++)
-				{
-					std::cout << "'" << arg[i] << "'"<< "\n";
-				}
+				// for (size_t i = 0; i < arg.size(); i++)
+				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else {
 
@@ -262,8 +262,22 @@ void Config::parsingFile( void )
 
 		}
 
-
 	}
+
+
+	// for (int i = 0; i <= server; i++)
+	// {
+	// 	std::cout << YELLOW <<"Print all content of the server n" << i << RESET << std::endl;
+	// 	this->_vConfServP[0].print_listen();
+	// 	this->_vConfServP[0].print_server_name();
+	// 	this->_vConfServP[0].print_client_max_body_size();
+	// 	this->_vConfServP[0].print_root();
+	// 	this->_vConfServP[0].print_index();
+	// 	this->_vConfServP[0].print_allow_methods();
+	// 	this->_vConfServP[0].print_error_page();
+	// }
+
+
 
 }
 

@@ -92,7 +92,8 @@
 	"ctime": "cpp",
 	"iomanip": "cpp",
 	"sstream": "cpp",
-	"fstream": "cpp"
+	"fstream": "cpp",
+	"map": "cpp"
 },
 "C_Cpp.errorSquiggles": "disabled",
 }
