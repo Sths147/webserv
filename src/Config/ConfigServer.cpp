@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/08/19 14:35:43 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/19 17:00:54 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,11 @@
 #include "MyException.hpp"
 
 ConfigServer::ConfigServer() {}
-ConfigServer::ConfigServer( const ConfigServer &other) {(void)other;}
 ConfigServer::~ConfigServer() {}
+// ConfigServer::ConfigServer() {std::cout << "\ncontruct\n";}
+// ConfigServer::~ConfigServer() { std::cout << "\ndestru\n";}
 
-#include <cstdlib>
+#include <cstdlib> // atoi
 
 
 
@@ -77,9 +78,11 @@ void	ConfigServer::set_listen( const std::string &str)
 
 
 	if (vecstring[0] != "\0"){
-
-		std::cout << "\tip = " << vecstring[0];
-		ip = ipconvert(vecstring[0]);
+		// std::cout << "\tip = " << vecstring[0];
+		if (vecstring[0] == "localhost")
+			ip = 2130706433;
+		else
+			ip = ipconvert(vecstring[0]);
 	}
 	if (vecstring.size() == 2 &&vecstring[1] != "\0"){
 		// std::cout << "\tport = " << vecstring[1];
@@ -92,6 +95,47 @@ void	ConfigServer::set_listen( const std::string &str)
 	this->_listen.push_back(Listen(ip, port));//todo stocker
 }
 
+
+/* ------   _index   ------ */
+
+void	ConfigServer::print_index( void ){
+	std::cout << "\nindex :"<< std::endl;
+	for (size_t i = 0; i < this->_index.size(); i++)
+	{
+		std::cout << "'" << this->_index[i] << "'" << std::endl;
+	}
+}
+void	ConfigServer::set_index( const std::vector<std::string> vec ){
+	if (this->_index.size() == 0)
+		this->_index = vec;
+	else	{
+		for (size_t i = 0; i < vec.size(); i++)
+		{
+			this->_index.push_back(vec[i]);
+		}
+	}
+}
+
+
+/* ------   _error_page   ------ */
+
+void	ConfigServer::print_error_page( void ){
+	std::cout << "\nerror_page :"<< std::endl;
+	for (size_t i = 0; i < this->_error_page.size(); i++)
+	{
+		std::cout << "'" << this->_error_page[i] << "'" << std::endl;
+	}
+}
+void	ConfigServer::set_error_page( const std::vector<std::string> vec ){
+		if (this->_error_page.size() == 0)
+		this->_error_page = vec;
+	else	{
+		for (size_t i = 0; i < vec.size(); i++)
+		{
+			this->_error_page.push_back(vec[i]);
+		}
+	}
+}
 
 
 /* ------   _server_name   ------ */
@@ -115,6 +159,26 @@ void	ConfigServer::set_server_name( const std::vector<std::string> &vec ) {
 }
 
 
+/* ------   _allow_methods   ------ */
+
+void	ConfigServer::print_allow_methods( void ){
+	std::cout << "\nallow_methods :"<< std::endl;
+	for (size_t i = 0; i < this->_allow_methods.size(); i++)
+	{
+		std::cout << "'" << this->_allow_methods[i] << "'" << std::endl;
+	}
+}
+void	ConfigServer::set_allow_methods( const std::vector<std::string> vec ){
+		if (this->_allow_methods.size() == 0)
+		this->_allow_methods = vec;
+	else {
+		for (size_t i = 0; i < vec.size(); i++)
+		{
+			this->_allow_methods.push_back(vec[i]);
+		}
+	}
+}
+
 
 /* ------   _client_max_body_size   ------ */
 
@@ -127,7 +191,6 @@ void	ConfigServer::print_client_max_body_size( void ){
 void	ConfigServer::set_client_max_body_size( const std::string &str){ this->_client_max_body_size = str;} // convert
 
 
-
 /* ------   _root   ------ */
 
 void	ConfigServer::print_root( void ){
@@ -137,45 +200,6 @@ void	ConfigServer::print_root( void ){
 	}
 }
 void	ConfigServer::set_root( const std::string &str){ this->_root = str;}
-
-
-
-/* ------   _index   ------ */
-
-void	ConfigServer::print_index( void ){
-	std::cout << "\nindex :"<< std::endl;
-	for (size_t i = 0; i < this->_index.size(); i++)
-	{
-		std::cout << "'" << this->_index[i] << "'" << std::endl;
-	}
-}
-void	ConfigServer::set_index( const std::string &str){ this->_index.push_back(str);}
-
-
-
-/* ------   _allow_methods   ------ */
-
-void	ConfigServer::print_allow_methods( void ){
-	std::cout << "\nallow_methods :"<< std::endl;
-	for (size_t i = 0; i < this->_allow_methods.size(); i++)
-	{
-		std::cout << "'" << this->_allow_methods[i] << "'" << std::endl;
-	}
-}
-void	ConfigServer::set_allow_methods( const std::string &str){ this->_allow_methods.push_back(str);}
-
-
-
-/* ------   _error_page   ------ */
-
-void	ConfigServer::print_error_page( void ){
-	std::cout << "\nerror_page :"<< std::endl;
-	for (size_t i = 0; i < this->_error_page.size(); i++)
-	{
-		std::cout << "'" << this->_error_page[i] << "'" << std::endl;
-	}
-}
-void	ConfigServer::set_error_page( const std::string &str){ this->_error_page.push_back(str);}
 
 
 

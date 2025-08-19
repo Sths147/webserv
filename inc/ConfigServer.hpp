@@ -20,42 +20,38 @@ class ConfigServer
 {
 	private:
 
-		std::vector<Listen>	_listen; // 65535
+		std::vector<Listen>			_listen;
+		std::vector<std::string>	_index;
+		std::vector<std::string>	_error_page;
 		std::vector<std::string>	_server_name;
+		std::vector<std::string>	_allow_methods;
+		std::string					_client_max_body_size; // convert max ?
 		std::string					_root;
 
-		std::string					_client_max_body_size; // convert max ?
-		std::vector<std::string>	_index;
-		std::vector<std::string>	_allow_methods;
-		std::vector<std::string>	_error_page;
-
 		std::vector<ConfigLocation>	_vConfLocaP;
-
 
 
 		public:
 
 		void	print_listen( void );
+		void	print_index( void );
+		void	print_error_page( void );
 		void	print_server_name( void );
+		void	print_allow_methods( void );
 		void	print_client_max_body_size( void );
 		void	print_root( void );
-		void	print_index( void );
-		void	print_allow_methods( void );
-		void	print_error_page( void );
 
 
 
-		ConfigServer( void );
-		ConfigServer( const ConfigServer &other );
 
 		/* --- set this server --- */
 		void	set_listen( const std::string &str);
+		void	set_index( const std::vector<std::string> vec );
+		void	set_error_page( const std::vector<std::string> vec );
 		void	set_server_name( const std::vector<std::string> &vec );
+		void	set_allow_methods( const std::vector<std::string> vec );
 		void	set_client_max_body_size( const std::string &str);
 		void	set_root( const std::string &str);
-		void	set_index( const std::string &str);
-		void	set_allow_methods( const std::string &str);
-		void	set_error_page( const std::string &str);
 		void	set_new_location( const std::string &str);
 
 		/* --- set in vector location index--- */
@@ -67,6 +63,7 @@ class ConfigServer
 
 
 
+		ConfigServer( void );
 		~ConfigServer();
 };
 

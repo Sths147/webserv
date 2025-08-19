@@ -17,7 +17,7 @@ class Config
 
 		std::string _file; // containe all the file without empty line commentary
 
-		std::vector<ConfigServer> _vConfServP;
+		std::vector<ConfigServer > _vConfServP;
 
 
 	public:
