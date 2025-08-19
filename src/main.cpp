@@ -19,16 +19,6 @@
 #define	MAX_REQUESTS_LINE	20
 
 
-class Server
-{
-    private:
-
-    public:
-        Server(void) ;
-        ~Server() ;
-};
-
-
 
 int main()
 {
@@ -88,9 +78,16 @@ int main()
 				if (buffer.empty())
 					throw std::runtime_error("empty request");
 				std::map<int, Request*> request;
-				Request	req1(buffer);
-				request[client_fd] = &req1;
-				write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
+				try {
+					Request	req1(buffer);
+					request[client_fd] = &req1;
+					std::cout << "type: " << req1.get_type() << std::endl;
+					write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
+				}
+				catch (int e)
+				{
+					write (client_fd, "HTTP/1.1 789 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
+				}
 				close(client_fd);
 			}
 		}
@@ -99,21 +96,21 @@ int main()
 	return (0);
 }
 
-#include "Server.hpp"
+// #include "Server.hpp"
 
-int main(int ac, char **av)
-{
+// int main(int ac, char **av)
+// {
 
-	if (ac == 2){
+// 	if (ac == 2){
 
-		try	{
-			Server webserv(av[1]);
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-		}
+// 		try	{
+// 			Server webserv(av[1]);
+// 		}
+// 		catch(const std::exception& e)
+// 		{
+// 			std::cerr << e.what() << '\n';
+// 		}
 
-	}
+// 	}
 
-}
+// }
