@@ -14,20 +14,28 @@ class ConfigLocation
 
 		ConfigLocation( void );
 		std::string _perm; //location "/" {
-		std::string _root;
 		std::vector<std::string> _index;
+		std::vector<int> _error_page;
 		std::vector<std::string> _allow_methods;
-		std::vector<std::string> _error_page;
+		std::string _root;
+
+		void	print_index( void );
+		void	print_error_page( void );
+		void	print_allow_methods( void );
+		void	print_root( void );
 
 	public:
 
-		ConfigLocation( const std::string &perm );
-		ConfigLocation( const ConfigLocation &other );
+		void	print_all( void );
 
+
+
+		ConfigLocation( const std::string &perm );
+
+		void	set_index( const std::vector<std::string> &str);
+		void	set_error_page( const std::vector<std::string> &str);
+		void	set_allow_methods( const std::vector<std::string> &str);
 		void	set_root( const std::string &str);
-		void	set_index( const std::string &str);
-		void	set_allow_methods( const std::string &str);
-		void	set_error_page( const std::string &str);
 
 		~ConfigLocation();
 };

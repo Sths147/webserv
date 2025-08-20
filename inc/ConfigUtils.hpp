@@ -20,7 +20,7 @@ class ConfigUtils
 
 		static	void						check_bracket(const std::string &str);
 		static	void						check_after_bracket_semicolon(const std::string &str, size_t pos);
-
+		static	bool						error_page_valid(const int &page);
 
 		static	size_t						find_first_not_of_space(const std::string &str);
 		static	size_t						find_first_not_of_space(const std::string &str, size_t pos);

@@ -41,7 +41,7 @@ HEADERS				:=		Config.hpp			\
 
 SRC					:=		Request.cpp			\
 							main.cpp			\
-							# Server.cpp		\
+							Server.cpp		\
 							# mainflotest.cpp	\
 							# main2.cpp
 

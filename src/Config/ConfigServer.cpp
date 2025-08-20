@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/08/19 17:00:54 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/20 15:58:04 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ ConfigServer::~ConfigServer() {}
 // ConfigServer::ConfigServer() {std::cout << "\ncontruct\n";}
 // ConfigServer::~ConfigServer() { std::cout << "\ndestru\n";}
 
-#include <cstdlib> // atoi
 
+#include <cstdlib> // atoi
 
 
 /* ------   _listen   ------ */
@@ -119,6 +119,7 @@ void	ConfigServer::set_index( const std::vector<std::string> vec ){
 
 /* ------   _error_page   ------ */
 
+
 void	ConfigServer::print_error_page( void ){
 	std::cout << "\nerror_page :"<< std::endl;
 	for (size_t i = 0; i < this->_error_page.size(); i++)
@@ -127,13 +128,15 @@ void	ConfigServer::print_error_page( void ){
 	}
 }
 void	ConfigServer::set_error_page( const std::vector<std::string> vec ){
-		if (this->_error_page.size() == 0)
-		this->_error_page = vec;
-	else	{
-		for (size_t i = 0; i < vec.size(); i++)
-		{
-			this->_error_page.push_back(vec[i]);
-		}
+	for (size_t i = 0; i < vec.size(); i++)
+	{
+		if (vec[i].size() > 3 )
+			throw (std::string("Error : unknown error page on this line "));
+		int page = std::atoi(vec[i].c_str());
+		if (ConfigUtils::error_page_valid(page))
+			this->_error_page.push_back(page);
+		else
+			throw (std::string("Error : unknown error page on this line "));
 	}
 }
 
@@ -147,7 +150,7 @@ void	ConfigServer::print_server_name( void ){
 		std::cout << "'" << this->_server_name[i] << "'" << std::endl;
 	}
 }
-void	ConfigServer::set_server_name( const std::vector<std::string> &vec ) {
+void	ConfigServer::set_server_name( const std::vector<std::string> vec ) {
 	if (this->_server_name.size() == 0)
 		this->_server_name = vec;
 	else {
@@ -205,12 +208,34 @@ void	ConfigServer::set_root( const std::string &str){ this->_root = str;}
 
 /* ------   location   ------ */
 
-void	ConfigServer::set_new_location( const std::string &str) {
-	this->_vConfLocaP.push_back(ConfigLocation(str));
+void	ConfigServer::print_location( void ){
+
+	for (size_t i = 0; i < this->_vConfLocal.size(); i++)
+	{
+		std::cout << YELLOW << "\tlocation n" << i << RESET << std::endl;
+		this->_vConfLocal[i].print_all();
+	}
+
 
 }
+void	ConfigServer::set_new_location( const std::string &perm) {
+	this->_vConfLocal.push_back(ConfigLocation(perm));
+}
 /* --- set in vector location index--- */
-void	ConfigServer::set_inlocation_root(const int &i, const std::string &str){this->_vConfLocaP[i].set_root(str);}
-void	ConfigServer::set_inlocation_index(const int &i, const std::string &str){this->_vConfLocaP[i].set_index(str);}
-void	ConfigServer::set_inlocation_allow_methods(const int &i, const std::string &str){this->_vConfLocaP[i].set_allow_methods(str);}
-void	ConfigServer::set_inlocation_error_page(const int &i, const std::string &str){this->_vConfLocaP[i].set_error_page(str);}
+void	ConfigServer::set_inlocation_index(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_index(arg);}
+void	ConfigServer::set_inlocation_allow_methods(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_allow_methods(arg);}
+void	ConfigServer::set_inlocation_error_page(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_error_page(arg);}
+void	ConfigServer::set_inlocation_root(const int &i, const std::string &str){this->_vConfLocal[i].set_root(str);}
+
+
+
+
+/* --- GET --- */
+
+std::vector<Listen>			&ConfigServer::get_listen( void ) { return (this->_listen);}
+std::vector<std::string>	&ConfigServer::get_index( void ) { return (this->_index);}
+std::vector<int>			&ConfigServer::get_error_page( void ) { return (this->_error_page);}
+std::vector<std::string>	&ConfigServer::get_server_name( void ) { return (this->_server_name);}
+std::vector<std::string>	&ConfigServer::get_allow_methods( void ) { return (this->_allow_methods);}
+std::string					&ConfigServer::get_client_max_body_size( void ) { return (this->_client_max_body_size);}
+std::string					&ConfigServer::get_root( void ) { return (this->_root);}

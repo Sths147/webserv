@@ -17,12 +17,15 @@ class Config
 
 		std::string _file; // containe all the file without empty line commentary
 
-		std::vector<ConfigServer > _vConfServP;
+		std::vector<ConfigServer > _vConfServer;
 
 
 	public:
-		Config(std::string &nameFile);
-		void parsingFile( void );
+		Config(std::string nameFile);
+		void			parsingFile( void );
+
+		ConfigServer	&copy_config_server( const int &i );
+		size_t			nb_of_server();
 		~Config(void);
 
 };
