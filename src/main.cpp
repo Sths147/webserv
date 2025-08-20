@@ -108,6 +108,7 @@ int main(int ac, char **av)
 			{
 				server.push_back(Server(config.copy_config_server(i)));
 			}
+
 			// std::string str = server[0].get_root();
 
 			// std::cout <<"\n get root " << str << std::endl;

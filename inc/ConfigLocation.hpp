@@ -13,11 +13,11 @@ class ConfigLocation
 	private:
 
 		ConfigLocation( void );
-		std::string _perm; //location "/" {
-		std::vector<std::string> _index;
-		std::vector<int> _error_page;
-		std::vector<std::string> _allow_methods;
-		std::string _root;
+		std::string					_perm; // location "/" {
+		std::vector<std::string>	_index;
+		std::vector<int>			_error_page;
+		std::vector<std::string>	_allow_methods;
+		std::string					_root;
 
 		void	print_index( void );
 		void	print_error_page( void );
