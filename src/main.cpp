@@ -124,4 +124,6 @@ int main(int ac, char **av)
 		std::cerr << "We need a Config file to lunch the server" << std::endl;
 	}
 	std::cout <<"\n get root " << server[1].get_root() << std::endl;
+	std::cout <<"\n check perm " << server[1].check_perm("/") << std::endl;
+	std::cout <<"\n check perm " << server[1].get_root() << std::endl;
 }
