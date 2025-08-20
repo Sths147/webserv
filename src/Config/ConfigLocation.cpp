@@ -89,6 +89,13 @@ void	ConfigLocation::print_root( void ){
 void	ConfigLocation::set_root(const std::string &str) { this->_root = str;}
 
 
+bool	ConfigLocation::check_perm( const std::string &key ) const { return (this->_perm == key); }
 
+const std::vector<std::string>	&ConfigLocation::get_index( void ) const { return (this->_index);}
 
+const std::vector<int>			&ConfigLocation::get_error_page( void ) const { return (this->_error_page);}
+
+const std::vector<std::string>	&ConfigLocation::get_allow_methods( void ) const { return (this->_allow_methods);}
+
+const std::string					&ConfigLocation::get_root( void ) const { return (this->_root);}
 

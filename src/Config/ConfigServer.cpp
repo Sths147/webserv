@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/08/20 15:58:04 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/20 17:51:46 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,10 +232,35 @@ void	ConfigServer::set_inlocation_root(const int &i, const std::string &str){thi
 
 /* --- GET --- */
 
-std::vector<Listen>			&ConfigServer::get_listen( void ) { return (this->_listen);}
-std::vector<std::string>	&ConfigServer::get_index( void ) { return (this->_index);}
-std::vector<int>			&ConfigServer::get_error_page( void ) { return (this->_error_page);}
-std::vector<std::string>	&ConfigServer::get_server_name( void ) { return (this->_server_name);}
-std::vector<std::string>	&ConfigServer::get_allow_methods( void ) { return (this->_allow_methods);}
-std::string					&ConfigServer::get_client_max_body_size( void ) { return (this->_client_max_body_size);}
-std::string					&ConfigServer::get_root( void ) { return (this->_root);}
+const	std::vector<Listen>			&ConfigServer::get_listen( void ) const { return (this->_listen);}
+const	std::vector<std::string>	&ConfigServer::get_index( void ) const { return (this->_index);}
+const	std::vector<int>			&ConfigServer::get_error_page( void ) const { return (this->_error_page);}
+const	std::vector<std::string>	&ConfigServer::get_server_name( void ) const { return (this->_server_name);}
+const	std::vector<std::string>	&ConfigServer::get_allow_methods( void ) const { return (this->_allow_methods);}
+const	std::string					&ConfigServer::get_client_max_body_size( void ) const { return (this->_client_max_body_size);}
+const	std::string					&ConfigServer::get_root( void ) const { return (this->_root);}
+
+
+
+/* --- GET inlocation --- */
+
+bool						ConfigServer::check_perm( const std::string key )
+{
+	for (size_t i = 0; i < this->_vConfLocal.size(); i++)
+	{
+		if (this->_vConfLocal[i].check_perm(key)){
+			this->last_i_perm = i;
+			return (true);
+		}
+	}
+	return (false);
+}
+
+const	std::vector<std::string>	&ConfigServer::get_inlocation_index( void ) const { return (this->_vConfLocal[this->last_i_perm].get_index()); }
+
+const	std::vector<int>			&ConfigServer::get_inlocation_error_page( void ) const { return (this->_vConfLocal[this->last_i_perm].get_error_page()); }
+
+const	std::vector<std::string>	&ConfigServer::get_inlocation_allow_methods( void ) const { return (this->_vConfLocal[this->last_i_perm].get_allow_methods()); }
+
+const	std::string					&ConfigServer::get_inlocation_root( void ) const { return (this->_vConfLocal[this->last_i_perm].get_root()); }
+

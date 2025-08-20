@@ -37,6 +37,14 @@ class ConfigLocation
 		void	set_allow_methods( const std::vector<std::string> &str);
 		void	set_root( const std::string &str);
 
+
+
+		bool	check_perm( const std::string &key ) const ;
+		const	std::vector<std::string>	&get_index( void ) const ;
+		const	std::vector<int>			&get_error_page( void ) const ;
+		const	std::vector<std::string>	&get_allow_methods( void ) const ;
+		const	std::string					&get_root( void ) const ;
+
 		~ConfigLocation();
 };
 
