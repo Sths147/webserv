@@ -24,7 +24,7 @@ class ConfigUtils
 
 		~ConfigUtils();
 		static	size_t						get_pos( void );
-		static	Listen								ip_host_parseur( const std::string &str);
+		static	Listen						ip_host_parseur( const std::string &str);
 
 
 		static	void						check_bracket(const std::string &str);

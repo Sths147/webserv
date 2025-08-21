@@ -10,8 +10,9 @@ class Server
 	private:
 		Server(void);
 		ConfigServer _ConfServer;
+		// std::vector<int>
 	public:
-		Server(ConfigServer &Config);
+		Server(ConfigServer &Config, int epoll_fd);
 
 
 		const	std::vector<Listen>			&get_listen( void ) const ;
