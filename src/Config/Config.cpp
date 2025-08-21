@@ -138,76 +138,48 @@ void Config::parsingFile( void )
 			serverDirectiveParsing(line);
 			ConfigServer tmp;
 			this->_vConfServer.push_back(tmp);
-			// std::cout << "server open"<< server << std::endl;
-
 
 		} else if (in_server && directive == "location"){
 
 			if (in_location)
 				throw (MyException("Error : already in a location we cant get a location in a location"));
-
 			location++;
 			in_location = true;
 			std::string perm = locationDirectiveParsing(line);
 			this->_vConfServer[server].set_new_location(perm);
-			// std::cout << perm << std::endl;
-			// std::cout << "location open"<< location << std::endl;
-
-
-
-
 
 		} else if (in_location) {
 
-				// std::cout << "directive in_location : " << directive << std::endl;
-
-			if (directive == "index") { // maybe more than one
+			if (directive == "index") {
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				this->_vConfServer[server].set_inlocation_index(location, arg);
-				// for (size_t i = 0; i < arg.size(); i++)
-				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
-			} else if (directive == "error_page") { // maybe more than one
+			} else if (directive == "error_page") {
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				this->_vConfServer[server].set_inlocation_error_page(location, arg);
-				// for (size_t i = 0; i < arg.size(); i++)
-				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
-			} else if (directive == "allow_methods") { // maybe more than one
+			} else if (directive == "allow_methods") {
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				this->_vConfServer[server].set_inlocation_allow_methods(location, arg);
-				// for (size_t i = 0; i < arg.size(); i++)
-				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else if (directive == "root") {
 
 				std::string arg =  ConfigUtils::get_one_token(line);
 				this->_vConfServer[server].set_inlocation_root(location, arg);
-				// std::cout << arg << "\n";
 
-			} else {
+			} else { // here we got "}" or error
+
 				if (directive != "\0")
 					throw (MyException("Error : unknown directive...", directive));
 				ConfigUtils::check_bracket(line);
 				in_location = false;
-				// here we got "}" or error
-				// std::cout << "location close"<< std::endl;
+
 			}
 
-
-
-
-
-
-
 		} else if (in_server) {
-
-
-
-				// std::cout << "directive in_server : " << directive << std::endl;
 
 			if (directive == "listen") {
 
@@ -220,16 +192,13 @@ void Config::parsingFile( void )
 				{
 					throw (MyException(str, line));
 				}
-				// std::cout << "arg listen : " <<  arg << " reste : " << line[ConfigUtils::get_pos()] << std::endl;
 
-			} else if (directive == "index") { // maybe more than one
+			} else if (directive == "index") {
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				this->_vConfServer[server].set_index(arg);
-				// for (size_t i = 0; i < arg.size(); i++)
-				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
-			} else if (directive == "error_page") { // maybe more than one
+			} else if (directive == "error_page") {
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				try
@@ -240,22 +209,16 @@ void Config::parsingFile( void )
 				{
 					throw (MyException(str, line));
 				}
-				// for (size_t i = 0; i < arg.size(); i++)
-				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else if (directive == "server_name") {
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				this->_vConfServer[server].set_server_name(arg);
-				// for (size_t i = 0; i < arg.size(); i++)
-				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
-			} else if (directive == "allow_methods") { // maybe more than one
+			} else if (directive == "allow_methods") {
 
 				std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
 				this->_vConfServer[server].set_allow_methods(arg);
-				// for (size_t i = 0; i < arg.size(); i++)
-				// {std::cout << "'" << arg[i] << "'" << "\n";}
 
 			} else if (directive == "client_max_body_size") {
 
@@ -267,15 +230,13 @@ void Config::parsingFile( void )
 				std::string arg =  ConfigUtils::get_one_token(line);
 				this->_vConfServer[server].set_root(arg);
 
-			} else {
+			} else { // here we got "}" or error
 
 				if (directive != "\0")
 					throw (MyException("Error : unknown directive...", directive));
 				ConfigUtils::check_bracket(line);
 				in_server = false;
 				location = -1;
-				// here we got "}" or error
-				// std::cout << "server close"<< std::endl;
 			}
 
 		} else {
@@ -283,9 +244,7 @@ void Config::parsingFile( void )
 			throw (MyException("Error : Directive found not in a Server/location...", line));
 
 		}
-
 	}
-
 
 	for (int i = 0; i <= server ; i++)
 	{
@@ -300,20 +259,12 @@ void Config::parsingFile( void )
 		this->_vConfServer[i].print_location();
 	}
 
-
-
 }
 
 
 
 
 ConfigServer	&Config::copy_config_server( const int &i ){ return (this->_vConfServer[i]); }
-
-
 size_t	Config::nb_of_server(){ return (this->_vConfServer.size()); }
-
-
-
-
 
 Config::~Config() {}

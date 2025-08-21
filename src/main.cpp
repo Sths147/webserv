@@ -95,7 +95,37 @@
 
 int main(int ac, char **av)
 {
+
+	int epfd = epoll_create1(EPOLL_CLOEXEC);
 	std::vector<Server> server;
+
+
+	int sockfd;
+	int	one = 1;
+	struct sockaddr_in	address;
+	socklen_t addrlen = sizeof(address);
+
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sockfd < 0)
+		perror("error opening socket");
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
+
+	address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
+
+	bind(sockfd, (struct sockaddr *)&address, addrlen);
+	listen(sockfd, 1024);
+	write(1, "server listening on port 8010\n", 30);
+	int flags = fcntl(sockfd, F_GETFL, 0);
+	fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+	struct epoll_event ev, events[MAX_EVENTS];
+	ev.events = EPOLLIN;
+	ev.data.fd = sockfd;
+	epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &ev);
+
+
+
 
 	if (ac == 2){
 
@@ -106,14 +136,8 @@ int main(int ac, char **av)
 			// std::cout << config.nb_of_server() ;
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
-				server.push_back(Server(config.copy_config_server(i)));
+				server.push_back(Server(config.copy_config_server(i), epfd ));
 			}
-
-			// std::string str = server[0].get_root();
-
-			// std::cout <<"\n get root " << str << std::endl;
-
-
 		}
 		catch(const std::exception& e)
 		{
@@ -123,7 +147,9 @@ int main(int ac, char **av)
 	} else {
 		std::cerr << "We need a Config file to lunch the server" << std::endl;
 	}
+
+
 	std::cout <<"\n get root " << server[1].get_root() << std::endl;
 	std::cout <<"\n check perm " << server[1].check_perm("/") << std::endl;
-	std::cout <<"\n check perm " << server[1].get_root() << std::endl;
+	std::cout <<"\n get_inlocation_root " << server[1].get_inlocation_root() << std::endl;
 }

@@ -118,13 +118,13 @@ static unsigned int	ipconvert(std::string& str)
 	{
 		char c = str[i];
 		if (!(std::isdigit(c) || c == '.'))
-			throw (std::string("Error : invalid character on ip of this line "));
+			throw (std::string("Error : invalid character on IP of this line "));
 	}
 
 	std::vector<std::string> vecstring = ConfigUtils::split(str, '.');
 	if (vecstring.size() != 4 || vecstring[0] == "\0" || vecstring[1] == "\0" || vecstring[2] == "\0" || vecstring[3] == "\0"
 		|| vecstring[0].size() > 3|| vecstring[1].size() > 3|| vecstring[2].size() > 3|| vecstring[3].size() > 3)
-		throw (std::string("Error : bad format on ip of this line "));
+		throw (std::string("Error : bad format on IP of this line "));
 
 	// std::cout << "\na = " << a << ", b = " << b << ", c = " << c << ", d = " << d <<std::endl;
 
