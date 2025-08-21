@@ -6,6 +6,13 @@
 #include <iostream>
 #include <vector>
 
+struct Listen
+{
+	unsigned int ip;
+	unsigned int port;
+	Listen(unsigned int cip, unsigned int cport) : ip(cip), port(cport) {}
+};
+
 class ConfigUtils
 {
 	private:
@@ -17,6 +24,8 @@ class ConfigUtils
 
 		~ConfigUtils();
 		static	size_t						get_pos( void );
+		static	Listen								ip_host_parseur( const std::string &str);
+
 
 		static	void						check_bracket(const std::string &str);
 		static	void						check_after_bracket_semicolon(const std::string &str, size_t pos);

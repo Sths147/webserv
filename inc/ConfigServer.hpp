@@ -8,12 +8,7 @@
 #include "ConfigUtils.hpp"
 #include "ConfigLocation.hpp"
 
-struct Listen
-{
-	unsigned int ip;
-	unsigned int port;
-	Listen(int cip, int cport) : ip(cip), port(cport) {}
-};
+
 
 
 class ConfigServer
