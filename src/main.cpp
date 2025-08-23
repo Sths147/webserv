@@ -112,7 +112,7 @@ int main(int ac, char **av)
 
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
-				std::cout << "server n*" << i <<std::endl;
+				// std::cout << "server n*" << i <<std::endl;
 				server.push_back(Server(config.copy_config_server(i), epollfd));
 			}
 
@@ -128,9 +128,9 @@ int main(int ac, char **av)
 		return (1);
 	}
 
-	std::cout <<"\n get root " << server[1].get_root() << std::endl;
-	std::cout <<"\n check location " << server[1].check_location("/") << std::endl;
-	std::cout <<"\n check perm " << server[1].get_root() << std::endl;
+	// std::cout <<"\n get root " << server[1].get_root() << std::endl;
+	std::cout <<"\n check location " << server[0].check_location("/dir1/dir/dir3") << std::endl;
+	// std::cout <<"\n check perm " << server[1].get_root() << std::endl;
 
 	// while ()
 	// {

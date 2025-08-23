@@ -18,16 +18,18 @@ Server::Server( void )
 
 }
 
-// static void set_nonblocking(int socket_fd) {
-// 	int flags = fcntl(socket_fd, F_GETFL, 0);
-// 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
-// }
+static void set_nonblocking(int socket_fd) {
+	int flags = fcntl(socket_fd, F_GETFL, 0);
+	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+}
 
-// static void set_address(struct sockaddr_in	&address, Listen &listen) {
-// 	address.sin_family = AF_INET;
-// 	address.sin_addr.s_addr = listen.ip;
-// 	address.sin_port = htons(listen.port);
-// }
+static void set_address(struct sockaddr_in	&address, Listen &listen) {
+	// std::cout << "listen ip : " << listen.ip << std::endl;
+	// std::cout << "listen port : " << listen.port << std::endl;
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr =  htonl(listen.ip);
+	address.sin_port = htons(listen.port);
+}
 
 Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
@@ -43,7 +45,7 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
 	for (size_t i = 0; i < size; i++)
 	{
-		std::cout << "creat listen n*" << i << std::endl;
+		// std::cout << "creat listen n*" << i << std::endl;
 		int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 		if (socket_fd < 0){
 			throw (MyException("Error : opening socket failed"));
@@ -54,13 +56,7 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 			throw (MyException("Error : setsockopt failed ", strerror(errno)));
 		}
 
-		// set_address(address, vec_listen[i]);
-		address.sin_family = AF_INET;
-		address.sin_addr.s_addr = INADDR_ANY;
-		// address.sin_addr.s_addr = vec_listen[i].ip;
-		address.sin_port = htons(vec_listen[i].port);
-		std::cout << "listen ip : " << vec_listen[i].ip << std::endl;
-		std::cout << "listen port : " << vec_listen[i].port << std::endl;
+		set_address(address, vec_listen[i]);
 
 		if ( bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0 ){
 			throw (MyException("Error : Bind failed ", strerror(errno)));
@@ -70,9 +66,9 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 			throw (MyException("Error : Listen failed"));
 		}
 
-		// set_nonblocking(socket_fd);
-		int flags = fcntl(socket_fd, F_GETFL, 0);
-		fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+		set_nonblocking(socket_fd);
+		// int flags = fcntl(socket_fd, F_GETFL, 0);
+		// fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 
 		ev.events = EPOLLIN;
 		ev.data.fd = socket_fd;

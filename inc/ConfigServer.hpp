@@ -24,7 +24,7 @@ class ConfigServer
 		std::string					_root;
 
 		std::vector<ConfigLocation>	_vConfLocal;
-		int							last_i_location;
+		int							_last_i_location;
 
 
 		public:
@@ -67,7 +67,7 @@ class ConfigServer
 			const	std::string					&get_root( void ) const ;
 
 			/* --- GET inlocation --- */
-			bool								check_location( const std::string key ) ;
+			bool								check_location( std::string key ) ;
 			const	std::string					&get_inlocation_location( void ) const ;
 			const	std::vector<std::string>	&get_inlocation_index( void ) const ;
 			const	std::vector<int>			&get_inlocation_error_page( void ) const ;

@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/08/23 12:24:37 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/23 14:12:29 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "ConfigLocation.hpp"
 #include "MyException.hpp"
 
-ConfigServer::ConfigServer() {}
+ConfigServer::ConfigServer() : _last_i_location(-1) {}
 ConfigServer::~ConfigServer() {}
 // ConfigServer::ConfigServer() {std::cout << "\ncontruct\n";}
 // ConfigServer::~ConfigServer() { std::cout << "\ndestru\n";}
@@ -190,26 +190,45 @@ const	std::string					&ConfigServer::get_root( void ) const { return (this->_roo
 
 /* --- GET inlocation --- */
 
-bool						ConfigServer::check_location( const std::string key )
+bool						ConfigServer::check_location( std::string key )
 {
-	this->last_i_location = -1;
+	this->_last_i_location = -1;
 	for (size_t i = 0; i < this->_vConfLocal.size(); i++)
 	{
-		if (this->_vConfLocal[i].check_location(key)){
-			this->last_i_location = i;
+		if (this->_vConfLocal[i].check_location(key) && this->_vConfLocal[i].get_absolut()){
+			this->_last_i_location = i;
 			return (true);
 		}
 	}
+	do
+	{
+		for (size_t i = 0; i < this->_vConfLocal.size() ; i++)
+		{
+			// std::cout << key <<std::endl;
+			if (this->_vConfLocal[i].check_location(key) && !this->_vConfLocal[i].get_absolut()) {
+				this->_last_i_location = i;
+				return (true);
+			}
+		}
+		size_t pos = key.find_last_of('/');
+		if (pos == std::string::npos || key.size() == 1)
+			break;
+		if (pos == 0) {
+			key.resize(1);
+		} else {
+			key.resize(pos);
+		}
+	} while (1);
 	return (false);
 }
 
-const	std::string					&ConfigServer::get_inlocation_location( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_location()); }
+const	std::string					&ConfigServer::get_inlocation_location( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1" , "contact moi si tu a ce msg")); return (this->_vConfLocal[this->_last_i_location].get_location()); }
 
-const	std::vector<std::string>	&ConfigServer::get_inlocation_index( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_index()); }
+const	std::vector<std::string>	&ConfigServer::get_inlocation_index( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1" , "contact moi si tu a ce msg")); return (this->_vConfLocal[this->_last_i_location].get_index()); }
 
-const	std::vector<int>			&ConfigServer::get_inlocation_error_page( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_error_page()); }
+const	std::vector<int>			&ConfigServer::get_inlocation_error_page( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1" , "contact moi si tu a ce msg")); return (this->_vConfLocal[this->_last_i_location].get_error_page()); }
 
-const	std::vector<std::string>	&ConfigServer::get_inlocation_allow_methods( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_allow_methods()); }
+const	std::vector<std::string>	&ConfigServer::get_inlocation_allow_methods( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1" , "contact moi si tu a ce msg")); return (this->_vConfLocal[this->_last_i_location].get_allow_methods()); }
 
-const	std::string					&ConfigServer::get_inlocation_root( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_root()); }
+const	std::string					&ConfigServer::get_inlocation_root( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1" , "contact moi si tu a ce msg")); return (this->_vConfLocal[this->_last_i_location].get_root()); }
 

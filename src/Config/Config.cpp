@@ -76,16 +76,13 @@ static void serverDirectiveParsing(std::string &line){
 
 static std::string locationDirectiveParsing(std::string line, bool &b){
 
-	(void)b;
-
-
 	std::vector<std::string> vec = ConfigUtils::split(line, ' ');
 
-	std::cout << std::endl;
-	for (size_t i = 0; i < vec.size(); i++)
-	{
-		std::cout << "locationDirectiveParsing n*"<< i << " '" << vec[i] << "'"<<  std::endl;
-	}
+	// std::cout << std::endl;
+	// for (size_t i = 0; i < vec.size(); i++)
+	// {
+	// 	std::cout << "locationDirectiveParsing n*"<< i << " '" << vec[i] << "'"<<  std::endl;
+	// }
 
 	if (vec.size() < 2 && (vec[1][0] != '{'|| vec[2][0] != '{'))
 		throw (std::string("Error : bad format on this line..."));
@@ -100,7 +97,6 @@ static std::string locationDirectiveParsing(std::string line, bool &b){
 		throw (std::string("Error : bad format on this line..."));
 	if (vec.size() > (i + 2) && vec[i + 2][0] != '#')
 		throw (std::string("Error : bad format on this line..."));
-
 	return (vec[i]);
 }
 
@@ -248,18 +244,18 @@ void Config::parsingFile( void )
 		}
 	}
 
-	// for (int i = 0; i <= server ; i++)
-	// {
-	// 	std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
-	// 	this->_vConfServer[i].print_listen();
-	// 	this->_vConfServer[i].print_index();
-	// 	this->_vConfServer[i].print_error_page();
-	// 	this->_vConfServer[i].print_server_name();
-	// 	this->_vConfServer[i].print_allow_methods();
-	// 	this->_vConfServer[i].print_client_max_body_size();
-	// 	this->_vConfServer[i].print_root();
-	// 	this->_vConfServer[i].print_location();
-	// }
+	for (int i = 0; i <= server ; i++)
+	{
+		std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
+		// this->_vConfServer[i].print_listen();
+		// this->_vConfServer[i].print_index();
+		// this->_vConfServer[i].print_error_page();
+		// this->_vConfServer[i].print_server_name();
+		// this->_vConfServer[i].print_allow_methods();
+		// this->_vConfServer[i].print_client_max_body_size();
+		// this->_vConfServer[i].print_root();
+		this->_vConfServer[i].print_location();
+	}
 
 }
 

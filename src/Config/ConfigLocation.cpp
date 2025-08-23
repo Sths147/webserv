@@ -15,6 +15,7 @@ ConfigLocation::ConfigLocation( const std::string &perm ) : _location(perm) {}
 
 void	ConfigLocation::print_all( void ){
 	std::cout << "location : " <<this->_location << std::endl;
+	std::cout << "\nabsolut : " <<this->_absolut << std::endl;
 	this->print_index();
 	this->print_error_page();
 	this->print_allow_methods();
@@ -110,9 +111,7 @@ void	ConfigLocation::set_root(const std::string &str) { this->_root = str;}
 
 
 
-bool							ConfigLocation::check_location( const std::string &key ) const {
-	return (this->_location == key);
-}
+bool							ConfigLocation::check_location( const std::string &key ) const { return (this->_location == key); }
 
 const bool						&ConfigLocation::get_absolut( void ) const { return (this->_absolut);}
 
