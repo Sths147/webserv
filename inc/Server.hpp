@@ -10,7 +10,7 @@ class Server
 	private:
 		Server(void);
 		ConfigServer _ConfServer;
-		// std::vector<int>
+		std::vector<int> vector_socket_fd;
 	public:
 		Server(ConfigServer &Config, int epoll_fd);
 
@@ -24,7 +24,7 @@ class Server
 		const	std::string					&get_root( void ) const ;
 
 
-		bool								check_perm( const std::string key ) ;
+		bool								check_location( const std::string key ) ;
 		const	std::vector<std::string>	&get_inlocation_index( void ) const ;
 		const	std::vector<int>			&get_inlocation_error_page( void ) const ;
 		const	std::vector<std::string>	&get_inlocation_allow_methods( void ) const ;

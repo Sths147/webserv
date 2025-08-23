@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/08/21 08:18:23 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/23 12:24:37 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,8 +164,8 @@ void	ConfigServer::print_location( void ){
 
 
 }
-void	ConfigServer::set_new_location( const std::string &perm) {
-	this->_vConfLocal.push_back(ConfigLocation(perm));
+void	ConfigServer::set_new_location( const std::string &perm, const bool &b) {
+	this->_vConfLocal.push_back(ConfigLocation(perm , b));
 }
 /* --- set in vector location index--- */
 void	ConfigServer::set_inlocation_index(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_index(arg);}
@@ -190,23 +190,26 @@ const	std::string					&ConfigServer::get_root( void ) const { return (this->_roo
 
 /* --- GET inlocation --- */
 
-bool						ConfigServer::check_perm( const std::string key )
+bool						ConfigServer::check_location( const std::string key )
 {
+	this->last_i_location = -1;
 	for (size_t i = 0; i < this->_vConfLocal.size(); i++)
 	{
-		if (this->_vConfLocal[i].check_perm(key)){
-			this->last_i_perm = i;
+		if (this->_vConfLocal[i].check_location(key)){
+			this->last_i_location = i;
 			return (true);
 		}
 	}
 	return (false);
 }
 
-const	std::vector<std::string>	&ConfigServer::get_inlocation_index( void ) const { return (this->_vConfLocal[this->last_i_perm].get_index()); }
+const	std::string					&ConfigServer::get_inlocation_location( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_location()); }
 
-const	std::vector<int>			&ConfigServer::get_inlocation_error_page( void ) const { return (this->_vConfLocal[this->last_i_perm].get_error_page()); }
+const	std::vector<std::string>	&ConfigServer::get_inlocation_index( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_index()); }
 
-const	std::vector<std::string>	&ConfigServer::get_inlocation_allow_methods( void ) const { return (this->_vConfLocal[this->last_i_perm].get_allow_methods()); }
+const	std::vector<int>			&ConfigServer::get_inlocation_error_page( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_error_page()); }
 
-const	std::string					&ConfigServer::get_inlocation_root( void ) const { return (this->_vConfLocal[this->last_i_perm].get_root()); }
+const	std::vector<std::string>	&ConfigServer::get_inlocation_allow_methods( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_allow_methods()); }
+
+const	std::string					&ConfigServer::get_inlocation_root( void ) const { if (this->last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->last_i_location].get_root()); }
 

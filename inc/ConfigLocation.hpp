@@ -13,7 +13,8 @@ class ConfigLocation
 	private:
 
 		ConfigLocation( void );
-		std::string					_perm; // location "/" {
+		std::string					_location; // location "/" {
+		bool						_absolut; // location "=" / {
 		std::vector<std::string>	_index;
 		std::vector<int>			_error_page;
 		std::vector<std::string>	_allow_methods;
@@ -32,6 +33,9 @@ class ConfigLocation
 
 		ConfigLocation( const std::string &perm );
 
+		ConfigLocation( const std::string &perm , const bool &b );
+
+		void	set_absolut( const bool &b);
 		void	set_index( const std::vector<std::string> &str);
 		void	set_error_page( const std::vector<std::string> &str);
 		void	set_allow_methods( const std::vector<std::string> &str);
@@ -39,7 +43,10 @@ class ConfigLocation
 
 
 
-		bool	check_perm( const std::string &key ) const ;
+		bool								check_location( const std::string &key ) const ;
+
+		const bool							&get_absolut( void ) const ;
+		const	std::string					&get_location( void ) const;
 		const	std::vector<std::string>	&get_index( void ) const ;
 		const	std::vector<int>			&get_error_page( void ) const ;
 		const	std::vector<std::string>	&get_allow_methods( void ) const ;

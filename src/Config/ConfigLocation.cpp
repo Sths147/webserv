@@ -5,15 +5,23 @@
 ConfigLocation::ConfigLocation() {}
 ConfigLocation::~ConfigLocation() {}
 
-ConfigLocation::ConfigLocation( const std::string &perm ) : _perm(perm) {}
+ConfigLocation::ConfigLocation( const std::string &perm , const bool &b) : _location(perm), _absolut(b) {}
+ConfigLocation::ConfigLocation( const std::string &perm ) : _location(perm) {}
+
+
+
+
 
 
 void	ConfigLocation::print_all( void ){
+	std::cout << "location : " <<this->_location << std::endl;
 	this->print_index();
 	this->print_error_page();
 	this->print_allow_methods();
 	this->print_root();
 }
+
+void	ConfigLocation::set_absolut( const bool &b) {this->_absolut = b;}
 
 /* ------   _index   ------ */
 
@@ -25,7 +33,7 @@ void	ConfigLocation::print_index( void ){
 	}
 }
 void	ConfigLocation::set_index(const std::vector<std::string> &arg) {
-		if (this->_index.size() == 0)
+	if (this->_index.size() == 0)
 		this->_index = arg;
 	else {
 		for (size_t i = 0; i < arg.size(); i++)
@@ -89,7 +97,26 @@ void	ConfigLocation::print_root( void ){
 void	ConfigLocation::set_root(const std::string &str) { this->_root = str;}
 
 
-bool	ConfigLocation::check_perm( const std::string &key ) const { return (this->_perm == key); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool							ConfigLocation::check_location( const std::string &key ) const {
+	return (this->_location == key);
+}
+
+const bool						&ConfigLocation::get_absolut( void ) const { return (this->_absolut);}
+
+const std::string				&ConfigLocation::get_location( void ) const { return (this->_location);}
 
 const std::vector<std::string>	&ConfigLocation::get_index( void ) const { return (this->_index);}
 
@@ -97,5 +124,5 @@ const std::vector<int>			&ConfigLocation::get_error_page( void ) const { return 
 
 const std::vector<std::string>	&ConfigLocation::get_allow_methods( void ) const { return (this->_allow_methods);}
 
-const std::string					&ConfigLocation::get_root( void ) const { return (this->_root);}
+const std::string				&ConfigLocation::get_root( void ) const { return (this->_root);}
 

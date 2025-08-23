@@ -14,7 +14,7 @@ void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t p
 	if (ConfigUtils::find_first_not_of_space(str, pos) != std::string::npos) {
 		if (str[_pos] == '#')
 			return ;
-		throw (MyException("2 Error : extra charater... ", str));
+		throw (MyException("Error : extra charater... ", str));
 	}
 	return  ;
 }
@@ -110,6 +110,8 @@ std::vector<std::string> ConfigUtils::split(const std::string &topars, char deli
 	return (tokens);
 }
 
+
+
 #include <cstdlib> // atoi
 
 static unsigned int	ipconvert(std::string& str)
@@ -150,7 +152,7 @@ Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 	if (vecstring.size() == 0 || (vecstring.size() == 1 && vecstring[0] == "\0"))
 		throw (std::string("Error : No value on this line ")); // listen :;
 
-	unsigned int ip = 0, port = 80;
+	unsigned int ip = 0, port = 8080;
 
 
 	if (vecstring[0] != "\0"){

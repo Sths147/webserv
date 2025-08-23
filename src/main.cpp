@@ -110,9 +110,9 @@ int main(int ac, char **av)
 			Config config(av[1]);
 			config.parsingFile();
 
-			// std::cout << config.nb_of_server() ;
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
+				std::cout << "server n*" << i <<std::endl;
 				server.push_back(Server(config.copy_config_server(i), epollfd));
 			}
 
@@ -120,12 +120,20 @@ int main(int ac, char **av)
 		catch(const std::exception& e)
 		{
 			std::cerr << e.what() << std::endl;
+			return (1);
 		}
 
 	} else {
 		std::cerr << "We need a Config file to lunch the server" << std::endl;
+		return (1);
 	}
+
 	std::cout <<"\n get root " << server[1].get_root() << std::endl;
-	std::cout <<"\n check perm " << server[1].check_perm("/") << std::endl;
+	std::cout <<"\n check location " << server[1].check_location("/") << std::endl;
 	std::cout <<"\n check perm " << server[1].get_root() << std::endl;
+
+	// while ()
+	// {
+	// }
+
 }

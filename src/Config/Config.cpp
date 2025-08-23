@@ -32,7 +32,7 @@ Config::Config( std::string nameFile )
 	}
 
 	// Debug Print all the content stocked
-	std::cout << YELLOW <<"the file.conf :\n" << RESET << this->_file << YELLOW <<"eof" << RESET<< std::endl;
+	// std::cout << YELLOW <<"the file.conf :\n" << RESET << this->_file << YELLOW <<"eof" << RESET<< std::endl;
 
 	// 5. Check if we read all the file or not.
 	if (sfile.bad()) {
@@ -74,42 +74,34 @@ static void serverDirectiveParsing(std::string &line){
 
 }
 
-static std::string locationDirectiveParsing(std::string &line){
+static std::string locationDirectiveParsing(std::string line, bool &b){
 
-	std::string token;
-	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
-		char c = line[i];
+	(void)b;
 
-		if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ';' || c == '}')
-			continue;
-		if (c == '/'){
-			size_t index;
-			token += c;
-			for (index = i + 1; index < line.size(); index++)
-			{
-				c = line[index];
-				if (isalpha(c) || c == '/'){
-					token += c;
-					continue;
-				}
-				if (c == ' ' &&  index + 1 < line.size() && line[index + 1] == '{') {
 
-					if (ConfigUtils::find_first_not_of_space(line, index + 2) == std::string::npos || line[ConfigUtils::get_pos()] == '#') {
-						return (token);
-					} else {
-						throw (MyException("Error : bad format on this line...", line));
-					}
-				}
-				else
-					throw (MyException("Error : bad format on this line...", line));
-			}
-			if (c == '{' || index >= line.size())
-				break;
-			i = index;
-		}
+	std::vector<std::string> vec = ConfigUtils::split(line, ' ');
+
+	std::cout << std::endl;
+	for (size_t i = 0; i < vec.size(); i++)
+	{
+		std::cout << "locationDirectiveParsing n*"<< i << " '" << vec[i] << "'"<<  std::endl;
 	}
-	return (token);
 
+	if (vec.size() < 2 && (vec[1][0] != '{'|| vec[2][0] != '{'))
+		throw (std::string("Error : bad format on this line..."));
+	size_t i = 0;
+	if (vec[0][0] == '='){
+		if (vec[0].size() > 1)
+			throw (std::string("Error : bad format on this line..."));
+		b = true;
+		i++;
+	}
+	if (vec[i][0] != '/')
+		throw (std::string("Error : bad format on this line..."));
+	if (vec.size() > (i + 2) && vec[i + 2][0] != '#')
+		throw (std::string("Error : bad format on this line..."));
+
+	return (vec[i]);
 }
 
 
@@ -145,8 +137,18 @@ void Config::parsingFile( void )
 				throw (MyException("Error : already in a location we cant get a location in a location"));
 			location++;
 			in_location = true;
-			std::string perm = locationDirectiveParsing(line);
-			this->_vConfServer[server].set_new_location(perm);
+			bool b = 0;
+			if (line[ConfigUtils::get_pos()] != ' ')
+				throw (MyException("Error : bad format on this line...", line));
+			try
+			{
+				std::string perm = locationDirectiveParsing(line.substr(ConfigUtils::get_pos() + 1), b);
+				this->_vConfServer[server].set_new_location(perm, b);
+			}
+			catch(const std::string &str)
+			{
+				throw (MyException(str, line));
+			}
 
 		} else if (in_location) {
 
@@ -246,18 +248,18 @@ void Config::parsingFile( void )
 		}
 	}
 
-	for (int i = 0; i <= server ; i++)
-	{
-		std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
-		this->_vConfServer[i].print_listen();
-		this->_vConfServer[i].print_index();
-		this->_vConfServer[i].print_error_page();
-		this->_vConfServer[i].print_server_name();
-		this->_vConfServer[i].print_allow_methods();
-		this->_vConfServer[i].print_client_max_body_size();
-		this->_vConfServer[i].print_root();
-		this->_vConfServer[i].print_location();
-	}
+	// for (int i = 0; i <= server ; i++)
+	// {
+	// 	std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
+	// 	this->_vConfServer[i].print_listen();
+	// 	this->_vConfServer[i].print_index();
+	// 	this->_vConfServer[i].print_error_page();
+	// 	this->_vConfServer[i].print_server_name();
+	// 	this->_vConfServer[i].print_allow_methods();
+	// 	this->_vConfServer[i].print_client_max_body_size();
+	// 	this->_vConfServer[i].print_root();
+	// 	this->_vConfServer[i].print_location();
+	// }
 
 }
 

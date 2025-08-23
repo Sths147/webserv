@@ -40,7 +40,7 @@ class ConfigUtils
 		static	std::string					get_one_token(const std::string &str);
 		static	std::vector<std::string>	get_multi_token(const std::string &str);
 
-		static std::vector<std::string> 	split(const std::string &str, char delim);
+		static std::vector<std::string>		split(const std::string &str, char delim);
 
 
 

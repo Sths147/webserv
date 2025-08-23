@@ -24,7 +24,7 @@ class ConfigServer
 		std::string					_root;
 
 		std::vector<ConfigLocation>	_vConfLocal;
-		int							last_i_perm;
+		int							last_i_location;
 
 
 		public:
@@ -47,7 +47,7 @@ class ConfigServer
 			void	set_allow_methods( const std::vector<std::string> vec );
 			void	set_client_max_body_size( const std::string &str);
 			void	set_root( const std::string &str);
-			void	set_new_location( const std::string &perm);
+			void	set_new_location( const std::string &perm, const bool &b);
 
 			/* --- set in vector location index--- */
 			void	set_inlocation_index(const int &i, const std::vector<std::string> &arg);
@@ -58,7 +58,6 @@ class ConfigServer
 
 
 			/* --- GET--- */
-
 			const	std::vector<Listen>			&get_listen( void ) const ;
 			const	std::vector<std::string>	&get_index( void ) const ;
 			const	std::vector<int>			&get_error_page( void ) const ;
@@ -68,7 +67,8 @@ class ConfigServer
 			const	std::string					&get_root( void ) const ;
 
 			/* --- GET inlocation --- */
-			bool								check_perm( const std::string key ) ;
+			bool								check_location( const std::string key ) ;
+			const	std::string					&get_inlocation_location( void ) const ;
 			const	std::vector<std::string>	&get_inlocation_index( void ) const ;
 			const	std::vector<int>			&get_inlocation_error_page( void ) const ;
 			const	std::vector<std::string>	&get_inlocation_allow_methods( void ) const ;

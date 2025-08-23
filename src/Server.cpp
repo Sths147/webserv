@@ -3,6 +3,15 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstring>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <fcntl.h>
+#include <errno.h>
+
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
 
 Server::Server( void )
 {
@@ -23,54 +32,60 @@ Server::Server( void )
 Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
 	(void) epoll_fd;
-	// std::vector<Listen> vec_listen = this->get_listen();
-	// if (vec_listen.size() == 0){
+	std::vector<Listen> vec_listen = this->get_listen();
+	size_t size = vec_listen.size();
 
-	// 	throw (MyException("todo faire un bind part defaut"));
+	struct epoll_event ev;
+	struct sockaddr_in	address;
+	if (size == 0){
+		throw (MyException("todo faire un bind part defaut"));
+	}
 
-	// }
+	for (size_t i = 0; i < size; i++)
+	{
+		std::cout << "creat listen n*" << i << std::endl;
+		int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+		if (socket_fd < 0){
+			throw (MyException("Error : opening socket failed"));
+		}
+		this->vector_socket_fd.push_back(socket_fd);
+		int	one = 1;
+		if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int)) < 0) {
+			throw (MyException("Error : setsockopt failed ", strerror(errno)));
+		}
 
-	// int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-	// if (socket_fd < 0){
-	// 	throw (MyException("Error : opening socket failed"));
-	// }
+		// set_address(address, vec_listen[i]);
+		address.sin_family = AF_INET;
+		address.sin_addr.s_addr = INADDR_ANY;
+		// address.sin_addr.s_addr = vec_listen[i].ip;
+		address.sin_port = htons(vec_listen[i].port);
+		std::cout << "listen ip : " << vec_listen[i].ip << std::endl;
+		std::cout << "listen port : " << vec_listen[i].port << std::endl;
 
-	// int	one = 1;
-	// if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int)) < 0) {
-	// 	throw (MyException("Error : setsockopt failed ", strerror(errno)));
-	// }
+		if ( bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0 ){
+			throw (MyException("Error : Bind failed ", strerror(errno)));
+		}
 
-	// struct sockaddr_in	address;
-	// set_address(set_address, vec_listen[i];)
+		if (listen(socket_fd, 1024) < 0){
+			throw (MyException("Error : Listen failed"));
+		}
 
-	// if ( bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0 ){
-	// 	throw (MyException("Error : Bind failed"));
-	// }
+		// set_nonblocking(socket_fd);
+		int flags = fcntl(socket_fd, F_GETFL, 0);
+		fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 
-	// if (listen(socket_fd, 1024) < 0){
-
-	// 	throw (MyException("Error : Listen failed"));
-
-	// }
-
-	// set_nonblocking(socket_fd);
-
-	// // std::cout <<  "server listening on port" << ,
-	// // write(1, "server listening on port 8010\n", 30);
-	// // int flags = fcntl(socket_fd, F_GETFL, 0);
-	// // fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
-
-
-	// // ??
-	// struct epoll_event ev;
-	// ev.events = EPOLLIN;
-	// ev.data.fd = socket_fd;
-	// epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket_fd, &ev);
-
+		ev.events = EPOLLIN;
+		ev.data.fd = socket_fd;
+		epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket_fd, &ev);
+	}
 }
 
 Server::~Server()
 {
+	for (size_t i = 0; i < this->vector_socket_fd.size(); i++)
+	{
+		close(this->vector_socket_fd[i]);
+	}
 
 }
 
@@ -84,7 +99,7 @@ const	std::string					&Server::get_client_max_body_size( void ) const { return (
 const	std::string					&Server::get_root( void ) const { return (this->_ConfServer.get_root()); }
 
 
-bool								Server::check_perm( const std::string key ) { return (this->_ConfServer.check_perm(key)); }
+bool								Server::check_location( const std::string key ) { return (this->_ConfServer.check_location(key)); }
 const	std::vector<std::string>	&Server::get_inlocation_index( void ) const { return (this->_ConfServer.get_inlocation_index());}
 const	std::vector<int>			&Server::get_inlocation_error_page( void ) const { return (this->_ConfServer.get_inlocation_error_page());}
 const	std::vector<std::string>	&Server::get_inlocation_allow_methods( void ) const { return (this->_ConfServer.get_inlocation_allow_methods());}
