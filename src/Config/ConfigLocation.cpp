@@ -53,10 +53,12 @@ void	ConfigLocation::print_error_page( void ){
 		std::cout << "'" << this->_error_page[i] << "'" << std::endl;
 	}
 }
+
 void	ConfigLocation::set_error_page(const std::vector<std::string> &arg) {
+
 	for (size_t i = 0; i < arg.size(); i++)
 	{
-		if (arg[i].size() > 3 )
+		if (arg[i].size() > 3)
 			throw (std::string("Error : unknown error page on this line "));
 		int page = std::atoi(arg[i].c_str());
 		if (ConfigUtils::error_page_valid(page))
@@ -64,6 +66,8 @@ void	ConfigLocation::set_error_page(const std::vector<std::string> &arg) {
 		else
 			throw (std::string("Error : unknown error page on this line "));
 	}
+
+
 }
 
 /* ------   _allow_methods   ------ */
@@ -76,9 +80,9 @@ void	ConfigLocation::print_allow_methods( void ){
 	}
 }
 void	ConfigLocation::set_allow_methods(const std::vector<std::string> &arg) {
-		if (this->_allow_methods.size() == 0)
+	if (this->_allow_methods.size() == 0) {
 		this->_allow_methods = arg;
-	else {
+	} else {
 		for (size_t i = 0; i < arg.size(); i++)
 		{
 			this->_allow_methods.push_back(arg[i]);

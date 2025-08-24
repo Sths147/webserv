@@ -129,7 +129,7 @@ int main(int ac, char **av)
 	}
 
 	// std::cout <<"\n get root " << server[1].get_root() << std::endl;
-	std::cout <<"\n check location " << server[0].check_location("/dir1/dir/dir3") << std::endl;
+	// std::cout <<"\n check location " << server[0].check_location("/dir1/dir/dir3") << std::endl;
 	// std::cout <<"\n check perm " << server[1].get_root() << std::endl;
 
 	// while ()
