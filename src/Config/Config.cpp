@@ -258,13 +258,13 @@ void Config::parsingFile( void )
 	// {
 	// 	std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
 	// 	this->_vConfServer[i].print_listen();
-	// 	this->_vConfServer[i].print_index();
-	// 	this->_vConfServer[i].print_error_page();
-	// 	this->_vConfServer[i].print_server_name();
-	// 	this->_vConfServer[i].print_allow_methods();
-	// 	this->_vConfServer[i].print_client_max_body_size();
-	// 	this->_vConfServer[i].print_root();
-	// 	this->_vConfServer[i].print_location();
+	// 	// this->_vConfServer[i].print_index();
+	// 	// this->_vConfServer[i].print_error_page();
+	// 	// this->_vConfServer[i].print_server_name();
+	// 	// this->_vConfServer[i].print_allow_methods();
+	// 	// this->_vConfServer[i].print_client_max_body_size();
+	// 	// this->_vConfServer[i].print_root();
+	// 	// this->_vConfServer[i].print_location();
 	// }
 
 }

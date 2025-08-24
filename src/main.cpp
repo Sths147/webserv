@@ -1,22 +1,201 @@
-#include <iostream>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/epoll.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <map>
-#include <vector>
-#include <ios>
-#include <fstream>
-#include "Server.hpp"
-#include "Request.hpp"
-#define PORT 8070
-#define BUFFER_MAX 			1024
+
+
 #define MAX_EVENTS 			10
 #define	MAX_REQUESTS_LINE	20
+#define MAX_EVENTS 10
+#define MAX_BUFFER 1024
+
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <sys/epoll.h>
+
+#include "Config.hpp"
+#include "Server.hpp"
+#include "Request.hpp"
+#include "MyException.hpp"
+
+
+
+static void set_nonblocking(int socket_fd) {
+	int flags = fcntl(socket_fd, F_GETFL, 0);
+	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+}
+
+
+
+
+
+
+
+static	int	check_event_to_socket_server( const std::vector<Server *> &server,	int event_fd){\
+
+	for (size_t i = 0; i < server.size(); i++)
+	{
+		std::vector<int> socket_fd = server[i]->get_socket_fd();
+		for (size_t j = 0; j < socket_fd.size(); j++)
+		{
+			if (event_fd == socket_fd[j]){
+				return (socket_fd[j]);
+			}
+		}
+	}
+	return (-1);
+
+}
+
+
+
+
+
+int main(int ac, char **av)
+{
+	int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+	if (epoll_fd < 0){
+		std::cerr << "Error : Epoll creation failed" << std::endl;
+	}
+
+
+	std::vector<Server *> server;
+
+	if (ac == 2){
+
+		try	{
+			Config config(av[1]);
+			config.parsingFile();
+
+
+			for (size_t i = 0; i < config.nb_of_server(); i++)
+			{
+				// std::cout << "server n*" << i <<std::endl;
+				Server *ptr = new Server(config.copy_config_server(i), epoll_fd);
+				server.push_back(ptr);
+			}
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << std::endl;
+			return (1);
+		}
+
+	} else {
+		std::cerr << "We need a Config file to lunch the server" << std::endl;
+		return (1);
+	}
+
+
+
+
+
+
+	int client_fd, nfds;
+	struct epoll_event ev, events[MAX_EVENTS];
+
+	std::cout << YELLOW <<"\n\tMain loop\n" << RESET << std::endl;
+
+	while (1) {
+
+		nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+		// std::cout << "epoll_wait : Event\n" << std::endl;
+
+		if (nfds < 0) {
+			perror("Epoll wait failed");
+			exit(1);
+		}
+
+		for (int i = 0; i < nfds; i++) {
+
+			int socket_server_fd = check_event_to_socket_server(server, events[i].data.fd);
+			if (socket_server_fd != -1) {
+
+				// std::cout << "New connection" << std::endl;
+
+				struct sockaddr_in client_addr;
+				socklen_t client_len = sizeof(client_addr);
+				client_fd = accept(socket_server_fd, (struct sockaddr*)&client_addr, &client_len);
+				if (client_fd < 0) {
+					perror("Accept failed");
+					continue;
+				}
+
+				// Set client socket to non-blocking
+				set_nonblocking(client_fd);
+
+				// Add client socket to epoll
+				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
+				ev.data.fd = client_fd;
+				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
+					perror("Epoll add client socket failed");
+					close(client_fd);
+					continue;
+				}
+
+			} else {
+
+				// Handle client data
+				std::vector<char>	buffer;
+				int client_fd = events[i].data.fd;
+				ssize_t				bytes = 1;
+				do {
+					char				tmp;
+					bytes = recv(client_fd, &tmp, sizeof(char), 0);
+					buffer.push_back(tmp);
+				}
+				while (bytes > 0);
+				if (buffer.empty())
+					throw std::runtime_error("empty request");
+				std::map<int, Request*> request;
+				Request	req1(buffer);
+				request[client_fd] = &req1;
+				std::cout << "type: " << req1.get_type() << std::endl;
+				write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
+				close(client_fd);
+			}
+		}
+	}
+	close(epoll_fd);
+
+
+
+
+
+	// std::cout <<"\n get root " << server[1].get_root() << std::endl;
+	// std::cout <<"\n check location " << server[0].check_location("/dir1/dir/dir3") << std::endl;
+	// std::cout <<"\n check perm " << server[1].get_root() << std::endl;
+
+
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+// #include <iostream>
+// #include <netinet/in.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <sys/socket.h>
+// #include <sys/epoll.h>
+// #include <unistd.h>
+// #include <fcntl.h>
+// #include <map>
+// #include <vector>
+// #include <ios>
+// #include <fstream>
+// #include "Server.hpp"
+// #include "Request.hpp"
+// #define PORT 8070
+// #define BUFFER_MAX 			1024
+// #define MAX_EVENTS 			10
+// #define	MAX_REQUESTS_LINE	20
 
 
 
@@ -90,50 +269,3 @@
 // 	close(sockfd);
 // 	return (0);
 // }
-
-#include "Config.hpp"
-#include "Server.hpp"
-
-int main(int ac, char **av)
-{
-	int epollfd = epoll_create1(EPOLL_CLOEXEC);
-	if (epollfd < 0){
-		std::cerr << "Error : Epoll creation failed" << std::endl;
-	}
-
-
-	std::vector<Server> server;
-
-	if (ac == 2){
-
-		try	{
-			Config config(av[1]);
-			config.parsingFile();
-
-			for (size_t i = 0; i < config.nb_of_server(); i++)
-			{
-				// std::cout << "server n*" << i <<std::endl;
-				server.push_back(Server(config.copy_config_server(i), epollfd));
-			}
-
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << std::endl;
-			return (1);
-		}
-
-	} else {
-		std::cerr << "We need a Config file to lunch the server" << std::endl;
-		return (1);
-	}
-
-	// std::cout <<"\n get root " << server[1].get_root() << std::endl;
-	// std::cout <<"\n check location " << server[0].check_location("/dir1/dir/dir3") << std::endl;
-	// std::cout <<"\n check perm " << server[1].get_root() << std::endl;
-
-	// while ()
-	// {
-	// }
-
-}

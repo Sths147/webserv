@@ -1,3 +1,16 @@
+#include <iostream>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/epoll.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <map>
+#include <vector>
+#include <ios>
+#include <fstream>
 
 
 #define PORT 8080
@@ -29,7 +42,7 @@ int main() {
 
     // Bind socket
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_addr.s_addr =  htonl(2130706433);;
     server_addr.sin_port = htons(PORT);
     if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("Bind failed");

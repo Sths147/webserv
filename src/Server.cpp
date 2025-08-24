@@ -27,16 +27,19 @@ static void set_address(struct sockaddr_in	&address, Listen &listen) {
 	// std::cout << "listen ip : " << listen.ip << std::endl;
 	// std::cout << "listen port : " << listen.port << std::endl;
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr =  htonl(listen.ip);
+	if (listen.ip == 0){
+		address.sin_addr.s_addr =  INADDR_ANY;
+	} else {
+		// address.sin_addr.s_addr =  listen.ip;
+		address.sin_addr.s_addr =  htonl(listen.ip);
+	}
 	address.sin_port = htons(listen.port);
 }
 
 Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
-	(void) epoll_fd;
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
-
 	struct epoll_event ev;
 	struct sockaddr_in	address;
 	if (size == 0){
@@ -45,7 +48,6 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
 	for (size_t i = 0; i < size; i++)
 	{
-		// std::cout << "creat listen n*" << i << std::endl;
 		int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 		if (socket_fd < 0){
 			throw (MyException("Error : opening socket failed"));
@@ -73,6 +75,7 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 		ev.events = EPOLLIN;
 		ev.data.fd = socket_fd;
 		epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket_fd, &ev);
+
 	}
 }
 
@@ -82,10 +85,12 @@ Server::~Server()
 	{
 		close(this->vector_socket_fd[i]);
 	}
+	// std::cout << "destructor server " << std::endl;
 
 }
 
 
+const	std::vector<int>			&Server::get_socket_fd( void ) const { return (this->vector_socket_fd); }
 const	std::vector<Listen>			&Server::get_listen( void ) const { return (this->_ConfServer.get_listen()); }
 const	std::vector<std::string>	&Server::get_index( void ) const { return (this->_ConfServer.get_index()); }
 const	std::vector<int>			&Server::get_error_page( void ) const { return (this->_ConfServer.get_error_page()); }

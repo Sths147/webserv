@@ -14,7 +14,7 @@ class Server
 	public:
 		Server(ConfigServer &Config, int epoll_fd);
 
-
+		const	std::vector<int>			&get_socket_fd( void ) const ;
 		const	std::vector<Listen>			&get_listen( void ) const ;
 		const	std::vector<std::string>	&get_index( void ) const ;
 		const	std::vector<int>			&get_error_page( void ) const ;
