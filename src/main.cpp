@@ -23,13 +23,7 @@ static void set_nonblocking(int socket_fd) {
 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-
-
-
-
-
-
-static	int	check_event_to_socket_server( const std::vector<Server *> &server,	int event_fd){\
+static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &event_fd, int &epoll_fd){
 
 	for (size_t i = 0; i < server.size(); i++)
 	{
@@ -37,37 +31,62 @@ static	int	check_event_to_socket_server( const std::vector<Server *> &server,	in
 		for (size_t j = 0; j < socket_fd.size(); j++)
 		{
 			if (event_fd == socket_fd[j]){
-				return (socket_fd[j]);
+
+				// std::cout << "New connection" << std::endl;
+				int client_fd;
+				struct epoll_event ev;
+
+				struct sockaddr_in client_addr;
+				socklen_t client_len = sizeof(client_addr);
+				client_fd = accept(socket_fd[j], (struct sockaddr*)&client_addr, &client_len);
+				if (client_fd < 0) {
+					perror("Accept failed");
+					return (true);
+				}
+
+				// Set client socket to non-blocking
+				set_nonblocking(client_fd);
+
+				// Add client socket to epoll
+				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
+				ev.data.fd = client_fd;
+				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
+					perror("Epoll add client socket failed");
+					close(client_fd);
+					return (true);
+				}
+				return (true);
 			}
 		}
 	}
-	return (-1);
-
+	return (false);
 }
-
-
-
-
 
 int main(int ac, char **av)
 {
+	//----------------------------parsing of the config file + creation of every instanse of server with his config----------------------------
+
 	int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
 	if (epoll_fd < 0){
 		std::cerr << "Error : Epoll creation failed" << std::endl;
 	}
-
 
 	std::vector<Server *> server;
 
 	if (ac == 2){
 
 		try	{
+
+			//First parsing of the config file to delete every empty and commentary line.
 			Config config(av[1]);
+			//Parsing of the config file.
 			config.parsingFile();
 
 
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
+				//Creat every server with his config file added.
+
 				// std::cout << "server n*" << i <<std::endl;
 				Server *ptr = new Server(config.copy_config_server(i), epoll_fd);
 				server.push_back(ptr);
@@ -84,21 +103,19 @@ int main(int ac, char **av)
 		return (1);
 	}
 
-
-
-
-
-
-	int client_fd, nfds;
-	struct epoll_event ev, events[MAX_EVENTS];
+	//----------------------------main loop event epoll add a new connection read a request response to his resquest----------------------------
 
 	std::cout << YELLOW <<"\n\tMain loop\n" << RESET << std::endl;
 
+
+
+	int nfds;
+	struct epoll_event events[MAX_EVENTS];
+
 	while (1) {
-
+		// Waiting an events on every socket bind with ip:port
 		nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-		// std::cout << "epoll_wait : Event\n" << std::endl;
-
+		// std::cout << "epoll_wait : Event detected\n" << std::endl;
 		if (nfds < 0) {
 			perror("Epoll wait failed");
 			exit(1);
@@ -106,32 +123,7 @@ int main(int ac, char **av)
 
 		for (int i = 0; i < nfds; i++) {
 
-			int socket_server_fd = check_event_to_socket_server(server, events[i].data.fd);
-			if (socket_server_fd != -1) {
-
-				// std::cout << "New connection" << std::endl;
-
-				struct sockaddr_in client_addr;
-				socklen_t client_len = sizeof(client_addr);
-				client_fd = accept(socket_server_fd, (struct sockaddr*)&client_addr, &client_len);
-				if (client_fd < 0) {
-					perror("Accept failed");
-					continue;
-				}
-
-				// Set client socket to non-blocking
-				set_nonblocking(client_fd);
-
-				// Add client socket to epoll
-				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
-				ev.data.fd = client_fd;
-				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
-					perror("Epoll add client socket failed");
-					close(client_fd);
-					continue;
-				}
-
-			} else {
+			if (!check_add_new_connection(server, events[i].data.fd, epoll_fd)) {
 
 				// Handle client data
 				std::vector<char>	buffer;
@@ -155,18 +147,16 @@ int main(int ac, char **av)
 		}
 	}
 	close(epoll_fd);
-
-
-
-
-
-	// std::cout <<"\n get root " << server[1].get_root() << std::endl;
-	// std::cout <<"\n check location " << server[0].check_location("/dir1/dir/dir3") << std::endl;
-	// std::cout <<"\n check perm " << server[1].get_root() << std::endl;
-
-
 	return 0;
 }
+
+
+
+
+
+
+
+
 
 
 
