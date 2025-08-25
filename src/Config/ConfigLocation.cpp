@@ -6,11 +6,6 @@ ConfigLocation::ConfigLocation() {}
 ConfigLocation::~ConfigLocation() {}
 
 ConfigLocation::ConfigLocation( const std::string &perm , const bool &b) : _location(perm), _absolut(b) {}
-ConfigLocation::ConfigLocation( const std::string &perm ) : _location(perm) {}
-
-
-
-
 
 
 void	ConfigLocation::print_all( void ){
@@ -22,7 +17,8 @@ void	ConfigLocation::print_all( void ){
 	this->print_root();
 }
 
-void	ConfigLocation::set_absolut( const bool &b) {this->_absolut = b;}
+void	ConfigLocation::set_absolut( const bool &b) { this->_absolut = b; }
+
 
 /* ------   _index   ------ */
 
@@ -46,14 +42,13 @@ void	ConfigLocation::set_index(const std::vector<std::string> &arg) {
 
 /* ------   _error_page   ------ */
 
-void	ConfigLocation::print_error_page( void ){
+void	ConfigLocation::print_error_page( void ) {
 	std::cout << "\nerror_page :"<< std::endl;
 	for (size_t i = 0; i < this->_error_page.size(); i++)
 	{
 		std::cout << "'" << this->_error_page[i] << "'" << std::endl;
 	}
 }
-
 void	ConfigLocation::set_error_page(const std::vector<std::string> &arg) {
 
 	for (size_t i = 0; i < arg.size(); i++)
@@ -66,13 +61,11 @@ void	ConfigLocation::set_error_page(const std::vector<std::string> &arg) {
 		else
 			throw (std::string("Error : unknown error page on this line "));
 	}
-
-
 }
 
 /* ------   _allow_methods   ------ */
 
-void	ConfigLocation::print_allow_methods( void ){
+void	ConfigLocation::print_allow_methods( void ) {
 	std::cout << "\nallow_methods :"<< std::endl;
 	for (size_t i = 0; i < this->_allow_methods.size(); i++)
 	{
@@ -92,14 +85,14 @@ void	ConfigLocation::set_allow_methods(const std::vector<std::string> &arg) {
 
 /* ------   _root   ------ */
 
-void	ConfigLocation::print_root( void ){
+void	ConfigLocation::print_root( void ) {
 	std::cout << "\nroot :"<< std::endl;
 	if (this->_root != "\0"){
 		std::cout << "'" << this->_root << "'" << std::endl;
 	}
 }
 
-void	ConfigLocation::set_root(const std::string &str) { this->_root = str;}
+void	ConfigLocation::set_root(const std::string &str) { this->_root = str; }
 
 
 
@@ -113,19 +106,21 @@ void	ConfigLocation::set_root(const std::string &str) { this->_root = str;}
 
 
 
+
+/* ------   get inlocation   ------ */
 
 
 bool							ConfigLocation::check_location( const std::string &key ) const { return (this->_location == key); }
 
-const bool						&ConfigLocation::get_absolut( void ) const { return (this->_absolut);}
+const bool						&ConfigLocation::get_absolut( void ) const { return (this->_absolut); }
 
-const std::string				&ConfigLocation::get_location( void ) const { return (this->_location);}
+const std::string				&ConfigLocation::get_location( void ) const { return (this->_location); }
 
-const std::vector<std::string>	&ConfigLocation::get_index( void ) const { return (this->_index);}
+const std::vector<std::string>	&ConfigLocation::get_index( void ) const { return (this->_index); }
 
-const std::vector<int>			&ConfigLocation::get_error_page( void ) const { return (this->_error_page);}
+const std::vector<int>			&ConfigLocation::get_error_page( void ) const { return (this->_error_page); }
 
-const std::vector<std::string>	&ConfigLocation::get_allow_methods( void ) const { return (this->_allow_methods);}
+const std::vector<std::string>	&ConfigLocation::get_allow_methods( void ) const { return (this->_allow_methods); }
 
-const std::string				&ConfigLocation::get_root( void ) const { return (this->_root);}
+const std::string				&ConfigLocation::get_root( void ) const { return (this->_root); }
 

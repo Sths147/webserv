@@ -30,10 +30,8 @@ class ConfigLocation
 		void	print_all( void );
 
 
-
-		ConfigLocation( const std::string &perm );
-
 		ConfigLocation( const std::string &perm , const bool &b );
+
 
 		void	set_absolut( const bool &b);
 		void	set_index( const std::vector<std::string> &str);
@@ -42,9 +40,7 @@ class ConfigLocation
 		void	set_root( const std::string &str);
 
 
-
 		bool								check_location( const std::string &key ) const ;
-
 		const bool							&get_absolut( void ) const ;
 		const	std::string					&get_location( void ) const;
 		const	std::vector<std::string>	&get_index( void ) const ;

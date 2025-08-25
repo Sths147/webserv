@@ -40,6 +40,7 @@ static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &
 				socklen_t client_len = sizeof(client_addr);
 				client_fd = accept(socket_fd[j], (struct sockaddr*)&client_addr, &client_len);
 				if (client_fd < 0) {
+
 					perror("Accept failed");
 					return (true);
 				}
@@ -51,6 +52,7 @@ static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &
 				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
 				ev.data.fd = client_fd;
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
+
 					perror("Epoll add client socket failed");
 					close(client_fd);
 					return (true);
@@ -69,10 +71,10 @@ int main(int ac, char **av)
 	int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
 	if (epoll_fd < 0){
 		std::cerr << "Error : Epoll creation failed" << std::endl;
+		return (1);
 	}
 
 	std::vector<Server *> server;
-
 	if (ac == 2){
 
 		try	{
@@ -95,11 +97,17 @@ int main(int ac, char **av)
 		catch(const std::exception& e)
 		{
 			std::cerr << e.what() << std::endl;
+			for (size_t i = 0; i < server.size(); i++)
+			{
+				delete server[i];
+			}
+			close(epoll_fd);
 			return (1);
 		}
 
 	} else {
 		std::cerr << "We need a Config file to lunch the server" << std::endl;
+		close(epoll_fd);
 		return (1);
 	}
 
@@ -113,17 +121,23 @@ int main(int ac, char **av)
 	struct epoll_event events[MAX_EVENTS];
 
 	while (1) {
-		// Waiting an events on every socket bind with ip:port
+
 		nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
-		// std::cout << "epoll_wait : Event detected\n" << std::endl;
 		if (nfds < 0) {
-			perror("Epoll wait failed");
-			exit(1);
+			std::cerr << "Epoll wait failed" << std::endl;
+			for (size_t i = 0; i < server.size(); i++)
+			{
+				delete server[i];
+			}
+			return (1);
 		}
 
 		for (int i = 0; i < nfds; i++) {
 
 			if (!check_add_new_connection(server, events[i].data.fd, epoll_fd)) {
+
+
+
 
 				// Handle client data
 				std::vector<char>	buffer;
@@ -143,11 +157,15 @@ int main(int ac, char **av)
 				std::cout << "type: " << req1.get_type() << std::endl;
 				write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
 				close(client_fd);
+
+
+
+
 			}
 		}
 	}
 	close(epoll_fd);
-	return 0;
+	return (0);
 }
 
 
