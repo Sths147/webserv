@@ -15,6 +15,8 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "MyException.hpp"
+#include "Struct.hpp"
+#include <map>
 
 
 
@@ -23,27 +25,28 @@ static void set_nonblocking(int socket_fd) {
 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &event_fd, int &epoll_fd){
+static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &event_fd, int &epoll_fd, std::map<int, DefaultListenServer> &client_socket_server){
 
 	for (size_t i = 0; i < server.size(); i++)
 	{
-		std::vector<int> socket_fd = server[i]->get_socket_fd();
-		for (size_t j = 0; j < socket_fd.size(); j++)
+		std::vector<int> vec_socket_fd = server[i]->get_socket_fd();
+		std::vector<Listen> vec_listen = server[i]->get_listen();
+		for (size_t j = 0; j < vec_socket_fd.size(); j++)
 		{
-			if (event_fd == socket_fd[j]){
+			if (event_fd == vec_socket_fd[j]){
 
-				// std::cout << "New connection" << std::endl;
 				int client_fd;
 				struct epoll_event ev;
-
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
-				client_fd = accept(socket_fd[j], (struct sockaddr*)&client_addr, &client_len);
+				client_fd = accept(vec_socket_fd[j], (struct sockaddr*)&client_addr, &client_len);
 				if (client_fd < 0) {
 
 					perror("Accept failed");
 					return (true);
 				}
+				// todo print i / j find server will find the same one and return the server
+				client_socket_server[client_fd] = DefaultListenServer(server[i], vec_listen[j]);
 
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
@@ -51,6 +54,8 @@ static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &
 				// Add client socket to epoll
 				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
 				ev.data.fd = client_fd;
+
+				// std::cout << "New connection fd = " << client_fd << std::endl;
 				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
 
 					perror("Epoll add client socket failed");
@@ -119,7 +124,7 @@ int main(int ac, char **av)
 
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
-
+	std::map<int, DefaultListenServer> client_socket_server;
 	while (1) {
 
 		nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
@@ -134,14 +139,13 @@ int main(int ac, char **av)
 
 		for (int i = 0; i < nfds; i++) {
 
-			if (!check_add_new_connection(server, events[i].data.fd, epoll_fd)) {
-
-
-
+			if (!check_add_new_connection(server, events[i].data.fd, epoll_fd, client_socket_server)) {
 
 				// Handle client data
 				std::vector<char>	buffer;
 				int client_fd = events[i].data.fd;
+				// std::cout << "request fd = " << client_fd << std::endl;
+
 				ssize_t				bytes = 1;
 				do {
 					char				tmp;
@@ -150,10 +154,14 @@ int main(int ac, char **av)
 				}
 				while (bytes > 0);
 				if (buffer.empty())
-					throw std::runtime_error("empty request");
+				throw std::runtime_error("empty request");
 				std::map<int, Request*> request;
 				Request	req1(buffer);
 				request[client_fd] = &req1;
+
+				DefaultListenServer client_fd_info = client_socket_server[client_fd];
+				(void)client_fd_info;
+
 				std::cout << "type: " << req1.get_type() << std::endl;
 				write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
 				close(client_fd);

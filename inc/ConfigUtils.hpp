@@ -10,6 +10,7 @@ struct Listen
 {
 	unsigned int ip;
 	unsigned int port;
+	Listen(void) {}
 	Listen(unsigned int cip, unsigned int cport) : ip(cip), port(cport) {}
 };
 
