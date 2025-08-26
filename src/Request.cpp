@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/19 10:41:46 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/26 13:47:55 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,20 @@ enum http_types {
 	HTAB = '\t'
 } t_http_types;
 
-Request::Request()
-: _type("NOTYPE")
-{
-}
+// Request::Request()
+// : _type("NOTYPE")
+// {
+// }
 
 Request::Request(std::vector<char>&buff)
 : _return_code(0), _type(parse_request_type(buff)), _target(parse_request_target(buff)), _http_type(parse_http_type(buff)), _header(parse_header(buff)), _body(buff)
 {
+	for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); it++)
+	{
+		std::cout << it->first << "--" << it->second << std::endl;
+	}
+	this->parse_headers();
+	std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
 }
 
 Request::~Request()
@@ -48,10 +54,21 @@ const std::string	Request::get_http_version() const
 	return (this->_http_type);
 }
 
+unsigned short int	Request::get_return_code() const
+{
+	return (this->_return_code);
+}
+
 void	Request::set_return_code(const unsigned short int& code)
 {
 	if (this->_return_code == 0)
 		this->_return_code = code;
+}
+
+void	Request::parse_headers()
+{
+	if (this->_header["Host"].empty())
+		this->set_return_code(400);
 }
 
 /*
@@ -159,7 +176,7 @@ const std::string	Request::parse_request_type(std::vector<char>& buff)
 	return (result);
 }
 
-const std::map<std::string, std::string>	Request::parse_header(std::vector<char>& buff)
+std::map<std::string, std::string>	Request::parse_header(std::vector<char>& buff)
 {
 	std::map<std::string, std::string>	result;
 	std::string							line = get_crlf_line(buff);
@@ -170,11 +187,11 @@ const std::map<std::string, std::string>	Request::parse_header(std::vector<char>
 		if (!result[key].empty())
 			set_return_code(400);
 		const std::string OWS = " \t";
-		if (line.find_first_not_of(OWS) >= line.find_last_not_of(OWS))
+		if (line.find_first_not_of(OWS) > line.find_last_not_of(OWS))
 			set_return_code(400);
 		line = line.substr(line.find_first_not_of(OWS), line.find_last_not_of(OWS) + 1);
 		if (line.length() == 0)
-		set_return_code(400);
+			set_return_code(400);
 		result[key] = line;
 		line = get_crlf_line(buff);
 	}
@@ -222,7 +239,45 @@ const std::string							Request::parse_key(std::string& line)
 	else
 	{
 		return_value = line.substr(0, n);
-		line = line.substr(n);
+		line = line.substr(n + 1);
 	}
 	return (return_value);
+}
+// Listen	Request::set_listen()
+// {
+// 	for (std::map<std::string, std::string>::iterator it = this->_header.begin(); it != this->_header.end(); it++)
+// 	{
+// 		if (it->first == "Host")
+// 		{
+// 			try {
+// 				Listen result = ConfigUtils::ip_host_parseur(it->second);
+// 				return (result);
+// 			}
+// 			catch (std::string &e)
+// 			{
+// 				this->set_return_code(400);
+// 			}
+// 		}
+// 	}
+// 	set_return_code(400);
+// 	Listen result = ConfigUtils::ip_host_parseur("0:0");
+// 	return (result);
+// }
+
+const std::vector<std::string>	Request::get_hosts() const
+{
+	std::vector<std::string> result;
+
+	for (std::map<std::string, std::string>::const_iterator it = this->_header.begin(); it != this->_header.end(); it++)
+	{
+		if (it->first == "Host")
+		{
+			std::stringstream		ss(it->second);
+			std::string				host;
+			while (ss >> host)
+				result.push_back(host);
+			return (result);
+		}
+	}
+	return (result);
 }
