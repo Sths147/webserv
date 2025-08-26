@@ -144,15 +144,24 @@ static unsigned int	ipconvert(std::string& str)
 
 Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 {
-	if (str.find_first_of(':') != std::string::npos && str.find_first_of(':') != str.find_last_of(':'))
-		throw (std::string("Error : Multi ':' on this line ")); // listen :80:;
 
+	unsigned int ip = 0, port = 8080;
+	if (str.find_first_of(':') == std::string::npos && !str.empty()) {
+		for (size_t i = 0; i < str.size(); i++)
+			if (!std::isdigit(str[i]))
+				throw(std::string("Error : the port on this line doesnt have onlydigit"));
+		port = std::atoi(str.c_str());
+		return (Listen(ip, port));
+	}
+
+	if (str.find_first_of(':') != str.find_last_of(':')) {
+		throw (std::string("Error : Multi ':' on this line ")); // listen :80:;
+	}
 	std::vector<std::string> vecstring = ConfigUtils::split(str, ':');
 
 	if (vecstring.size() == 0 || (vecstring.size() == 1 && vecstring[0] == "\0"))
 		throw (std::string("Error : No value on this line ")); // listen :;
 
-	unsigned int ip = 0, port = 8080;
 
 
 	if (vecstring[0] != "\0"){

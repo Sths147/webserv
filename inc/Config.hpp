@@ -25,7 +25,7 @@ class Config
 		public:
 
 		Config(std::string nameFile);
-		void			parsingFile( void );
+		void			pars( void );
 		ConfigServer	&copy_config_server( const int &i );
 		size_t			nb_of_server();
 		~Config(void);
