@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 10:20:10 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/26 13:37:15 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/26 16:06:18 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class Request
 		const std::string							parse_request_target(std::vector<char>& buff);
 		const std::string							parse_http_type(std::vector<char>& buff);
 		// Listen										set_listen();
-		const std::vector<std::string>				get_hosts() const;
+		bool										check_hosts(std::vector<std::string>&) const;
 		std::map<std::string, std::string>			parse_header(std::vector<char>& buff);
 		const std::string							get_crlf_line(std::vector<char>& buff);
 		unsigned short int							get_return_code() const;
