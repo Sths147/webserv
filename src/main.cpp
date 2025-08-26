@@ -18,19 +18,18 @@
 #include "Struct.hpp"
 #include <map>
 
-static int	 find_server(vector Server, request.listen, request.server);
 
 static void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &event_fd, int &epoll_fd, std::map<int, DefaultListenServer> &client_socket_server){
+static	bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, Listen> &client_socket_server){
 
-	for (size_t i = 0; i < server.size(); i++)
+	for (size_t i = 0; i < vec_server.size(); i++)
 	{
-		std::vector<int> vec_socket_fd = server[i]->get_socket_fd();
-		std::vector<Listen> vec_listen = server[i]->get_listen();
+		std::vector<int> vec_socket_fd = vec_server[i]->get_socket_fd();
+		const std::vector<Listen> &vec_listen = vec_server[i]->get_listen();
 		for (size_t j = 0; j < vec_socket_fd.size(); j++)
 		{
 			if (event_fd == vec_socket_fd[j]){
@@ -46,7 +45,7 @@ static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &
 					return (true);
 				}
 				// todo print i / j find server will find the same one and return the server
-				client_socket_server[client_fd] = DefaultListenServer(server[i], vec_listen[j]);
+				client_socket_server[client_fd] = vec_listen[j];
 
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
@@ -69,6 +68,26 @@ static	bool	check_add_new_connection( const std::vector<Server *> &server,	int &
 	return (false);
 }
 
+static Server	*find_server(Listen client_fd_info, std::vector<Server *> vec_server, Request &req1)
+{
+	Server *ptr = NULL;
+	bool first = false;
+	(void)req1;
+	for (size_t i = 0; i < vec_server.size(); i++)
+	{
+		std::vector<Listen> vec_listen = vec_server[i]->get_listen();
+		for (size_t j = 0; j < vec_listen.size(); j++)
+		{
+			if (!first && vec_listen[j].ip == client_fd_info.ip && vec_listen[j].port == client_fd_info.port) {
+				ptr = vec_server[i];
+			} else if (vec_listen[j].ip == client_fd_info.ip && vec_listen[j].port == client_fd_info.port ){//&& req1.check_hosts(vec_server[i]->get_server_name())){
+				ptr = vec_server[i];
+			}
+		}
+	}
+	return (ptr);
+}
+
 int main(int ac, char **av)
 {
 	//----------------------------parsing of the config file + creation of every instanse of server with his config----------------------------
@@ -79,7 +98,7 @@ int main(int ac, char **av)
 		return (1);
 	}
 
-	std::vector<Server *> server;
+	std::vector<Server *> vec_server;
 	if (ac == 2){
 
 		try	{
@@ -96,15 +115,15 @@ int main(int ac, char **av)
 
 				// std::cout << "server n*" << i <<std::endl;
 				Server *ptr = new Server(config.copy_config_server(i), epoll_fd);
-				server.push_back(ptr);
+				vec_server.push_back(ptr);
 			}
 		}
 		catch(const std::exception& e)
 		{
 			std::cerr << e.what() << std::endl;
-			for (size_t i = 0; i < server.size(); i++)
+			for (size_t i = 0; i < vec_server.size(); i++)
 			{
-				delete server[i];
+				delete vec_server[i];
 			}
 			close(epoll_fd);
 			return (1);
@@ -124,22 +143,22 @@ int main(int ac, char **av)
 
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
-	std::map<int, DefaultListenServer> client_socket_server;
+	std::map<int, Listen> client_socket_server;
 	while (1) {
 
 		nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
 		if (nfds < 0) {
 			std::cerr << "Epoll wait failed" << std::endl;
-			for (size_t i = 0; i < server.size(); i++)
+			for (size_t i = 0; i < vec_server.size(); i++)
 			{
-				delete server[i];
+				delete vec_server[i];
 			}
 			return (1);
 		}
 
 		for (int i = 0; i < nfds; i++) {
 
-			if (!check_add_new_connection(server, events[i].data.fd, epoll_fd, client_socket_server)) {
+			if (!check_add_new_connection(vec_server, events[i].data.fd, epoll_fd, client_socket_server)) {
 
 				// Handle client data
 				std::vector<char>	buffer;
@@ -158,12 +177,11 @@ int main(int ac, char **av)
 				std::map<int, Request*> request;
 				Request	req1(buffer);
 				request[client_fd] = &req1;
-//				int i = find_server(vector Server, request.listen, request.server);
+				Server *serv = find_server(client_socket_server[client_fd], vec_server, req1);
+				(void)serv;
 				//treat errors if i < 0
 				//Response rep(Request, Server[i]);
 
-				DefaultListenServer client_fd_info = client_socket_server[client_fd];
-				(void)client_fd_info;
 
 				std::cout << "type: " << req1.get_type() << std::endl;
 				write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
