@@ -16,7 +16,7 @@
 #include "Request.hpp"
 #include "MyException.hpp"
 
-
+static int	 find_server(vector Server, request.listen, request.server);
 
 static void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
@@ -154,22 +154,18 @@ int main(int ac, char **av)
 				std::map<int, Request*> request;
 				Request	req1(buffer);
 				request[client_fd] = &req1;
+//				int i = find_server(vector Server, request.listen, request.server);
+				//treat errors if i < 0
+				//Response rep(Request, Server[i]);
 				std::cout << "type: " << req1.get_type() << std::endl;
 				write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
 				close(client_fd);
-
-
-
-
 			}
 		}
 	}
 	close(epoll_fd);
 	return (0);
 }
-
-
-
 
 
 
