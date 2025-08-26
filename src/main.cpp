@@ -1,9 +1,9 @@
 
 
-#define MAX_EVENTS 			10
+#define MAX_EVENTS			10
 #define	MAX_REQUESTS_LINE	20
-#define MAX_EVENTS 10
-#define MAX_BUFFER 1024
+#define MAX_EVENTS			10
+#define MAX_BUFFER			1024
 
 #include <netinet/in.h>
 #include <stdlib.h>
@@ -82,7 +82,7 @@ int main(int ac, char **av)
 			//First parsing of the config file to delete every empty and commentary line.
 			Config config(av[1]);
 			//Parsing of the config file.
-			config.parsingFile();
+			config.pars();
 
 
 			for (size_t i = 0; i < config.nb_of_server(); i++)

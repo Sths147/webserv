@@ -194,7 +194,7 @@ void			Config::set_in_server( std::string &directive, std::string &line, int &se
 
 
 #include <sstream> // for stringstream
-void Config::parsingFile( void )
+void Config::pars( void )
 {
 
 	std::stringstream ss(this->_file);
