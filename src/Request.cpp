@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/26 16:14:06 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/26 16:17:40 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,7 +270,7 @@ const std::string							Request::parse_key(std::string& line)
 // 	return (result);
 // }
 
-bool	Request::check_hosts(std::vector<std::string>& server_names) const
+bool	Request::check_hosts(const std::vector<std::string>& server_names) const
 {
 	std::vector<std::string> result;
 
@@ -284,7 +284,7 @@ bool	Request::check_hosts(std::vector<std::string>& server_names) const
 				result.push_back(host);
 		}
 	}
-	for (std::vector<std::string>::iterator servname = server_names.begin(); servname != server_names.end(); servname++)
+	for (std::vector<std::string>::const_iterator servname = server_names.begin(); servname != server_names.end(); servname++)
 	{
 		for (std::vector<std::string>::iterator hosts = result.begin(); hosts != result.end(); hosts++)
 		{

@@ -80,7 +80,7 @@ static Server	*find_server(Listen client_fd_info, std::vector<Server *> vec_serv
 		{
 			if (!first && vec_listen[j].ip == client_fd_info.ip && vec_listen[j].port == client_fd_info.port) {
 				ptr = vec_server[i];
-			} else if (vec_listen[j].ip == client_fd_info.ip && vec_listen[j].port == client_fd_info.port ){//&& req1.check_hosts(vec_server[i]->get_server_name())){
+			} else if (vec_listen[j].ip == client_fd_info.ip && vec_listen[j].port == client_fd_info.port && req1.check_hosts(vec_server[i]->get_server_name())){
 				ptr = vec_server[i];
 			}
 		}
@@ -178,6 +178,7 @@ int main(int ac, char **av)
 				Request	req1(buffer);
 				request[client_fd] = &req1;
 				Server *serv = find_server(client_socket_server[client_fd], vec_server, req1);
+				// std::cout << &serv << std::endl;
 				(void)serv;
 				//treat errors if i < 0
 				//Response rep(Request, Server[i]);
