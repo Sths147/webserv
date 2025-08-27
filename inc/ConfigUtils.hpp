@@ -28,10 +28,8 @@ class ConfigUtils
 		static	size_t						get_pos( void );
 		static	Listen						ip_host_parseur( const std::string &str);
 
-
 		static	void						check_bracket(const std::string &str);
 		static	void						check_after_bracket_semicolon(const std::string &str, size_t pos);
-		static	bool						error_page_valid(const int &page);
 
 		static	size_t						find_first_not_of_space(const std::string &str);
 		static	size_t						find_first_not_of_space(const std::string &str, size_t pos);
@@ -43,9 +41,6 @@ class ConfigUtils
 		static	std::vector<std::string>	get_multi_token(const std::string &str);
 
 		static std::vector<std::string>		split(const std::string &str, char delim);
-
-
-
 
 };
 

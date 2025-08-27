@@ -56,14 +56,11 @@ void	ConfigLocation::set_error_page(const std::vector<std::string> &vec) {
 	if ( vec[0].size() > 3 )
 		throw (std::string("Error : unknown error page on this line "));
 	unsigned short int page = std::atoi(vec[0].c_str());
-	if (ConfigUtils::error_page_valid(page))
-		if (vec[1][0] == '/') {
-			this->_error_page[page] = vec[1];
-		} else {
-			throw (std::string("Error : second parameter is not a path on this line "));
-		}
-	else
-		throw (std::string("Error : unused error code on this line "));
+	if (vec[1][0] == '/') {
+		this->_error_page[page] = vec[1];
+	} else {
+		throw (std::string("Error : second parameter is not a path on this line "));
+	}
 }
 
 /* ------   _allow_methods   ------ */
