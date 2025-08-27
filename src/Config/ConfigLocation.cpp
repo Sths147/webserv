@@ -49,18 +49,17 @@ void	ConfigLocation::print_error_page( void ) {
 		std::cout << "'" << this->_error_page[i] << "'" << std::endl;
 	}
 }
-void	ConfigLocation::set_error_page(const std::vector<std::string> &arg) {
+void	ConfigLocation::set_error_page(const std::vector<std::string> &vec) {
 
-	for (size_t i = 0; i < arg.size(); i++)
-	{
-		if (arg[i].size() > 3)
-			throw (std::string("Error : unknown error page on this line "));
-		int page = std::atoi(arg[i].c_str());
-		if (ConfigUtils::error_page_valid(page))
-			this->_error_page.push_back(page);
-		else
-			throw (std::string("Error : unknown error page on this line "));
-	}
+	if (vec.size() != 2)
+		throw (std::string("Error : number error | the page error format on this line "));
+	if ( vec[0].size() > 3 )
+		throw (std::string("Error : unknown error page on this line "));
+	unsigned short int page = std::atoi(vec[0].c_str());
+	if (ConfigUtils::error_page_valid(page))
+		this->_error_page[page] = vec[1];
+	else
+		throw (std::string("Error : unused error number page on this line "));
 }
 
 /* ------   _allow_methods   ------ */
@@ -110,17 +109,17 @@ void	ConfigLocation::set_root(const std::string &str) { this->_root = str; }
 /* ------   get inlocation   ------ */
 
 
-bool							ConfigLocation::check_location( const std::string &key ) const { return (this->_location == key); }
+bool													ConfigLocation::check_location( const std::string &key ) const { return (this->_location == key); }
 
-const bool						&ConfigLocation::get_absolut( void ) const { return (this->_absolut); }
+const bool												&ConfigLocation::get_absolut( void ) const { return (this->_absolut); }
 
-const std::string				&ConfigLocation::get_location( void ) const { return (this->_location); }
+const std::string										&ConfigLocation::get_location( void ) const { return (this->_location); }
 
-const std::vector<std::string>	&ConfigLocation::get_index( void ) const { return (this->_index); }
+const std::vector<std::string>							&ConfigLocation::get_index( void ) const { return (this->_index); }
 
-const std::vector<int>			&ConfigLocation::get_error_page( void ) const { return (this->_error_page); }
+const std::map<unsigned short int, std::string>			&ConfigLocation::get_error_page( void ) const { return (this->_error_page); }
 
-const std::vector<std::string>	&ConfigLocation::get_allow_methods( void ) const { return (this->_allow_methods); }
+const std::vector<std::string>							&ConfigLocation::get_allow_methods( void ) const { return (this->_allow_methods); }
 
-const std::string				&ConfigLocation::get_root( void ) const { return (this->_root); }
+const std::string										&ConfigLocation::get_root( void ) const { return (this->_root); }
 

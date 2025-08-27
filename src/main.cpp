@@ -60,6 +60,7 @@ static	bool	check_add_new_connection( const std::vector<Server *> &vec_server,	i
 					perror("Epoll add client socket failed");
 					close(client_fd);
 					return (true);
+
 				}
 				return (true);
 			}

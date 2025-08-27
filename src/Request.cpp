@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/26 16:17:40 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 11:21:21 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,30 +78,31 @@ A server that receives a method longer than any that it implements SHOULD respon
 const std::string	Request::parse_request_target(std::vector<char>& buff)
 {
 	std::string					result;
-	try{
-		std::vector<char>::iterator	k = buff.begin();
-		if (*k != SP)
-			throw ErrorException(400);
-		buff.erase(k);
-		while (k != buff.end())
-		{
-			if (*k == SP)
-				break;
-			else if (*k < 33 || *k > 126)
-				set_return_code(400);
-			else
-			{
-				result += *k;
-				buff.erase(k);
-			}
-		}
-		if (result.empty() || k == buff.end())
-			set_return_code(400);
-	}
-	catch (ErrorException& e)
-	{
-		set_return_code(e.get_return());
-	}
+	(void)buff;
+	// try{
+	// 	std::vector<char>::iterator	k = buff.begin();
+	// 	if (*k != SP)
+	// 		throw ErrorException(400);
+	// 	buff.erase(k);
+	// 	while (k != buff.end())
+	// 	{
+	// 		if (*k == SP)
+	// 			break;
+	// 		else if (*k < 33 || *k > 126)
+	// 			set_return_code(400);
+	// 		else
+	// 		{
+	// 			result += *k;
+	// 			buff.erase(k);
+	// 		}
+	// 	}
+	// 	if (result.empty() || k == buff.end())
+	// 		set_return_code(400);
+	// }
+	// catch (ErrorException& e)
+	// {
+	// 	set_return_code(e.get_return());
+	// }
 	return (result);
 }
 

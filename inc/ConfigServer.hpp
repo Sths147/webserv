@@ -10,18 +10,17 @@
 
 
 
-
 class ConfigServer
 {
 	private:
 
-		std::vector<Listen>			_listen;
-		std::vector<std::string>	_index;
-		std::vector<int>			_error_page;
-		std::vector<std::string>	_server_name;
-		std::vector<std::string>	_allow_methods;
-		std::string					_client_max_body_size; // convert max ?
-		std::string					_root;
+		std::vector<Listen>								_listen;
+		std::vector<std::string>						_index;
+		std::map<unsigned short int, std::string>		_error_page;
+		std::vector<std::string>						_server_name;
+		std::vector<std::string>						_allow_methods;
+		std::string										_client_max_body_size; // convert max ?
+		std::string										_root;
 
 		std::vector<ConfigLocation>	_vConfLocal;
 		int							_last_i_location;
@@ -58,21 +57,21 @@ class ConfigServer
 
 
 			/* --- GET--- */
-			const	std::vector<Listen>			&get_listen( void ) const ;
-			const	std::vector<std::string>	&get_index( void ) const ;
-			const	std::vector<int>			&get_error_page( void ) const ;
-			const	std::vector<std::string>	&get_server_name( void ) const ;
-			const	std::vector<std::string>	&get_allow_methods( void ) const ;
-			const	std::string					&get_client_max_body_size( void ) const ;
-			const	std::string					&get_root( void ) const ;
+			const	std::vector<Listen>									&get_listen( void ) const ;
+			const	std::vector<std::string>							&get_index( void ) const ;
+			const	std::map<unsigned short int, std::string>			&get_error_page( void ) const ;
+			const	std::vector<std::string>							&get_server_name( void ) const ;
+			const	std::vector<std::string>							&get_allow_methods( void ) const ;
+			const	std::string											&get_client_max_body_size( void ) const ;
+			const	std::string											&get_root( void ) const ;
 
 			/* --- GET inlocation --- */
-			bool								check_location( std::string key ) ;
-			const	std::string					&get_inlocation_location( void ) const ;
-			const	std::vector<std::string>	&get_inlocation_index( void ) const ;
-			const	std::vector<int>			&get_inlocation_error_page( void ) const ;
-			const	std::vector<std::string>	&get_inlocation_allow_methods( void ) const ;
-			const	std::string					&get_inlocation_root( void ) const ;
+			bool														check_location( std::string key ) ;
+			const	std::string											&get_inlocation_location( void ) const ;
+			const	std::vector<std::string>							&get_inlocation_index( void ) const ;
+			const	std::map<unsigned short int, std::string>			&get_inlocation_error_page( void ) const ;
+			const	std::vector<std::string>							&get_inlocation_allow_methods( void ) const ;
+			const	std::string											&get_inlocation_root( void ) const ;
 
 
 			ConfigServer( void );
