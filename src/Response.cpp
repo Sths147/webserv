@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 15:47:24 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 16:05:17 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,7 @@ Response::Response(Request& request, Server& server)		//builds get response
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
 {
 	//check if client max body size and implement return code accordingly
-	//setup error pages
 	std::cout << "Here we are with a final path of" << this->_path << std::endl;
-	std::cout << "Error test " << server.get_error_page().find(404)->first << server.get_error_page().find(404)->second << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
@@ -40,10 +38,6 @@ Response::Response(Request& request, Server& server)		//builds get response
 	}
 	else
 		this->set_error_response(server);
-	// if (this->_status_code != 0)
-	// 	this->set_error_response();
-	// else
-	// 	this->_status_code = 200;
 }
 
 const std::string	Response::determine_final_path(Request& request, Server& server)
@@ -66,22 +60,16 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 			full_path = server.get_inlocation_root() + path;
 		if (stat(full_path.c_str(), &sfile) < 0)
 		{
-			std::cout << "NOT EXIST" << std::endl;
+			if (!stat(path.c_str(), &sfile))
+				return (path);
 			set_status(404);
 		}
 		else if (S_ISDIR(sfile.st_mode))
-		{
 			std::cout << "DIRECTORY" << std::endl;
-		}
 		else
-		{
 			std::cout << "IS OK " << std::endl;
-		}
 		return (full_path);
 	}
-	//if path est accessible directement alors on le return else on return ""
-	else if (stat(path.c_str(), &sfile))
-		return (path);
 	else
 	{
 		set_status(404);
@@ -110,9 +98,7 @@ void				Response::set_error_response(Server& server)
 		jjj.open(path.c_str());
 		std::cout << path << std::endl;
 		if (!jjj.is_open())
-		{
 			std::cout << "ERROR" << std::endl;
-		}
 		else
 		{
 			std::string line;
@@ -126,7 +112,6 @@ void				Response::set_error_response(Server& server)
 	}
 	else
 	{
-		//if error pages for this number are set up, write the body else
 		ss << "<html><body><h1>" << this->_status_code << " " << this->_reason_phrase << "</h1></body></html>";
 		ss >> this->_body;
 	}

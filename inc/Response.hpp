@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:45:52 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 13:49:17 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 15:45:34 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,12 @@ class Response
 		~Response();
 
 		const std::string	determine_final_path(Request& request, Server& server);
-		void				set_error_response();
+		void				set_error_response(Server& server);
 		void				set_status(const unsigned short int& code);
 		void				write_response(int&	client_fd);
 		void				set_get_response();
 		void				set_get_headers();
+		void				set_error_headers();
 };
 
 #endif
