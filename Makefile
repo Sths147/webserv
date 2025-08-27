@@ -42,11 +42,9 @@ HEADERS				:=		Config.hpp			\
 
 
 SRC					:=		Request.cpp			\
-							main.cpp			\
-							Server.cpp			\
 							Response.cpp		\
-							# mainflotest.cpp	\
-							# main2.cpp
+							Server.cpp			\
+							main.cpp
 
 
 SRC_CONFIG			:=		Config.cpp			\
@@ -56,7 +54,7 @@ SRC_CONFIG			:=		Config.cpp			\
 
 
 SRC_UTILS			:=		MyException.cpp		\
-
+							main_utils.cpp
 
 
 
