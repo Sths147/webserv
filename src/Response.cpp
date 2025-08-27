@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 14:22:23 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 15:47:24 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,12 @@ Response::Response(Request& request, Server& server)		//builds get response
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
 {
 	//check if client max body size and implement return code accordingly
+	//setup error pages
 	std::cout << "Here we are with a final path of" << this->_path << std::endl;
-	if (this->_status_code != 0)
-		this->set_error_response();
-	else if (!request.get_type().compare("GET"))
+	std::cout << "Error test " << server.get_error_page().find(404)->first << server.get_error_page().find(404)->second << std::endl;
+	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
-	else if (!request.get_type().compare("POST"))
+	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
 	{
 		// this->set_post_response();
 	}
@@ -39,7 +39,7 @@ Response::Response(Request& request, Server& server)		//builds get response
 		this->_reason_phrase = "OK";
 	}
 	else
-		this->set_error_response();
+		this->set_error_response(server);
 	// if (this->_status_code != 0)
 	// 	this->set_error_response();
 	// else
@@ -83,7 +83,10 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	else if (stat(path.c_str(), &sfile))
 		return (path);
 	else
+	{
+		set_status(404);
 		return ("");
+	}
 }
 
 void				Response::set_status(const unsigned short int& code)
@@ -92,14 +95,58 @@ void				Response::set_status(const unsigned short int& code)
 		this->_status_code = code;
 }
 
-void				Response::set_error_response()
+void				Response::set_error_response(Server& server)
 {
-	this->_reason_phrase = reason_phrase(this->_status_code);
 	std::stringstream ss;
-	//if error pages for this number are set up, write the body else
-	ss << "<html><body><h1>" << this->_status_code << " " << this->_reason_phrase << "</h1></body></html>";
-	ss >> this->_body;
-	// this->set_error_header();
+	this->_reason_phrase = reason_phrase(this->_status_code);
+	if (server.check_location(this->_path) && !(server.get_inlocation_error_page().empty()) && !(server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end()))
+	{
+		std::cout << "Error in location: " << this->_status_code << " has a page and the value is " << server.get_inlocation_error_page().find(this->_status_code)->second << std::endl;
+	}
+	else if (!(server.get_error_page().empty()) && (server.get_error_page().find(this->_status_code) != server.get_error_page().end()))
+	{
+		std::ifstream jjj;
+		std::string		path = server.get_root() + server.get_error_page().find(this->_status_code)->second;
+		jjj.open(path.c_str());
+		std::cout << path << std::endl;
+		if (!jjj.is_open())
+		{
+			std::cout << "ERROR" << std::endl;
+		}
+		else
+		{
+			std::string line;
+			std::vector<std::string> liness;
+			while (std::getline(jjj, line))
+				liness.push_back(line);
+			for (std::vector<std::string>::iterator it = liness.begin(); it != liness.end(); it++)
+				this->_body += *it + "\n";
+		}
+		std::cout << "Error in root: " << this->_status_code << " has a page and the value is " << server.get_error_page().find(this->_status_code)->second << std::endl;
+	}
+	else
+	{
+		//if error pages for this number are set up, write the body else
+		ss << "<html><body><h1>" << this->_status_code << " " << this->_reason_phrase << "</h1></body></html>";
+		ss >> this->_body;
+	}
+	this->set_error_headers();
+}
+
+
+void	Response::set_error_headers()
+{
+	this->_header["Content-Type"] = "text/html";
+	this->_header["Connection"] = "close";
+	this->_header["Server"] = "VVVVVVVVVVVVVVV";
+	std::stringstream ss;
+	std::string			len;
+	if (!this->_body.empty())
+	{
+		ss << this->_body.length();
+		ss >> len;
+		this->_header["Content-Length"] = len;
+	}
 }
 
 static std::string		reason_phrase(unsigned short int& code)
@@ -154,7 +201,6 @@ void	Response::set_get_response()
 	struct stat					sfile;
 	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IROTH))
 	{
-		std::cout << "CAN READ" << std::endl;
 		std::ifstream				file;
 		std::string					line;
 		std::vector<std::string>	all_lines;
