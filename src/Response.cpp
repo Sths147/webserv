@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 14:16:09 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 14:19:16 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ Response::~Response()
 }
 
 Response::Response(Request& request, Server& server)		//builds get response
-
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
 {
 	//check if client max body size and implement return code accordingly
@@ -29,12 +28,9 @@ Response::Response(Request& request, Server& server)		//builds get response
 	if (this->_status_code != 0)
 		this->set_error_response();
 	else if (!request.get_type().compare("GET"))
-	{
 		this->set_get_response();
-	}
 	else if (!request.get_type().compare("POST"))
 	{
-
 		// this->set_post_response();
 	}
 	if (this->_status_code == 0)
@@ -42,6 +38,8 @@ Response::Response(Request& request, Server& server)		//builds get response
 		this->_status_code = 200;
 		this->_reason_phrase = "OK";
 	}
+	else
+		this->set_error_response();
 	// if (this->_status_code != 0)
 	// 	this->set_error_response();
 	// else
