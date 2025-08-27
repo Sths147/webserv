@@ -6,11 +6,12 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 14:15:20 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/27 14:19:53 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include <sys/stat.h>
 #include <unistd.h>
 
 static std::string		reason_phrase(unsigned short int& code);
@@ -36,6 +37,11 @@ Response::Response(Request& request, Server& server)		//builds get response
 
 		// this->set_post_response();
 	}
+	if (this->_status_code == 0)
+	{
+		this->_status_code = 200;
+		this->_reason_phrase = "OK";
+	}
 	// if (this->_status_code != 0)
 	// 	this->set_error_response();
 	// else
@@ -46,6 +52,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 {
 	std::string		path;
 	std::string		full_path;
+	struct stat		sfile;
 
 	path = request.get_target().substr(0, request.get_target().find_first_of('?'));
 	if (path.length() < request.get_target().length())
@@ -53,21 +60,35 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	if (server.check_location(path))
 	{
 		if (server.get_inlocation_root().empty() && !server.get_root().empty())
+		{
+			//must change this shit to change root into an alias
 			full_path = server.get_root() + path;
+		}
 		else
 			full_path = server.get_inlocation_root() + path;
-		//checker si
-			//le répertoire existe
-			//la ressource est un répertoire
-		//si oui
-			//return (full_path);
+		if (stat(full_path.c_str(), &sfile) < 0)
+		{
+			std::cout << "NOT EXIST" << std::endl;
+			set_status(404);
+		}
+		else if (S_ISDIR(sfile.st_mode))
+		{
+			std::cout << "DIRECTORY" << std::endl;
+		}
+		else
+		{
+			std::cout << "IS OK " << std::endl;
+		}
 		return (full_path);
 	}
-	else //if path est accessible directement alors on le return else on return ""
+	//if path est accessible directement alors on le return else on return ""
+	else if (stat(path.c_str(), &sfile))
+		return (path);
+	else
 		return ("");
 }
 
-void				Response::set_status(unsigned short int& code)
+void				Response::set_status(const unsigned short int& code)
 {
 	if (this->_status_code == 0)
 		this->_status_code = code;
@@ -116,8 +137,6 @@ void	Response::write_response(int& client_fd)
 	std::string	response;
 	std::stringstream ss;
 
-	this->_status_code = 200;
-	this->_reason_phrase = "OK";
 	ss << this->_http_type << " " << this->_status_code << " " << this->_reason_phrase;
 	if (!(this->_header["Server"].empty()))
 	{
@@ -129,34 +148,33 @@ void	Response::write_response(int& client_fd)
 	if (!(this->_body.empty()))
 		ss << this->_body;
 	response = ss.str();
-	std::cout << "Respooooonse : \n" << response << std::endl;
 	write(client_fd, response.c_str(), response.length());
 }
 
 void	Response::set_get_response()
 {
-	//checker si j'ai les permissions pour lire la ressource
-	//si non --> error Resource non accessible
-	//si oui :
-
-	std::ifstream		file;
-	std::string			line;
-	std::vector<std::string>	all_lines;
-
-	file.open(this->_path.c_str());
-	if (!file.is_open())
+	struct stat					sfile;
+	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IROTH))
 	{
-		std::cout << "NOTOPEN" << std::endl;
+		std::cout << "CAN READ" << std::endl;
+		std::ifstream				file;
+		std::string					line;
+		std::vector<std::string>	all_lines;
+
+		file.open(this->_path.c_str());
+		if (!file.is_open())
+			set_status(500);
+		else
+		{
+			while (std::getline(file, line))
+				all_lines.push_back(line);
+			for (std::vector<std::string>::iterator it = all_lines.begin(); it != all_lines.end(); it++)
+				this->_body += *it + "\n";
+			set_get_headers();
+		}
 	}
 	else
-	{
-		while (std::getline(file, line))
-			all_lines.push_back(line);
-		for (std::vector<std::string>::iterator it = all_lines.begin(); it != all_lines.end(); it++)
-			this->_body += *it + "\n";
-	}
-	// std::cout << "Here we are " << this->_path << " body: " << this->_body << std::endl;
-	set_get_headers();
+		set_status(401);
 }
 
 void	Response::set_get_headers()

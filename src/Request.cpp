@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 13:00:54 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:39:20 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,30 +79,30 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 {
 	std::string					result;
 	(void)buff;
-	// try{
-	// 	std::vector<char>::iterator	k = buff.begin();
-	// 	if (*k != SP)
-	// 		throw ErrorException(400);
-	// 	buff.erase(k);
-	// 	while (k != buff.end())
-	// 	{
-	// 		if (*k == SP)
-	// 			break;
-	// 		else if (*k < 33 || *k > 126)
-	// 			set_return_code(400);
-	// 		else
-	// 		{
-	// 			result += *k;
-	// 			buff.erase(k);
-	// 		}
-	// 	}
-	// 	if (result.empty() || k == buff.end())
-	// 		set_return_code(400);
-	// }
-	// catch (ErrorException& e)
-	// {
-	// 	set_return_code(e.get_return());
-	// }
+	try{
+		std::vector<char>::iterator	k = buff.begin();
+		if (*k != SP)
+			throw ErrorException(400);
+		buff.erase(k);
+		while (k != buff.end())
+		{
+			if (*k == SP)
+				break;
+			else if (*k < 33 || *k > 126)
+				set_return_code(400);
+			else
+			{
+				result += *k;
+				buff.erase(k);
+			}
+		}
+		if (result.empty() || k == buff.end())
+			set_return_code(400);
+	}
+	catch (ErrorException& e)
+	{
+		set_return_code(e.get_return());
+	}
 	return (result);
 }
 
