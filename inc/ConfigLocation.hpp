@@ -32,7 +32,6 @@ class ConfigLocation
 
 		ConfigLocation( const std::string &perm , const bool &b );
 
-
 		void	set_absolut( const bool &b);
 		void	set_index( const std::vector<std::string> &str);
 		void	set_error_page( const std::vector<std::string> &str);

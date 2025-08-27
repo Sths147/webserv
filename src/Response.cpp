@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 12:56:00 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 14:15:20 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ void	Response::write_response(int& client_fd)
 	ss << "\r\n";
 	if (!(this->_body.empty()))
 		ss << this->_body;
-	response = ss.str().;
+	response = ss.str();
 	std::cout << "Respooooonse : \n" << response << std::endl;
 	write(client_fd, response.c_str(), response.length());
 }
