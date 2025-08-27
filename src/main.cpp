@@ -13,9 +13,9 @@
 
 #include "Config.hpp"
 #include "Server.hpp"
-#include "Request.hpp"
 #include "MyException.hpp"
 #include "Struct.hpp"
+#include "Response.hpp"
 #include <map>
 
 
@@ -179,13 +179,11 @@ int main(int ac, char **av)
 				request[client_fd] = &req1;
 				Server *serv = find_server(client_socket_server[client_fd], vec_server, req1);
 				// std::cout << &serv << std::endl;
-				(void)serv;
-				//treat errors if i < 0
-				//Response rep(Request, Server[i]);
-
-
+				// (void)serv;
+				Response rep(req1, *serv);
+				rep.write_response(client_fd);
 				std::cout << "type: " << req1.get_type() << std::endl;
-				write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
+				// write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
 				close(client_fd);
 			}
 		}

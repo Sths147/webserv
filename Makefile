@@ -34,14 +34,17 @@ HEADERS				:=		Config.hpp			\
 							ConfigLocation.hpp	\
 							ConfigServer.hpp	\
 							ConfigUtils.hpp		\
+							ErrorException.hpp	\
 							MyException.hpp		\
+							Response.hpp		\
 							Server.hpp
 
 
 
 SRC					:=		Request.cpp			\
 							main.cpp			\
-							Server.cpp		\
+							Server.cpp			\
+							Response.cpp		\
 							# mainflotest.cpp	\
 							# main2.cpp
 

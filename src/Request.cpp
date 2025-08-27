@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/26 16:17:40 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/27 11:32:01 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,12 @@ enum http_types {
 Request::Request(std::vector<char>&buff)
 : _return_code(0), _type(parse_request_type(buff)), _target(parse_request_target(buff)), _http_type(parse_http_type(buff)), _header(parse_header(buff)), _body(buff)
 {
-	for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); it++)
-	{
-		std::cout << it->first << "--" << it->second << std::endl;
-	}
+	// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); it++)
+	// {
+	// 	std::cout << it->first << "--" << it->second << std::endl;
+	// }
 	this->parse_headers();
-	std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
+	// std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
 }
 
 Request::~Request()

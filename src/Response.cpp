@@ -1,0 +1,175 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
+/*   Updated: 2025/08/27 12:56:00 by sithomas         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "Response.hpp"
+#include <unistd.h>
+
+static std::string		reason_phrase(unsigned short int& code);
+
+Response::~Response()
+{
+}
+
+Response::Response(Request& request, Server& server)		//builds get response
+
+: _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
+{
+	//check if client max body size and implement return code accordingly
+	std::cout << "Here we are with a final path of" << this->_path << std::endl;
+	if (this->_status_code != 0)
+		this->set_error_response();
+	else if (!request.get_type().compare("GET"))
+	{
+		this->set_get_response();
+	}
+	else if (!request.get_type().compare("POST"))
+	{
+
+		// this->set_post_response();
+	}
+	// if (this->_status_code != 0)
+	// 	this->set_error_response();
+	// else
+	// 	this->_status_code = 200;
+}
+
+const std::string	Response::determine_final_path(Request& request, Server& server)
+{
+	std::string		path;
+	std::string		full_path;
+
+	path = request.get_target().substr(0, request.get_target().find_first_of('?'));
+	if (path.length() < request.get_target().length())
+		this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
+	if (server.check_location(path))
+	{
+		if (server.get_inlocation_root().empty() && !server.get_root().empty())
+			full_path = server.get_root() + path;
+		else
+			full_path = server.get_inlocation_root() + path;
+		//checker si
+			//le répertoire existe
+			//la ressource est un répertoire
+		//si oui
+			//return (full_path);
+		return (full_path);
+	}
+	else //if path est accessible directement alors on le return else on return ""
+		return ("");
+}
+
+void				Response::set_status(unsigned short int& code)
+{
+	if (this->_status_code == 0)
+		this->_status_code = code;
+}
+
+void				Response::set_error_response()
+{
+	this->_reason_phrase = reason_phrase(this->_status_code);
+	std::stringstream ss;
+	//if error pages for this number are set up, write the body else
+	ss << "<html><body><h1>" << this->_status_code << " " << this->_reason_phrase << "</h1></body></html>";
+	ss >> this->_body;
+	// this->set_error_header();
+}
+
+static std::string		reason_phrase(unsigned short int& code)
+{
+	std::map<unsigned short int, std::string> httpErrorCodes;
+    httpErrorCodes[100] = "Continue";
+    httpErrorCodes[101] = "Switching Protocols";
+    httpErrorCodes[200] = "OK";
+    httpErrorCodes[201] = "Created";
+    httpErrorCodes[202] = "Accepted";
+    httpErrorCodes[204] = "No Content";
+    httpErrorCodes[300] = "Multiple Choices";
+    httpErrorCodes[301] = "Moved Permanently";
+    httpErrorCodes[302] = "Found";
+    httpErrorCodes[304] = "Not Modified";
+    httpErrorCodes[400] = "Bad Request";
+    httpErrorCodes[401] = "Unauthorized";
+    httpErrorCodes[403] = "Forbidden";
+    httpErrorCodes[404] = "Not Found";
+    httpErrorCodes[405] = "Method Not Allowed";
+    httpErrorCodes[408] = "Request Timeout";
+    httpErrorCodes[429] = "Too Many Requests";
+    httpErrorCodes[500] = "Internal Server Error";
+    httpErrorCodes[501] = "Not Implemented";
+    httpErrorCodes[502] = "Bad Gateway";
+    httpErrorCodes[503] = "Service Unavailable";
+    httpErrorCodes[504] = "Gateway Timeout";
+	return (httpErrorCodes[code]);
+}
+
+void	Response::write_response(int& client_fd)
+{
+	std::string	response;
+	std::stringstream ss;
+
+	this->_status_code = 200;
+	this->_reason_phrase = "OK";
+	ss << this->_http_type << " " << this->_status_code << " " << this->_reason_phrase;
+	if (!(this->_header["Server"].empty()))
+	{
+		ss << "\r\n";
+		for (std::map<std::string, std::string>::iterator it = this->_header.begin(); it != this->_header.end(); it++)
+			ss << it->first << ": " << it->second << "\r\n";
+	}
+	ss << "\r\n";
+	if (!(this->_body.empty()))
+		ss << this->_body;
+	response = ss.str().;
+	std::cout << "Respooooonse : \n" << response << std::endl;
+	write(client_fd, response.c_str(), response.length());
+}
+
+void	Response::set_get_response()
+{
+	//checker si j'ai les permissions pour lire la ressource
+	//si non --> error Resource non accessible
+	//si oui :
+
+	std::ifstream		file;
+	std::string			line;
+	std::vector<std::string>	all_lines;
+
+	file.open(this->_path.c_str());
+	if (!file.is_open())
+	{
+		std::cout << "NOTOPEN" << std::endl;
+	}
+	else
+	{
+		while (std::getline(file, line))
+			all_lines.push_back(line);
+		for (std::vector<std::string>::iterator it = all_lines.begin(); it != all_lines.end(); it++)
+			this->_body += *it + "\n";
+	}
+	// std::cout << "Here we are " << this->_path << " body: " << this->_body << std::endl;
+	set_get_headers();
+}
+
+void	Response::set_get_headers()
+{
+	this->_header["Content-Type"] = "text/html";
+	this->_header["Connection"] = "Keep-alive";
+	this->_header["Server"] = "VVVVVVVVVVVVVVV";
+	std::stringstream ss;
+	std::string			len;
+	if (!this->_body.empty())
+	{
+		ss << this->_body.length();
+		ss >> len;
+		this->_header["Content-Length"] = len;
+	}
+}

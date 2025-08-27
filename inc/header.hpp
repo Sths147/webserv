@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   header.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 16:18:30 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/26 13:32:10 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/26 18:19:24 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <stdlib.h>
+#include "ErrorException.hpp"
 // #include <Server.hpp>
 
 
