@@ -7,9 +7,6 @@
 
 size_t ConfigUtils::_pos = 0;
 
-bool ConfigUtils::error_page_valid(const int &page){
-	return (page == 404 || page == 500|| page == 502 || page == 503 || page == 504);
-}
 void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t pos) {
 	if (ConfigUtils::find_first_not_of_space(str, pos) != std::string::npos) {
 		if (str[_pos] == '#')
