@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/28 14:11:45 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/28 14:18:54 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ Response::~Response()
 Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
 {
+	this->_header["Server"] = "42WEBSERV";
 	//check if client max body size and implement return code accordingly
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
@@ -188,7 +189,6 @@ void	Response::set_error_headers()
 {
 	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "close";
-	this->_header["Server"] = "VVVVVVVVVVVVVVV";
 	std::stringstream ss;
 	std::string			len;
 	if (!this->_body.empty())
@@ -276,7 +276,6 @@ void	Response::set_get_headers()
 	this->_content_type = set_content_type(this->_path);
 	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "Keep-alive";
-	this->_header["Server"] = "VVVVVVVVVVVVVVV";
 	std::stringstream ss;
 	std::string			len;
 	if (!this->_body.empty())
