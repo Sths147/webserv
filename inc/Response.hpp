@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:45:52 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/28 13:34:24 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/28 15:08:35 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ class Response
 		void				set_error_headers();
 		void				fill_body_with_error_pages(Server& server);
 		std::string			set_content_type(const std::string& path);
+		const std::string&	get_connection_header() const;
 };
 
 #endif

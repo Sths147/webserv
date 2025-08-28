@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/28 14:18:54 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/28 15:49:28 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ void	Response::fill_body_with_error_pages(Server& server)
 	std::string					error_line;
 	std::vector<std::string>	error_vector;
 	if (server.check_location(this->_path) && !(server.get_inlocation_error_page().empty()) \
-		&& !(server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end()))
+		&& server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end())
 	{
 		if (!server.get_inlocation_root().empty())
 			path = reconstruct_path(server.get_inlocation_root(), server.get_inlocation_error_page().find(this->_status_code)->second);
@@ -189,7 +189,7 @@ void	Response::set_error_headers()
 {
 	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "close";
-	std::stringstream ss;
+	std::stringstream	ss;
 	std::string			len;
 	if (!this->_body.empty())
 	{
@@ -284,6 +284,11 @@ void	Response::set_get_headers()
 		ss >> len;
 		this->_header["Content-Length"] = len;
 	}
+}
+
+const std::string&	Response::get_connection_header() const
+{
+	return (this->_header.find("Connection")->second);
 }
 
 static std::string	reconstruct_path(std::string s1, std::string s2)
