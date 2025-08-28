@@ -6,25 +6,28 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 16:05:17 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/28 14:11:45 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include <sstream>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 static std::string		reason_phrase(unsigned short int& code);
+static std::string		reconstruct_path(std::string s1, std::string s2);
 
 Response::~Response()
 {
 }
 
-Response::Response(Request& request, Server& server)		//builds get response
+Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
 {
 	//check if client max body size and implement return code accordingly
-	std::cout << "Here we are with a final path of" << this->_path << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
@@ -40,6 +43,20 @@ Response::Response(Request& request, Server& server)		//builds get response
 		this->set_error_response(server);
 }
 
+static std::string	set_full_path(Server& server, std::string& path)
+{
+	std::string	full_path;
+
+	if (server.get_inlocation_root().empty() && !server.get_root().empty())
+		full_path = reconstruct_path(server.get_root(), path);
+	else if (!server.get_inlocation_root().empty())
+		// full_path = reconstruct_path(server.get_inlocation_root(), path.substr(server.get_locatio ().length()));
+		full_path = reconstruct_path(server.get_inlocation_root(), path);
+	else
+		full_path = path;
+	return (full_path);
+}
+
 const std::string	Response::determine_final_path(Request& request, Server& server)
 {
 	std::string		path;
@@ -51,13 +68,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 		this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
 	if (server.check_location(path))
 	{
-		if (server.get_inlocation_root().empty() && !server.get_root().empty())
-		{
-			//must change this shit to change root into an alias
-			full_path = server.get_root() + path;
-		}
-		else
-			full_path = server.get_inlocation_root() + path;
+		full_path = set_full_path(server, path);
 		if (stat(full_path.c_str(), &sfile) < 0)
 		{
 			if (!stat(path.c_str(), &sfile))
@@ -65,9 +76,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 			set_status(404);
 		}
 		else if (S_ISDIR(sfile.st_mode))
-			std::cout << "DIRECTORY" << std::endl;
-		else
-			std::cout << "IS OK " << std::endl;
+			this->_isdir = 1;
 		return (full_path);
 	}
 	else
@@ -87,41 +96,97 @@ void				Response::set_error_response(Server& server)
 {
 	std::stringstream ss;
 	this->_reason_phrase = reason_phrase(this->_status_code);
-	if (server.check_location(this->_path) && !(server.get_inlocation_error_page().empty()) && !(server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end()))
-	{
-		std::cout << "Error in location: " << this->_status_code << " has a page and the value is " << server.get_inlocation_error_page().find(this->_status_code)->second << std::endl;
-	}
-	else if (!(server.get_error_page().empty()) && (server.get_error_page().find(this->_status_code) != server.get_error_page().end()))
-	{
-		std::ifstream jjj;
-		std::string		path = server.get_root() + server.get_error_page().find(this->_status_code)->second;
-		jjj.open(path.c_str());
-		std::cout << path << std::endl;
-		if (!jjj.is_open())
-			std::cout << "ERROR" << std::endl;
-		else
-		{
-			std::string line;
-			std::vector<std::string> liness;
-			while (std::getline(jjj, line))
-				liness.push_back(line);
-			for (std::vector<std::string>::iterator it = liness.begin(); it != liness.end(); it++)
-				this->_body += *it + "\n";
-		}
-		std::cout << "Error in root: " << this->_status_code << " has a page and the value is " << server.get_error_page().find(this->_status_code)->second << std::endl;
-	}
-	else
+	this->fill_body_with_error_pages(server);
+	if (this->_body.empty())
 	{
 		ss << "<html><body><h1>" << this->_status_code << " " << this->_reason_phrase << "</h1></body></html>";
 		ss >> this->_body;
+		this->_body += " " + this->_reason_phrase + "</h1></body></html>";
 	}
 	this->set_error_headers();
 }
 
+void	Response::fill_body_with_error_pages(Server& server)
+{
+	std::ifstream				stream;
+	std::string					path;
+	std::string					error_line;
+	std::vector<std::string>	error_vector;
+	if (server.check_location(this->_path) && !(server.get_inlocation_error_page().empty()) \
+		&& !(server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end()))
+	{
+		if (!server.get_inlocation_root().empty())
+			path = reconstruct_path(server.get_inlocation_root(), server.get_inlocation_error_page().find(this->_status_code)->second);
+		else
+			path = reconstruct_path(server.get_root(), server.get_inlocation_error_page().find(this->_status_code)->second);
+		stream.open(path.c_str());
+		if (stream.is_open())
+		{
+			this->_content_type = set_content_type(path);
+			while (std::getline(stream, error_line))
+				error_vector.push_back(error_line);
+			for (std::vector<std::string>::iterator it = error_vector.begin(); it != error_vector.end(); it++)
+			{
+				if (it == error_vector.end() - 1)
+					this->_body += *it;
+				else
+					this->_body += *it + "\n";
+			}
+			return ;
+		}
+	}
+	else if (!(server.get_error_page().empty()) && (server.get_error_page().find(this->_status_code) != server.get_error_page().end()))
+	{
+		path = reconstruct_path(server.get_root(), server.get_error_page().find(this->_status_code)->second);
+		stream.open(path.c_str());
+		std::cout << path << std::endl;
+		if (stream.is_open())
+		{
+			this->_content_type = set_content_type(path);
+			while (std::getline(stream, error_line))
+				error_vector.push_back(error_line);
+			for (std::vector<std::string>::iterator it = error_vector.begin(); it != error_vector.end(); it++)
+			{
+				if (it == error_vector.end() - 1)
+					this->_body += *it;
+				else
+					this->_body += *it + "\n";
+			}
+		}
+	}
+}
+
+std::string	Response::set_content_type(const std::string&	path)
+{
+	if (!path.empty() && path.find_last_of('.') != std::string::npos)
+	{
+		std::string ext = path.substr(path.find_last_of('.'));
+		if (!ext.empty())
+		{
+			std::ifstream file;
+			file.open("./server_files/mime_types.txt");
+			if (file.is_open())
+			{
+				std::string line;
+				while (std::getline(file, line))
+				{
+					std::istringstream linestream(line);
+					std::string word1;
+					std::string word2;
+					linestream >> word1;
+					linestream >> word2;
+					if (!word1.compare(ext))
+						return (word2);
+				}
+			}
+		}
+	}
+	return ("application/octet-stream");
+}
 
 void	Response::set_error_headers()
 {
-	this->_header["Content-Type"] = "text/html";
+	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "close";
 	this->_header["Server"] = "VVVVVVVVVVVVVVV";
 	std::stringstream ss;
@@ -208,7 +273,8 @@ void	Response::set_get_response()
 
 void	Response::set_get_headers()
 {
-	this->_header["Content-Type"] = "text/html";
+	this->_content_type = set_content_type(this->_path);
+	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "Keep-alive";
 	this->_header["Server"] = "VVVVVVVVVVVVVVV";
 	std::stringstream ss;
@@ -219,4 +285,9 @@ void	Response::set_get_headers()
 		ss >> len;
 		this->_header["Content-Length"] = len;
 	}
+}
+
+static std::string	reconstruct_path(std::string s1, std::string s2)
+{
+	return (s1 + s2);
 }
