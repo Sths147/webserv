@@ -71,6 +71,7 @@ int main(int ac, char **av)
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
 	std::map<int, Listen> client_socket_server;
+	try {
 	while (1) {
 
 		nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
@@ -99,20 +100,27 @@ int main(int ac, char **av)
 				}
 				while (bytes > 0);
 				if (buffer.empty())
-				throw std::runtime_error("empty request");
-				std::map<int, Request*> request;
+					throw std::runtime_error("empty request");
+				// std::map<int, Request*> request;
 				Request	req1(buffer);
-				request[client_fd] = &req1;
+				// request[client_fd] = &req1;
 				Server *serv = find_server(client_socket_server[client_fd], vec_server, req1);
 				// std::cout << &serv << std::endl;
 				// (void)serv;
 				Response rep(req1, *serv);
 				rep.write_response(client_fd);
-				std::cout << "type: " << req1.get_type() << std::endl;
+				// std::cout << rep.get_connection_header() << " connection header" << std::endl;
+				// std::cout << "type: " << req1.get_type() << std::endl;
 				// write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
+				// if (rep.get_connection_header().compare("Keep-alive"))
 				close(client_fd);
 			}
 		}
+	}
+	}
+	catch (std::exception& e)
+	{
+		std::cout << "BIG ERROR " << e.what() << std::endl;
 	}
 	close(epoll_fd);
 	return (0);
