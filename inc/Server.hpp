@@ -25,6 +25,7 @@ class Server
 
 
 		bool												check_location( const std::string key ) ;
+		const	std::string									&get_inlocation_location( void ) const ;
 		const	std::vector<std::string>					&get_inlocation_index( void ) const ;
 		const	std::map<unsigned short int, std::string>	&get_inlocation_error_page( void ) const ;
 		const	std::vector<std::string>					&get_inlocation_allow_methods( void ) const ;

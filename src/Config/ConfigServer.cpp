@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/08/27 15:37:28 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/08/27 15:46:39 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,9 @@ void	ConfigServer::print_client_max_body_size( void ){
 		std::cout << "'" << this->_client_max_body_size << "'" << std::endl;
 	}
 }
-void	ConfigServer::set_client_max_body_size( const std::string &str){ this->_client_max_body_size = str;} // convert
+void	ConfigServer::set_client_max_body_size( const std::string &str){
+	this->_client_max_body_size = str;
+} // convert
 
 
 /* ------   _root   ------ */
