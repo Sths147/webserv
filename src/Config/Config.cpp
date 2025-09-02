@@ -121,6 +121,11 @@ void			Config::set_in_location( std::string &directive, std::string &line, int &
 		std::string arg =  ConfigUtils::get_one_token(line);
 		this->_vConfServer[server].set_inlocation_root(location, arg);
 
+	} else if (directive == "autoindex") {
+
+		// std::string arg =  ConfigUtils::get_one_token(line);
+		// this->_vConfServer[server].set_inlocation_root(location, arg);
+
 	} else { // here we got "}" or error
 
 		if (directive != "\0")

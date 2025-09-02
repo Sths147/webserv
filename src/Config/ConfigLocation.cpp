@@ -97,6 +97,7 @@ void	ConfigLocation::set_root(const std::string &str) { this->_root = str; }
 
 
 
+void	ConfigLocation::set_autoindex( const bool &b ) {this->_autoindex = b;}
 
 
 
@@ -124,3 +125,4 @@ const std::vector<std::string>							&ConfigLocation::get_allow_methods( void ) 
 
 const std::string										&ConfigLocation::get_root( void ) const { return (this->_root); }
 
+const bool												&ConfigLocation::get_autoindex( void ) const { return (this->_autoindex); }

@@ -11,10 +11,7 @@
 #include <map>
 
 
-Server::Server( void )
-{
-
-}
+Server::Server( void ) {}
 
 static void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
@@ -22,28 +19,21 @@ static void set_nonblocking(int socket_fd) {
 }
 
 static void set_address(struct sockaddr_in	&address, Listen &listen) {
-	// std::cout << "listen ip : " << listen.ip << std::endl;
-	// std::cout << "listen port : " << listen.port << std::endl;
 	address.sin_family = AF_INET;
 	if (listen.ip == 0){
 		address.sin_addr.s_addr =  INADDR_ANY;
 	} else {
-		// address.sin_addr.s_addr =  listen.ip;
 		address.sin_addr.s_addr =  htonl(listen.ip);
 	}
 	address.sin_port = htons(listen.port);
 }
 
-// static return
-static bool is_already_bind(map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server, Listen &listen_in_vec, Server *ptr) {
-
-	map_uint_maps_uint_vec_server::iterator found = map_ip_port_vec_ptr_server.find(listen_in_vec.ip);
+static bool is_already_bind(t_map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server, Listen &listen_in_vec, Server *ptr) {
+	t_map_uint_maps_uint_vec_server::iterator found = map_ip_port_vec_ptr_server.find(listen_in_vec.ip);
 	if (found != map_ip_port_vec_ptr_server.end()) {
-
 		std::map<unsigned int, std::vector<Server *> >::iterator found2 = found->second.find(listen_in_vec.port);
 		if (found2 != found->second.end()) {
 			found2->second.push_back(ptr);
-
 			return (true);
 		}
 	}
@@ -51,12 +41,12 @@ static bool is_already_bind(map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_s
 	return (false);
 }
 
-Server::Server(ConfigServer &config, int epoll_fd, map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server) : _ConfServer(config) {
+Server::Server(ConfigServer &config, int epoll_fd, t_map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server) : _ConfServer(config) {
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
 	struct epoll_event ev;
 	struct sockaddr_in	address;
-	if (size == 0){
+	if (size == 0){//--------------------------------------------------------------------------------------------------------------------------------------------
 		throw (MyException("todo faire un bind part defaut"));
 	}
 	for (size_t i = 0; i < size; i++)
@@ -84,8 +74,6 @@ Server::Server(ConfigServer &config, int epoll_fd, map_uint_maps_uint_vec_server
 			}
 
 			set_nonblocking(socket_fd);
-			// int flags = fcntl(socket_fd, F_GETFL, 0);
-			// fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 
 			ev.events = EPOLLIN;
 			ev.data.fd = socket_fd;
@@ -103,8 +91,6 @@ Server::~Server()
 	{
 		close(this->vector_socket_fd[i]);
 	}
-	// std::cout << "destructor server " << std::endl;
-
 }
 
 

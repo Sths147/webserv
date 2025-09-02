@@ -19,6 +19,7 @@ class ConfigLocation
 		std::map<unsigned short int, std::string>	_error_page;
 		std::vector<std::string>					_allow_methods;
 		std::string									_root;
+		bool										_autoindex;
 
 		void	print_index( void );
 		void	print_error_page( void );
@@ -37,6 +38,7 @@ class ConfigLocation
 		void	set_error_page( const std::vector<std::string> &str);
 		void	set_allow_methods( const std::vector<std::string> &str);
 		void	set_root( const std::string &str);
+		void	set_autoindex( const bool &b );
 
 
 		bool														check_location( const std::string &key ) const ;
@@ -46,6 +48,7 @@ class ConfigLocation
 		const	std::map<unsigned short int, std::string>			&get_error_page( void ) const ;
 		const	std::vector<std::string>							&get_allow_methods( void ) const ;
 		const	std::string											&get_root( void ) const ;
+		const	bool												&get_autoindex( void ) const ;
 
 		~ConfigLocation();
 };

@@ -21,6 +21,7 @@ class ConfigServer
 		std::vector<std::string>						_allow_methods;
 		std::string										_client_max_body_size; // convert max ?
 		std::string										_root;
+		bool											_autoindex;
 
 		std::vector<ConfigLocation>	_vConfLocal;
 		int							_last_i_location;
@@ -46,6 +47,7 @@ class ConfigServer
 			void	set_allow_methods( const std::vector<std::string> vec );
 			void	set_client_max_body_size( const std::string &str);
 			void	set_root( const std::string &str);
+			void	set_autoindex( const bool &b );
 			void	set_new_location( const std::string &perm, const bool &b);
 
 			/* --- set in vector location index--- */
@@ -53,6 +55,7 @@ class ConfigServer
 			void	set_inlocation_allow_methods(const int &i, const std::vector<std::string> &arg);
 			void	set_inlocation_error_page(const int &i, const std::vector<std::string> &arg);
 			void	set_inlocation_root(const int &i, const std::string &str);
+			void	set_inlocation_autoindex( const bool &b );
 
 
 
@@ -64,6 +67,7 @@ class ConfigServer
 			const	std::vector<std::string>							&get_allow_methods( void ) const ;
 			const	std::string											&get_client_max_body_size( void ) const ;
 			const	std::string											&get_root( void ) const ;
+			const	bool												&get_autoindex( void ) const ;
 
 			/* --- GET inlocation --- */
 			bool														check_location( std::string key ) ;
@@ -72,6 +76,7 @@ class ConfigServer
 			const	std::map<unsigned short int, std::string>			&get_inlocation_error_page( void ) const ;
 			const	std::vector<std::string>							&get_inlocation_allow_methods( void ) const ;
 			const	std::string											&get_inlocation_root( void ) const ;
+			const	bool												&get_inlocation_autoindex( void ) const ;
 
 
 			ConfigServer( void );
