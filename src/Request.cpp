@@ -178,7 +178,7 @@ const std::string	Request::parse_request_type(std::vector<char>& buff)
 	}
 	if (result.empty())
 		set_return_code(400);
-	if (result.compare("GET"))
+	if (result.compare("GET") && result.compare("POST"))
 		set_return_code(400);
 	return (result);
 }
@@ -294,4 +294,23 @@ bool	Request::check_hosts(const std::vector<std::string>& server_names) const
 		}
 	}
 	return (false);
+}
+
+// bool				Request::has_header(std::string& to_find)
+// {
+// 	if (this->_header.count(to_find))
+// 		return (true);
+// 	return (false);
+// }
+
+const std::string	Request::get_content_type() const
+{
+	if (this->_header.count("Content-Type"))
+		return (this->_header.find("Content-Type")->second);
+	return ("");
+}
+
+const std::vector<char>	Request::get_body() const
+{
+	return (this->_body);
 }

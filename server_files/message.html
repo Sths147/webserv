@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width">
+		<title>My test page</title>
+	</head>
+	<body>
+		<form action="/messages/list.text" method="post">
+			<ul>
+				<li>
+					<label for="name">Nom&nbsp</label>
+					<input type="text" id="name" name="user_name" />
+				</li>
+				<li>
+					<label for="mail">E-mail&nbsp</label>
+					<input type="email" id="mail" name="user_mail" />
+				</li>
+				<li>
+					<label for="msg">Message&nbsp</label>
+					<textarea id="msg" name="user_message"></textarea>
+				</li>
+			</ul>
+			<div class="button">
+				<button type="submit">Send message</button>
+			</div>
+		</form>
+	</body>
+</html>

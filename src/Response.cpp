@@ -32,9 +32,7 @@ Response::Response(Request& request, Server& server)
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
-	{
-		// this->set_post_response();
-	}
+			this->set_post_response(request);
 	if (this->_status_code == 0)
 	{
 		this->_status_code = 200;
@@ -77,7 +75,8 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 			set_status(404);
 		}
 		else if (S_ISDIR(sfile.st_mode))
-			this->_isdir = 1;
+			this->_isdir = true;
+		this->_isdir = false;
 		return (full_path);
 	}
 	else
@@ -269,6 +268,72 @@ void	Response::set_get_response()
 	}
 	else
 		set_status(401);
+}
+
+void	Response::set_post_response(Request& request)
+{
+	struct stat					sfile;
+	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
+	{
+		std::fstream				file;
+
+		file.open(this->_path.c_str(), std::fstream::out | std::fstream::app);
+		if (!file.is_open())
+			set_status(500);
+		else
+		{
+			std::stringstream ss;
+			std::vector<char>	requestbody = request.get_body();
+			for (std::vector<char>::iterator it = requestbody.begin(); it != requestbody.end(); it++)
+				ss << *it;
+			file << ss.str() << "\n";
+			this->_body.append("Message well received");
+			this->set_post_headers();
+			// set_status(200);
+		}
+	}
+	else
+		set_status(401);
+}
+
+// void	Response::treat_post(Request& request)
+// {
+// 	if (!request.get_content_type().compare("application/x-www-urlencoded"))
+// 	{
+
+// 	}
+// 	// else if (!request.get_content_type().compare("application/json"))
+// 	// {}
+// 	if (!request.get_content_type().compare("application/octet-stream"))
+// 	{
+// 		if (this->_isdir == false)
+// 		{
+// 			//error ?
+// 		}
+// 		else
+// 		{
+
+// 		}
+// 	}
+// 	else
+// 	{
+// 		//set_status(400); a verifier
+// 	}
+
+// }
+
+void	Response::set_post_headers()
+{
+	this->_header["Content-Type"] = "text/plain";
+	this->_header["Connection"] = "Keep-alive";
+	std::stringstream ss;
+	std::string			len;
+	if (!this->_body.empty())
+	{
+		ss << this->_body.length();
+		ss >> len;
+		this->_header["Content-Length"] = len;
+	}
 }
 
 void	Response::set_get_headers()
