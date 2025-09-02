@@ -35,7 +35,7 @@ class Request
 		const std::string							parse_request_type(std::vector<char>& buff);
 		const std::string							parse_request_target(std::vector<char>& buff);
 		const std::string							parse_http_type(std::vector<char>& buff);
-		// Listen										set_listen();
+		// Listen									set_listen();
 		bool										check_hosts(const std::vector<std::string>&) const;
 		std::map<std::string, std::string>			parse_header(std::vector<char>& buff);
 		const std::string							get_crlf_line(std::vector<char>& buff);
@@ -43,4 +43,7 @@ class Request
 		const std::string							parse_key(std::string& line);
 		void										set_return_code(const unsigned short int&);
 		void										parse_headers();
+		const std::string							get_content_type() const;
+		const std::vector<char>							get_body() const;
 };
+
