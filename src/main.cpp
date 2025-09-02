@@ -34,10 +34,10 @@ int main(int ac, char **av)
 	}
 
 	std::vector<Server *> vec_server;
+	map_uint_maps_uint_vec_server map_ip_port_vec_ptr_server;
 	if (ac == 2){
 
 		try	{
-			std::map<unsigned int, std::vector<unsigned int> > listen_started;
 			//First parsing of the config file to delete every empty and commentary line.
 			Config config(av[1]);
 			//Parsing of the config file.
@@ -45,7 +45,7 @@ int main(int ac, char **av)
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
 				// std::cout << "server n*" << i <<std::endl; //Creat every server with his config file added.
-				Server *ptr = new Server(config.copy_config_server(i), epoll_fd, listen_started);
+				Server *ptr = new Server(config.copy_config_server(i), epoll_fd, map_ip_port_vec_ptr_server);
 				vec_server.push_back(ptr);
 			}
 		}
@@ -86,6 +86,13 @@ int main(int ac, char **av)
 			int client_fd = events[i].data.fd;
 			// std::cout << "request fd = " << client_fd << std::endl;
 			if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
+
+				// Listen tmp = client_socket_server[client_fd];
+
+				// std::cout << "Listen tmp = client_socket_server[client_fd]; = tmp.ip :" << tmp.ip << "tmp.port : " << tmp.port << std::endl;
+
+				// map_ip_port_vec_ptr_server[]
+
 
 				// Handle client data
 				std::vector<char>	buffer;

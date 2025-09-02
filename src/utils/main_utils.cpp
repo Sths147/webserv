@@ -37,7 +37,7 @@ bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &eve
 					return (true);
 				}
 				// todo print i / j find server will find the same one and return the server
-				client_socket_server[client_fd] = vec_listen[j];
+				client_socket_server[client_fd] = vec_listen[j];// save the client with the listen struct
 
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
@@ -79,4 +79,21 @@ Server	*find_server(Listen client_fd_info, std::vector<Server *> vec_server, Req
 		}
 	}
 	return (ptr);
+}
+
+// map_uint_maps_uint_vec_server
+// std::map<unsigned int, std::map<unsigned int, std::vector<Server *> > >
+
+
+Server	*find_server_from_map(Listen client_fd_info, map_uint_maps_uint_vec_server &map_ip_port_vec_ptrserver, Request &req1){
+
+	std::vector<Server *> tmp = map_ip_port_vec_ptrserver[client_fd_info.ip][client_fd_info.port];
+	if (tmp.size() != 1){
+		for (size_t i = 0; i < tmp.size(); i++)
+		{
+			if (req1.check_hosts(tmp[i]->get_server_name()))
+				return (tmp[i]);
+		}
+	}
+	return (tmp[0]);
 }

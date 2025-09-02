@@ -34,25 +34,23 @@ static void set_address(struct sockaddr_in	&address, Listen &listen) {
 	address.sin_port = htons(listen.port);
 }
 
-static bool is_already_bind(std::map<unsigned int, std::vector<unsigned int> > &listen_started, Listen &listen_in_vec) {
+// static return
+static bool is_already_bind(map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server, Listen &listen_in_vec, Server *ptr) {
 
-	std::map<unsigned int, std::vector<unsigned int> >::iterator found = listen_started.find(listen_in_vec.ip);
-	if (found != listen_started.end()) {
+	map_uint_maps_uint_vec_server::iterator found = map_ip_port_vec_ptr_server.find(listen_in_vec.ip);
+	if (found != map_ip_port_vec_ptr_server.end()) {
 
-		std::vector<unsigned int> vec_port = found->second;
-		for (size_t i = 0; i < vec_port.size(); i++)
-		{
-			if (vec_port[i] == listen_in_vec.port) {
-				return (true);
-			}
+		std::map<unsigned int, std::vector<Server *> >::iterator found2 = found->second.find(listen_in_vec.port);
+		if (found2 != found->second.end()) {
+			found2->second.push_back(ptr);
+			return (true);
 		}
 	}
-	listen_started[listen_in_vec.ip].push_back(listen_in_vec.port);
+	map_ip_port_vec_ptr_server[listen_in_vec.ip][listen_in_vec.port].push_back(ptr);
 	return (false);
 }
 
-Server::Server(ConfigServer &config, int epoll_fd, std::map<unsigned int, std::vector<unsigned int> > &listen_started) : _ConfServer(config) {
-
+Server::Server(ConfigServer &config, int epoll_fd, map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server) : _ConfServer(config) {
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
 	struct epoll_event ev;
@@ -63,7 +61,7 @@ Server::Server(ConfigServer &config, int epoll_fd, std::map<unsigned int, std::v
 
 	for (size_t i = 0; i < size; i++)
 	{
-		if (!is_already_bind(listen_started, vec_listen[i])) {
+		if (!is_already_bind(map_ip_port_vec_ptr_server, vec_listen[i], this)) {
 
 			int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 			if (socket_fd < 0){
