@@ -12,7 +12,7 @@ class Server
 		ConfigServer _ConfServer;
 		std::vector<int> vector_socket_fd;
 	public:
-		Server(ConfigServer &Config, int epoll_fd);
+		Server(ConfigServer &config, int epoll_fd, std::map<unsigned int, std::vector<unsigned int> > &listen_started);
 
 		const	std::vector<int>							&get_socket_fd( void ) const ;
 		const	std::vector<Listen>							&get_listen( void ) const ;

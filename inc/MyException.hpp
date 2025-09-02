@@ -28,10 +28,6 @@ class MyException : public std::exception
 
 
 		virtual const char* what() const throw();
-		static void putRed( std::string &str);
-		static void putGreen( std::string &str);
-		static void putBlue( std::string &str);
-		static void putYellow( std::string &str);
 
 	// }
 };

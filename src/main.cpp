@@ -14,7 +14,6 @@
 #include "Config.hpp"
 #include "Server.hpp"
 #include "MyException.hpp"
-// #include "Request.hpp"
 #include "Struct.hpp"
 #include "Response.hpp"
 #include <map>
@@ -38,7 +37,7 @@ int main(int ac, char **av)
 	if (ac == 2){
 
 		try	{
-
+			std::map<unsigned int, std::vector<unsigned int> > listen_started;
 			//First parsing of the config file to delete every empty and commentary line.
 			Config config(av[1]);
 			//Parsing of the config file.
@@ -46,7 +45,7 @@ int main(int ac, char **av)
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
 				// std::cout << "server n*" << i <<std::endl; //Creat every server with his config file added.
-				Server *ptr = new Server(config.copy_config_server(i), epoll_fd);
+				Server *ptr = new Server(config.copy_config_server(i), epoll_fd, listen_started);
 				vec_server.push_back(ptr);
 			}
 		}

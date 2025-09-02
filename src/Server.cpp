@@ -34,7 +34,24 @@ static void set_address(struct sockaddr_in	&address, Listen &listen) {
 	address.sin_port = htons(listen.port);
 }
 
-Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
+static bool is_already_bind(std::map<unsigned int, std::vector<unsigned int> > &listen_started, Listen &listen_in_vec) {
+
+	std::map<unsigned int, std::vector<unsigned int> >::iterator found = listen_started.find(listen_in_vec.ip);
+	if (found != listen_started.end()) {
+
+		std::vector<unsigned int> vec_port = found->second;
+		for (size_t i = 0; i < vec_port.size(); i++)
+		{
+			if (vec_port[i] == listen_in_vec.port) {
+				return (true);
+			}
+		}
+	}
+	listen_started[listen_in_vec.ip].push_back(listen_in_vec.port);
+	return (false);
+}
+
+Server::Server(ConfigServer &config, int epoll_fd, std::map<unsigned int, std::vector<unsigned int> > &listen_started) : _ConfServer(config) {
 
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
@@ -46,34 +63,39 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
 	for (size_t i = 0; i < size; i++)
 	{
-		int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-		if (socket_fd < 0){
-			throw (MyException("Error : opening socket failed"));
+		if (!is_already_bind(listen_started, vec_listen[i])) {
+
+			int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+			if (socket_fd < 0){
+				throw (MyException("Error : opening socket failed"));
+			}
+			this->vector_socket_fd.push_back(socket_fd);
+			int	one = 1;
+			if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int)) < 0) {
+				throw (MyException("Error : setsockopt failed ", strerror(errno)));
+			}
+
+			set_address(address, vec_listen[i]);
+
+			if ( bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0 ){
+				throw (MyException("Error : Bind failed ", strerror(errno)));
+			}
+
+			if (listen(socket_fd, 1024) < 0){
+				throw (MyException("Error : Listen failed"));
+			}
+
+			set_nonblocking(socket_fd);
+			// int flags = fcntl(socket_fd, F_GETFL, 0);
+			// fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+
+			ev.events = EPOLLIN;
+			ev.data.fd = socket_fd;
+			epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket_fd, &ev);
 		}
-		this->vector_socket_fd.push_back(socket_fd);
-		int	one = 1;
-		if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int)) < 0) {
-			throw (MyException("Error : setsockopt failed ", strerror(errno)));
-		}
-
-		set_address(address, vec_listen[i]);
-
-		if ( bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0 ){
-			throw (MyException("Error : Bind failed ", strerror(errno)));
-		}
-
-		if (listen(socket_fd, 1024) < 0){
-			throw (MyException("Error : Listen failed"));
-		}
-
-		set_nonblocking(socket_fd);
-		// int flags = fcntl(socket_fd, F_GETFL, 0);
-		// fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
-
-		ev.events = EPOLLIN;
-		ev.data.fd = socket_fd;
-		epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket_fd, &ev);
-
+		// else {
+		// 	std::cerr << "aldready started : " << vec_listen[i].ip << ":" << vec_listen[i].port << std::endl;
+		// }
 	}
 }
 

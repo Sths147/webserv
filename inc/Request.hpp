@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 10:20:10 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/26 16:17:04 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/08/30 08:43:37 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,15 +23,15 @@ class Request
 		// Listen										_listen;
 		const std::string							_server_name;
 		std::vector<char>							_body;
-        Request();
+		Request();
 
-    public:
-        Request(std::vector<char>&);
-        ~Request();
-        // Request&    operator=(const Request&);
-        const std::string							get_type() const;
-        const std::string							get_target() const;
-        const std::string							get_http_version() const;
+	public:
+		Request(std::vector<char>&);
+		~Request();
+		// Request&    operator=(const Request&);
+		const std::string							get_type() const;
+		const std::string							get_target() const;
+		const std::string							get_http_version() const;
 		const std::string							parse_request_type(std::vector<char>& buff);
 		const std::string							parse_request_target(std::vector<char>& buff);
 		const std::string							parse_http_type(std::vector<char>& buff);
