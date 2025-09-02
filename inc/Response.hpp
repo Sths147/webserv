@@ -32,7 +32,8 @@ class Response
 		std::string											_body;
 
 	public:
-		Response(Request& request, Server& server);
+		Response(Request &request, Server &server);
+		void NewFunction();
 		~Response();
 
 		const std::string	determine_final_path(Request& request, Server& server);
@@ -42,9 +43,12 @@ class Response
 		void				set_get_response();
 		void				set_get_headers();
 		void				set_error_headers();
+		void				set_post_response(Request& request);
 		void				fill_body_with_error_pages(Server& server);
 		std::string			set_content_type(const std::string& path);
 		const std::string&	get_connection_header() const;
+		void				set_post_headers();
+		// void				treat_post(Request& request);
 };
 
 #endif
