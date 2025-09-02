@@ -32,13 +32,13 @@ Response::Response(Request& request, Server& server)
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
-			this->set_post_response(request);
+		this->set_post_response(request);
 	if (this->_status_code == 0)
 	{
 		this->_status_code = 200;
 		this->_reason_phrase = "OK";
 	}
-	else
+	else if (this->_status_code > 199 )
 		this->set_error_response(server);
 }
 
@@ -68,14 +68,23 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	if (server.check_location(path))
 	{
 		full_path = set_full_path(server, path);
+		if (!stat(full_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
+		{
+			this->_isdir = true;
+			if (!request.get_type().compare("GET"))
+			{
+				if (!server.get_inlocation_index().empty())
+					full_path += server.get_inlocation_index()[0];
+				else if (!server.get_index().empty())
+					full_path += server.get_index()[0];
+			}
+		}
 		if (stat(full_path.c_str(), &sfile) < 0)
 		{
-			if (!stat(path.c_str(), &sfile))
+			if (!stat(path.c_str(), &sfile) && !S_ISDIR(sfile.st_mode))
 				return (path);
 			set_status(404);
 		}
-		else if (S_ISDIR(sfile.st_mode))
-			this->_isdir = true;
 		this->_isdir = false;
 		return (full_path);
 	}
