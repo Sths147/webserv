@@ -43,6 +43,7 @@ static bool is_already_bind(map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_s
 		std::map<unsigned int, std::vector<Server *> >::iterator found2 = found->second.find(listen_in_vec.port);
 		if (found2 != found->second.end()) {
 			found2->second.push_back(ptr);
+
 			return (true);
 		}
 	}
@@ -58,7 +59,6 @@ Server::Server(ConfigServer &config, int epoll_fd, map_uint_maps_uint_vec_server
 	if (size == 0){
 		throw (MyException("todo faire un bind part defaut"));
 	}
-
 	for (size_t i = 0; i < size; i++)
 	{
 		if (!is_already_bind(map_ip_port_vec_ptr_server, vec_listen[i], this)) {

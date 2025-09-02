@@ -21,6 +21,7 @@
 void set_nonblocking(int socket_fd);
 bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, Listen> &client_socket_server);
 Server	*find_server(Listen client_fd_info, std::vector<Server *> vec_server, Request &req1);
+Server	*find_server_from_map(Listen client_fd_info, map_uint_maps_uint_vec_server &map_ip_port_vec_ptrserver, Request &req1);
 
 
 int main(int ac, char **av)
@@ -87,9 +88,6 @@ int main(int ac, char **av)
 			// std::cout << "request fd = " << client_fd << std::endl;
 			if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
 
-				// Listen tmp = client_socket_server[client_fd];
-
-				// std::cout << "Listen tmp = client_socket_server[client_fd]; = tmp.ip :" << tmp.ip << "tmp.port : " << tmp.port << std::endl;
 
 				// map_ip_port_vec_ptr_server[]
 
@@ -110,7 +108,13 @@ int main(int ac, char **av)
 				// std::map<int, Request*> request;
 				Request	req1(buffer);
 				// request[client_fd] = &req1;
-				Server *serv = find_server(client_socket_server[client_fd], vec_server, req1);
+
+				// Server *serv = find_server(client_socket_server[client_fd], vec_server , req1);
+				Server *serv = find_server_from_map(client_socket_server[client_fd], map_ip_port_vec_ptr_server , req1);
+
+
+
+
 				// std::cout << &serv << std::endl;
 				// (void)serv;
 				Response rep(req1, *serv);

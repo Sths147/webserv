@@ -85,9 +85,9 @@ Server	*find_server(Listen client_fd_info, std::vector<Server *> vec_server, Req
 // std::map<unsigned int, std::map<unsigned int, std::vector<Server *> > >
 
 
-Server	*find_server_from_map(Listen client_fd_info, map_uint_maps_uint_vec_server &map_ip_port_vec_ptrserver, Request &req1){
+Server	*find_server_from_map(Listen client_fd_info, map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server, Request &req1){
 
-	std::vector<Server *> tmp = map_ip_port_vec_ptrserver[client_fd_info.ip][client_fd_info.port];
+	std::vector<Server *> tmp = map_ip_port_vec_ptr_server[client_fd_info.ip][client_fd_info.port];
 	if (tmp.size() != 1){
 		for (size_t i = 0; i < tmp.size(); i++)
 		{
