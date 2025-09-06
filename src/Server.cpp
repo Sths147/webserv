@@ -11,14 +11,15 @@
 #include <map>
 
 
-Server::Server( void ) {}
+// Server::Server( void ) {}
 
 static void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-static void set_address(struct sockaddr_in	&address, Listen &listen) {
+static void set_address(struct sockaddr_in	&address, Listen &listen)
+{
 	address.sin_family = AF_INET;
 	if (listen.ip == 0){
 		address.sin_addr.s_addr =  INADDR_ANY;

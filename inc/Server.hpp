@@ -6,6 +6,7 @@
 #include "Config.hpp"
 class Server;
 typedef std::map<unsigned int, std::map<unsigned int, std::vector<Server *> > > t_map_uint_maps_uint_vec_server;
+
 class Server
 {
 	private:
