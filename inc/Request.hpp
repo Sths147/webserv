@@ -20,7 +20,6 @@ class Request
 		const std::string							_target;
 		const std::string							_http_type;
 		std::map<std::string, std::string>			_header;
-		// Listen										_listen;
 		const std::string							_server_name;
 		std::vector<char>							_body;
 		Request();

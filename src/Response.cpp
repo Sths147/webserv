@@ -28,7 +28,11 @@ Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
 {
 	this->_header["Server"] = "42WEBSERV";
+	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	//check if client max body size and implement return code accordingly
+	if (this->_status_code == 0)
+		this->check_allowed_method(request.get_type(), server);
+	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
@@ -49,8 +53,7 @@ static std::string	set_full_path(Server& server, std::string& path)
 	if (server.get_inlocation_root().empty() && !server.get_root().empty())
 		full_path = reconstruct_path(server.get_root(), path);
 	else if (!server.get_inlocation_root().empty())
-		// full_path = reconstruct_path(server.get_inlocation_root(), path.substr(server.get_locatio ().length()));
-		full_path = reconstruct_path(server.get_inlocation_root(), path);
+		full_path = reconstruct_path(server.get_inlocation_root(), path.substr(server.get_inlocation_location().length()));
 	else
 		full_path = path;
 	return (full_path);
@@ -368,4 +371,46 @@ const std::string&	Response::get_connection_header() const
 static std::string	reconstruct_path(std::string s1, std::string s2)
 {
 	return (s1 + s2);
+}
+
+
+void				Response::check_allowed_method(const std::string& _method_requested, Server& server)
+{
+	std::string	methods[9] = {"GET", "HEAD", "OPTIONS", "TRACE", "PUT", "DELETE", "POST", "PATCH", "CONNECT"};
+	std::string implemented_methods[3] = {"GET", "POST", "DELETE"};
+
+	for (int i = 0; i < 9; i++)
+	{
+		if (!_method_requested.compare(methods[i]))
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (!_method_requested.compare(implemented_methods[j]))
+					break ;
+				if (j == 2)
+					this->set_status(501);
+			}
+			break ;
+		}
+		if (i == 8)
+			this->set_status(400);
+	}
+	if (server.get_inlocation_allow_methods().size() != 0)
+	{
+		for (size_t i = 0; i < server.get_inlocation_allow_methods().size(); i++)
+		{
+			if (!_method_requested.compare(server.get_inlocation_allow_methods()[i]))
+				return ;
+		}
+		this->set_status(405);
+	}
+	else if (server.get_allow_methods().size() != 0)
+	{
+		for (size_t i = 0; i < server.get_allow_methods().size(); i++)
+		{
+			if (!_method_requested.compare(server.get_allow_methods()[i]))
+				return ;
+		}
+		this->set_status(405);
+	}
 }

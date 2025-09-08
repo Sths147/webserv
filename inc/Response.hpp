@@ -48,6 +48,7 @@ class Response
 		std::string			set_content_type(const std::string& path);
 		const std::string&	get_connection_header() const;
 		void				set_post_headers();
+		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		// void				treat_post(Request& request);
 };
 
