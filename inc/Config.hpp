@@ -26,6 +26,7 @@ class Config
 
 		Config(std::string nameFile);
 		void			pars( void );
+		void			check_lunch( void );
 		ConfigServer	&copy_config_server( const int &i );
 		size_t			nb_of_server();
 		~Config(void);

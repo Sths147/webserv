@@ -37,7 +37,6 @@ size_t ConfigUtils::get_pos( void ) {
 	return (_pos);
 }
 
-
 std::string	ConfigUtils::parse_token(const std::string& input, const size_t pos) {
 	std::string token;
 
@@ -86,7 +85,6 @@ std::string	ConfigUtils::get_one_token(const std::string &str) {
 	return (arg);
 }
 
-
 std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
 	std::vector<std::string> vec = ConfigUtils::parse_multi_token(str, _pos);
 	if (_pos == str.find_first_of(';'))
@@ -94,24 +92,7 @@ std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
 	return (vec);
 }
 
-#include <sstream> // pour stringstream
-std::vector<std::string> ConfigUtils::split(const std::string &topars, char delim)
-{
-	std::vector<std::string> tokens;
-	std::stringstream ss(topars.c_str());
-	std::string str;
-
-
-	while (std::getline(ss, str, delim)) {
-		tokens.push_back(str);
-	}
-	return (tokens);
-}
-
-
-
 #include <cstdlib> // atoi
-
 static unsigned int	ipconvert(std::string& str)
 {
 	for (size_t i = 0; i < str.size(); i++)
@@ -138,7 +119,6 @@ static unsigned int	ipconvert(std::string& str)
 
 	return ((a << 24) | (b << 16) | (c << 8) | d);
 }
-
 
 Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 {
@@ -179,4 +159,16 @@ Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 	return (Listen(ip, port));
 }
 
+#include <sstream> // pour stringstream
+std::vector<std::string> ConfigUtils::split(const std::string &topars, char delim)
+{
+	std::vector<std::string> tokens;
+	std::stringstream ss(topars.c_str());
+	std::string str;
 
+
+	while (std::getline(ss, str, delim)) {
+		tokens.push_back(str);
+	}
+	return (tokens);
+}
