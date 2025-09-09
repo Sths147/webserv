@@ -79,30 +79,24 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 {
 	std::string					result;
 	(void)buff;
-	try{
-		std::vector<char>::iterator	k = buff.begin();
-		if (*k != SP)
-			throw ErrorException(400);
-		buff.erase(k);
-		while (k != buff.end())
-		{
-			if (*k == SP)
-				break;
-			else if (*k < 33 || *k > 126)
-				set_return_code(400);
-			else
-			{
-				result += *k;
-				buff.erase(k);
-			}
-		}
-		if (result.empty() || k == buff.end())
-			set_return_code(400);
-	}
-	catch (ErrorException& e)
+	std::vector<char>::iterator	k = buff.begin();
+	if (*k != SP)
+		set_return_code(400);
+	buff.erase(k);
+	while (k != buff.end())
 	{
-		set_return_code(e.get_return());
+		if (*k == SP)
+			break;
+		else if (*k < 33 || *k > 126)
+			set_return_code(400);
+		else
+		{
+			result += *k;
+			buff.erase(k);
+		}
 	}
+	if (result.empty() || k == buff.end())
+		set_return_code(400);
 	return (result);
 }
 
@@ -178,8 +172,8 @@ const std::string	Request::parse_request_type(std::vector<char>& buff)
 	}
 	if (result.empty())
 		set_return_code(400);
-	if (result.compare("GET") && result.compare("POST"))
-		set_return_code(400);
+	// if (result.compare("GET") && result.compare("POST"))
+	// 	set_return_code(400);
 	return (result);
 }
 
