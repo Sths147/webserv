@@ -16,6 +16,7 @@ class Server
 		Server(ConfigServer &config, int epoll_fd);
 
 		const	std::vector<int>							&get_socket_fd( void ) const ;
+		bool												check_listen( Listen &tmp ) const;
 		const	std::vector<Listen>							&get_listen( void ) const ;
 		const	std::vector<std::string>					&get_index( void ) const ;
 		const	std::map<unsigned short int, std::string>	&get_error_page( void ) const ;

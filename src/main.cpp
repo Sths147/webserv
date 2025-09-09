@@ -18,7 +18,7 @@
 
 void set_nonblocking(int socket_fd);
 bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, Listen> &client_socket_server);
-Server	*find_server_from_map(Listen client_fd_info, t_map_uint_maps_uint_vec_server &map_ip_port_vec_ptrserver, Request &req1);
+Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
 
 
 int main(int ac, char **av)
@@ -104,11 +104,14 @@ int main(int ac, char **av)
 					if (buffer.empty())
 						throw std::runtime_error("empty request");
 
+
+
+
 					// std::map<int, Request*> request;
 					Request	req1(buffer);
 					// request[client_fd] = &req1;
 
-					// Server *serv = find_server_from_map(client_socket_server[client_fd], req1);
+					Server *serv = find_server_from_map(client_socket_server[client_fd], vec_server,req1);
 
 
 					Response rep(req1, *serv);

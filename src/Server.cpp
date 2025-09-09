@@ -31,7 +31,6 @@ static void set_address(struct sockaddr_in	&address, Listen &listen)
 }
 Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
-	(void)map_ip_port_vec_ptr_server;
 
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
@@ -84,6 +83,15 @@ Server::~Server()
 }
 
 
+bool												Server::check_listen( Listen &tmp ) const{
+	std::vector<Listen> vec_listen = this->get_listen();
+	for (size_t i = 0; i < vec_listen.size(); i++)
+	{
+		if ((vec_listen[i].ip == 0 || vec_listen[i].ip == tmp.ip) && vec_listen[i].port == tmp.port)
+			return true;
+	}
+	return false;
+}
 const	std::vector<int>							&Server::get_socket_fd( void ) const { return (this->vector_socket_fd); }
 const	std::vector<Listen>							&Server::get_listen( void ) const { return (this->_ConfServer.get_listen()); }
 const	std::vector<std::string>					&Server::get_index( void ) const { return (this->_ConfServer.get_index()); }
