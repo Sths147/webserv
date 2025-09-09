@@ -121,6 +121,11 @@ void			Config::set_in_location( std::string &directive, std::string &line, int &
 		std::string arg =  ConfigUtils::get_one_token(line);
 		this->_vConfServer[server].set_inlocation_root(location, arg);
 
+	} else if (directive == "autoindex") {
+
+		// std::string arg =  ConfigUtils::get_one_token(line);
+		// this->_vConfServer[server].set_inlocation_root(location, arg);
+
 	} else { // here we got "}" or error
 
 		if (directive != "\0")
@@ -267,6 +272,58 @@ void Config::pars( void )
 	// 	// this->_vConfServer[i].print_location();
 	// }
 
+}
+
+
+void	Config::check_lunch( void ) {
+
+	std::map<unsigned int, std::vector<unsigned int> > map_port_ip;
+	for (size_t i = 0; i < this->_vConfServer.size(); i++)
+	{
+		std::vector<Listen> vec_listen = this->_vConfServer[i].get_listen();
+		for (size_t j = 0; j < vec_listen.size(); j++)
+		{
+			if (vec_listen[j].ip == 0){
+				unsigned int port = vec_listen[j].port;
+				if (map_port_ip.find(port) != map_port_ip.end()){
+					vec_listen[j].to_lunch = false;
+				} else {
+					map_port_ip[port].push_back(0);
+				}
+			}
+		}
+	}
+	for (size_t i = 0; i < this->_vConfServer.size(); i++)
+	{
+		std::vector<Listen> vec_listen = this->_vConfServer[i].get_listen();
+		for (size_t j = 0; j < vec_listen.size(); j++)
+		{
+			unsigned int ip = vec_listen[j].ip;
+			if (ip != 0){
+				unsigned int port = vec_listen[j].port;
+				if (map_port_ip.find(port) != map_port_ip.end()) {
+					std::vector<unsigned int>& ip_vec = map_port_ip[port];
+					bool conflict_found = false;
+					for (size_t k = 0; k < ip_vec.size(); k++) {
+						if (ip_vec[k] == 0 || ip_vec[k] == ip) {
+							conflict_found = true;
+							break;
+						}
+					}
+					if (conflict_found) {
+						this->_vConfServer[i].set_listen_lunch_false(j);
+					} else {
+						map_port_ip[port].push_back(ip);
+					}
+				} else {
+					map_port_ip[port].push_back(ip);
+				}
+			}
+		}
+	}
+	// std::cout << "ip " << this->_vConfServer[1].get_listen()[0].ip
+	// 	<< " port " << this->_vConfServer[0].get_listen()[0].port
+	// 	<< this->_vConfServer[1].get_listen()[0].to_lunch << std::endl;
 }
 
 

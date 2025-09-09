@@ -9,10 +9,11 @@
 
 struct Listen
 {
-	unsigned int ip;
-	unsigned int port;
+	unsigned int	ip;
+	unsigned int	port;
+	bool			to_lunch;
 	Listen(void) {}
-	Listen(unsigned int cip, unsigned int cport) : ip(cip), port(cport) {}
+	Listen(unsigned int cip, unsigned int cport) : ip(cip), port(cport), to_lunch(true) {}
 };
 
 class ConfigUtils
