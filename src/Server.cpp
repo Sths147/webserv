@@ -20,6 +20,7 @@ static void set_nonblocking(int socket_fd) {
 
 static void set_address(struct sockaddr_in	&address, Listen &listen)
 {
+	std::cout << "set_address ip : " << listen.ip << " port : " << listen.port << std::endl;
 	address.sin_family = AF_INET;
 	if (listen.ip == 0){
 		address.sin_addr.s_addr =  INADDR_ANY;
@@ -28,21 +29,10 @@ static void set_address(struct sockaddr_in	&address, Listen &listen)
 	}
 	address.sin_port = htons(listen.port);
 }
+Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
-static bool is_already_bind(t_map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server, Listen &listen_in_vec, Server *ptr) {
-	t_map_uint_maps_uint_vec_server::iterator found = map_ip_port_vec_ptr_server.find(listen_in_vec.ip);
-	if (found != map_ip_port_vec_ptr_server.end()) {
-		std::map<unsigned int, std::vector<Server *> >::iterator found2 = found->second.find(listen_in_vec.port);
-		if (found2 != found->second.end()) {
-			found2->second.push_back(ptr);
-			return (true);
-		}
-	}
-	map_ip_port_vec_ptr_server[listen_in_vec.ip][listen_in_vec.port].push_back(ptr);
-	return (false);
-}
+	(void)map_ip_port_vec_ptr_server;
 
-Server::Server(ConfigServer &config, int epoll_fd, t_map_uint_maps_uint_vec_server &map_ip_port_vec_ptr_server) : _ConfServer(config) {
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
 	struct epoll_event ev;
@@ -52,8 +42,7 @@ Server::Server(ConfigServer &config, int epoll_fd, t_map_uint_maps_uint_vec_serv
 	}
 	for (size_t i = 0; i < size; i++)
 	{
-		if (!is_already_bind(map_ip_port_vec_ptr_server, vec_listen[i], this)) {
-
+			if (vec_listen[i].to_lunch) {
 			int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 			if (socket_fd < 0){
 				throw (MyException("Error : opening socket failed"));

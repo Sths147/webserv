@@ -33,18 +33,22 @@ int main(int ac, char **av)
 	}
 
 	std::vector<Server *> vec_server;
-	t_map_uint_maps_uint_vec_server map_ip_port_vec_ptr_server;
 	if (ac == 2){
 
 		try	{
+
 			//First parsing of the config file to delete every empty and commentary line.
 			Config config(av[1]);
+
 			//Parsing of the config file.
 			config.pars();
+
+			//Pars all listen if an ip : 0 and port : "n" exists we accept this one first and dosent accept other ip on the same "n" port.
+			config.check_lunch();
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
 				// std::cout << "server n*" << i <<std::endl; //Creat every server with his config file added.
-				Server *ptr = new Server(config.copy_config_server(i), epoll_fd, map_ip_port_vec_ptr_server);
+				Server *ptr = new Server(config.copy_config_server(i), epoll_fd);
 				vec_server.push_back(ptr);
 			}
 		}
@@ -104,7 +108,7 @@ int main(int ac, char **av)
 					Request	req1(buffer);
 					// request[client_fd] = &req1;
 
-					Server *serv = find_server_from_map(client_socket_server[client_fd], map_ip_port_vec_ptr_server , req1);
+					// Server *serv = find_server_from_map(client_socket_server[client_fd], req1);
 
 
 					Response rep(req1, *serv);

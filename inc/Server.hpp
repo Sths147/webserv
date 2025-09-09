@@ -5,7 +5,6 @@
 
 #include "Config.hpp"
 class Server;
-typedef std::map<unsigned int, std::map<unsigned int, std::vector<Server *> > > t_map_uint_maps_uint_vec_server;
 
 class Server
 {
@@ -14,7 +13,7 @@ class Server
 		ConfigServer _ConfServer;
 		std::vector<int> vector_socket_fd;
 	public:
-		Server(ConfigServer &config, int epoll_fd, t_map_uint_maps_uint_vec_server &map_ip_port_vec_ptrserver);
+		Server(ConfigServer &config, int epoll_fd);
 
 		const	std::vector<int>							&get_socket_fd( void ) const ;
 		const	std::vector<Listen>							&get_listen( void ) const ;

@@ -41,6 +41,7 @@ class ConfigServer
 
 			/* --- set this server --- */
 			void	set_listen( const std::string &str);
+			void	set_listen_lunch_false( size_t index);
 			void	set_index( const std::vector<std::string> vec );
 			void	set_error_page( const std::vector<std::string> vec );
 			void	set_server_name( const std::vector<std::string> vec );
