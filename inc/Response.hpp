@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:45:52 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/30 08:43:19 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/09/09 12:07:29 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ class Response
 		void				set_get_headers();
 		void				set_error_headers();
 		void				set_post_response(Request& request);
+		void				set_delete_response(Request& request);
+		void				set_delete_headers();
 		void				fill_body_with_error_pages(Server& server);
 		std::string			set_content_type(const std::string& path);
 		const std::string&	get_connection_header() const;

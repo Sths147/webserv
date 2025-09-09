@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/28 15:49:28 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/09/09 12:08:55 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ Response::Response(Request& request, Server& server)
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
 		this->set_post_response(request);
+	else if (this->_status_code == 0 && !request.get_type().compare("DELETE"))
+		this->set_delete_response(request);
 	if (this->_status_code == 0)
 	{
 		this->_status_code = 200;
@@ -279,7 +281,7 @@ void	Response::set_get_response()
 		}
 	}
 	else
-		set_status(401);
+		set_status(403);
 }
 
 void	Response::set_post_response(Request& request)
@@ -301,38 +303,44 @@ void	Response::set_post_response(Request& request)
 			file << ss.str() << "\n";
 			this->_body.append("Message well received");
 			this->set_post_headers();
-			// set_status(200);
 		}
 	}
 	else
-		set_status(401);
+		set_status(403);
 }
 
-// void	Response::treat_post(Request& request)
-// {
-// 	if (!request.get_content_type().compare("application/x-www-urlencoded"))
-// 	{
+void	Response::set_delete_response(Request& request)
+{
+	struct stat					sfile;
+	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
+	{
+		if (std::remove(this->_path.c_str()))
+			set_status(500);
+		else
+		{
+			this->_body = "<html><body><h1>";
+			this->_body += request.get_target();
+			this->_body += " deleted </h1></body></html>";
+		}
+		set_delete_headers();
+	}
+	else
+		set_status(403);
+}
 
-// 	}
-// 	// else if (!request.get_content_type().compare("application/json"))
-// 	// {}
-// 	if (!request.get_content_type().compare("application/octet-stream"))
-// 	{
-// 		if (this->_isdir == false)
-// 		{
-// 			//error ?
-// 		}
-// 		else
-// 		{
-
-// 		}
-// 	}
-// 	else
-// 	{
-// 		//set_status(400); a verifier
-// 	}
-
-// }
+void	Response::set_delete_headers()
+{
+	this->_header["Content-Type"] = "text/plain";
+	this->_header["Connection"] = "Keep-alive";
+	std::stringstream ss;
+	std::string			len;
+	if (!this->_body.empty())
+	{
+		ss << this->_body.length();
+		ss >> len;
+		this->_header["Content-Length"] = len;
+	}
+}
 
 void	Response::set_post_headers()
 {
