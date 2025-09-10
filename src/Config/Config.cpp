@@ -213,6 +213,15 @@ void			Config::set_in_server( std::string &directive, std::string &line, int &se
 		else
 			throw (MyException("Error : autoindex unknow value", line));
 
+	} else if (directive == "return") {
+
+		std::vector<std::string> vec_arg =  ConfigUtils::get_multi_token(line);
+
+		if (vec_arg[0] == "301")
+			this->_vConfServer[server].set_return(vec_arg[1]);
+		else
+			throw (MyException("Error : directive return not allowed", line));
+
 	} else { // here we got "}" or error
 
 		if (directive != "\0")
