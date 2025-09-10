@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/10 16:21:56 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/09/10 16:41:53 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,8 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 	std::vector<char>::iterator	k = buff.begin();
 	if (*k != SP)
 		set_return_code(400);
-	buff.erase(k);
+	if (k != buff.end())
+		buff.erase(k);
 	while (k != buff.end())
 	{
 		if (*k == SP)
@@ -97,7 +98,8 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 		else
 		{
 			result += *k;
-			buff.erase(k);
+			if (k != buff.end())
+				buff.erase(k);
 		}
 	}
 	if (result.empty() || k == buff.end())
@@ -146,12 +148,12 @@ static void			skip_crlf(std::vector<char>& buff)
 	std::vector<char>::iterator	k = buff.begin();
 	while (1)
 	{
-		if (*k == CR && *(k + 1) && *(k + 1) == LF)
+		if (k != buff.end() &&*k == CR && (k + 1) != buff.end() && *(k + 1) == LF)
 		{
 			buff.erase(k);
 			buff.erase(k);
 		}
-		else if (*k == LF)
+		else if (k != buff.end() && *k == LF)
 			buff.erase(k);
 		else
 			break ;
@@ -172,7 +174,8 @@ const std::string	Request::parse_request_type(std::vector<char>& buff)
 		else if (*k >= 'A' && *k <= 'Z')
 		{
 			result += *k;
-			buff.erase(k);
+			if (k != buff.end())
+				buff.erase(k);
 		}
 		else
 			set_return_code(400);
