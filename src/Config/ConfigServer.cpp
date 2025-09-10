@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/09/10 15:18:53 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/09/10 16:34:49 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,8 +214,6 @@ const	std::string									&ConfigServer::get_return( void ) const { return (this
 
 bool						ConfigServer::check_location( std::string key )
 {
-
-    std::cerr << "DEBUG: this = " << this << std::endl;
 	this->_last_i_location = -1;
 	for (size_t i = 0; i < this->_vConfLocal.size(); i++)
 	{

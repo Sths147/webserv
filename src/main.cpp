@@ -72,6 +72,7 @@ int main(int ac, char **av)
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
 	std::map<int, Listen> client_socket_server;
+
 	try {
 		while (1) {
 
@@ -106,16 +107,11 @@ int main(int ac, char **av)
 					if (buffer.empty())
 						throw std::runtime_error("empty request");
 
-
-
-
 					// std::map<int, Request*> request;
 					Request	req1(buffer);
 					// request[client_fd] = &req1;
 
 					Server *serv = find_server_from_map(client_socket_server[client_fd], vec_server,req1);
-
-
 
 					Response rep(req1, *serv);
 					rep.write_response(client_fd);

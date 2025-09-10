@@ -49,7 +49,6 @@ bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &eve
 				for (size_t i = 0; i < vec_listen.size(); i++)
 				{
 					if ((vec_listen[i].ip == 0 || vec_listen[i].ip == tmp.ip) && vec_listen[i].port == tmp.port){
-						std::cout << "find : " << ntohl(client_addr.sin_addr.s_addr) << ":"<< ntohs(server_addr.sin_port) << std::endl;
 						find = true;
 					}
 					// else {
