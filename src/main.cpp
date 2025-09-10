@@ -82,6 +82,9 @@ int main(int ac, char **av)
 				close(epoll_fd);
 				return (1);
 			}
+			// else if (nfds == 0){
+			// 	check_fd()
+			// }
 
 			for (int i = 0; i < nfds; i++) {
 

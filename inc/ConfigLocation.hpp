@@ -25,7 +25,7 @@ class ConfigLocation
 		std::vector<std::string>					_allow_methods;
 		std::string									_root;
 		autoindexvalue								_autoindex;
-		std::vector<std::string>					_return;// 301  ..?
+		std::string									_return;// 301  ..?
 
 		void	print_index( void );
 		void	print_error_page( void );
@@ -45,6 +45,7 @@ class ConfigLocation
 		void	set_allow_methods( const std::vector<std::string> &str);
 		void	set_root( const std::string &str);
 		void	set_autoindex( const autoindexvalue b );
+		void	set_return( const std::string &str );
 
 
 		bool														check_location( const std::string &key ) const ;
@@ -55,6 +56,7 @@ class ConfigLocation
 		const	std::vector<std::string>							&get_allow_methods( void ) const ;
 		const	std::string											&get_root( void ) const ;
 		const	autoindexvalue										&get_autoindex( void ) const ;
+		const	std::string											&get_return( void ) const ;
 
 		~ConfigLocation();
 };

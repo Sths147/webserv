@@ -57,6 +57,7 @@ class ConfigServer
 			void	set_inlocation_error_page(const int &i, const std::vector<std::string> &arg);
 			void	set_inlocation_root(const int &i, const std::string &str);
 			void	set_inlocation_autoindex(const int &i, const autoindexvalue b );
+			void	set_inlocation_return(const int &i, const std::string &str );
 
 
 
@@ -78,7 +79,7 @@ class ConfigServer
 			const	std::vector<std::string>							&get_inlocation_allow_methods( void ) const ;
 			const	std::string											&get_inlocation_root( void ) const ;
 			const	autoindexvalue										&get_inlocation_autoindex( void ) const ;
-
+			const	std::string											&get_inlocation_return( void ) const ;
 
 			ConfigServer( void );
 			~ConfigServer();
