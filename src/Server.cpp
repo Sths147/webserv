@@ -31,7 +31,6 @@ static void set_address(struct sockaddr_in	&address, Listen &listen)
 }
 Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
-
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
 	struct epoll_event ev;
