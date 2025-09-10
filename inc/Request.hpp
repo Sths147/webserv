@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 10:20:10 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/30 08:43:37 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/09/10 14:40:19 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 class Request
 {
     private:
+		static	unsigned int						_max_size;
 		unsigned short int							_return_code;
 		const std::string							_type;
 		const std::string							_target;
@@ -43,6 +44,6 @@ class Request
 		void										set_return_code(const unsigned short int&);
 		void										parse_headers();
 		const std::string							get_content_type() const;
-		const std::vector<char>							get_body() const;
+		const std::vector<char>						get_body() const;
 };
 

@@ -6,11 +6,12 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/08/27 13:39:20 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/09/10 14:40:01 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
+#include <limits>
 
 enum http_types {
     CR = '\r',
@@ -18,6 +19,8 @@ enum http_types {
     SP = ' ',
 	HTAB = '\t'
 } t_http_types;
+
+unsigned int	Request::_max_size = std::numeric_limits<uint>::max();
 
 // Request::Request()
 // : _type("NOTYPE")
@@ -27,10 +30,12 @@ enum http_types {
 Request::Request(std::vector<char>&buff)
 : _return_code(0), _type(parse_request_type(buff)), _target(parse_request_target(buff)), _http_type(parse_http_type(buff)), _header(parse_header(buff)), _body(buff)
 {
-	// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); it++)
-	// {
-	// 	std::cout << it->first << "--" << it->second << std::endl;
-	// }
+	for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); it++)
+	{
+		std::cout << it->first << "--" << it->second << std::endl;
+	}
+	std::string	mybody(this->_body.begin(), this->_body.end());
+	std::cout << "\n\n and here is the body" << mybody << std::endl;
 	this->parse_headers();
 	// std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
 }

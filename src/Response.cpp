@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/10 11:42:29 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/09/10 15:00:22 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,12 @@ Response::Response(Request& request, Server& server)
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	//check if client max body size and implement return code accordingly
-	//if (req.redirect)
-	//this->
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
+	if (!server.get_inlocation_return().empty())
+		this->set_status(301);
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
-	std::cout << "PAAATH " << this->_path << std::endl;
+	// std::cout << "PAAATH " << this->_path << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
@@ -88,8 +88,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 					full_path += server.get_inlocation_index()[0];
 				else if (!server.get_index().empty())
 					full_path += server.get_index()[0];
-				else
-					// else if (server.get_autoindex() == ON)
+				else if (server.get_autoindex() == ON)
 				{
 					this->_autoindex = true;
 					return (full_path);
@@ -367,6 +366,15 @@ void	Response::set_delete_response(Request& request)
 	}
 	else
 		set_status(403);
+}
+
+void				Response::set_redirect(Server& server)
+{
+	this->_body = "<html><head><title>301 Moved Permanently</title></head><body><center><h1>301 Moved Permanently</h1></center><hr><center>42WEBSERV</center></body></html>";
+	this->_header["Content-Type"] = "text/html";
+	this->_header["Content-Length"] = this->_body.length();
+	this->_header["Connection"] = "keep-alive";
+	this->_header["Location"] = server.get_inlocation_return();
 }
 
 void	Response::set_delete_headers()
