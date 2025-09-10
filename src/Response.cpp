@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/10 11:25:30 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/09/10 11:42:29 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <ctime>
 
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
@@ -30,9 +31,12 @@ Response::Response(Request& request, Server& server)
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	//check if client max body size and implement return code accordingly
+	//if (req.redirect)
+	//this->
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
+	std::cout << "PAAATH " << this->_path << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
@@ -44,7 +48,9 @@ Response::Response(Request& request, Server& server)
 		this->_status_code = 200;
 		this->_reason_phrase = "OK";
 	}
-	else if (this->_status_code > 199 )
+	else if (this->_status_code > 299 &&  this->_status_code < 399)
+		this->set_redirect(server);
+	else
 		this->set_error_response(server);
 }
 
@@ -68,6 +74,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	struct stat		sfile;
 
 	path = request.get_target().substr(0, request.get_target().find_first_of('?'));
+	this->_autoindex = false;
 	if (path.length() < request.get_target().length())
 		this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
 	if (server.check_location(path))
@@ -75,13 +82,18 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 		full_path = set_full_path(server, path);
 		if (!stat(full_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 		{
-			this->_isdir = true;
 			if (!request.get_type().compare("GET"))
 			{
 				if (!server.get_inlocation_index().empty())
 					full_path += server.get_inlocation_index()[0];
 				else if (!server.get_index().empty())
 					full_path += server.get_index()[0];
+				else
+					// else if (server.get_autoindex() == ON)
+				{
+					this->_autoindex = true;
+					return (full_path);
+				}
 			}
 		}
 		if (stat(full_path.c_str(), &sfile) < 0)
@@ -90,7 +102,6 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 				return (path);
 			set_status(404);
 		}
-		this->_isdir = false;
 		return (full_path);
 	}
 	else
@@ -262,7 +273,37 @@ void	Response::write_response(int& client_fd)
 void	Response::set_get_response()
 {
 	struct stat					sfile;
-	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IROTH))
+	if (this->_autoindex == true)
+	{
+		std::time_t result = std::time(NULL);
+		std::stringstream buffer;
+		std::string time_str;
+		buffer << result;
+		buffer >> time_str;
+		std::fstream tmp;
+		tmp.open(time_str.c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
+		if (!tmp.is_open())
+			this->set_status(500);
+		else
+		{
+			tmp << "<html><body><h1> You are in a directory : \n</h1><p>";
+			DIR*	dir = opendir(this->_path.c_str());
+			struct dirent* entry;
+			while ((entry = readdir(dir)) != NULL)
+				tmp << entry->d_name << "\n";
+			tmp << "</p></body></html>";
+			closedir(dir);
+		}
+		tmp.seekg(0, std::ios::beg);
+		std::string		line;
+		while (std::getline(tmp, line))
+			this->_body += line + "<br>";
+		// std::cout << "bodyyy" << this->_body << std::endl;
+		this->set_get_headers();
+		tmp.close();
+		std::remove(time_str.c_str());
+	}
+	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IROTH))
 	{
 		std::ifstream				file;
 		std::string					line;
@@ -277,7 +318,7 @@ void	Response::set_get_response()
 				all_lines.push_back(line);
 			for (std::vector<std::string>::iterator it = all_lines.begin(); it != all_lines.end(); it++)
 				this->_body += *it + "\n";
-			set_get_headers();
+			this->set_get_headers();
 		}
 	}
 	else
@@ -358,7 +399,10 @@ void	Response::set_post_headers()
 
 void	Response::set_get_headers()
 {
-	this->_content_type = set_content_type(this->_path);
+	if (this->_autoindex == true)
+		this->_content_type = "text/html";
+	else
+		this->_content_type = set_content_type(this->_path);
 	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "Keep-alive";
 	std::stringstream ss;
