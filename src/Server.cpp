@@ -112,3 +112,4 @@ const	std::map<unsigned short int, std::string>	&Server::get_inlocation_error_pa
 const	std::vector<std::string>					&Server::get_inlocation_allow_methods( void ) const { return (this->_ConfServer.get_inlocation_allow_methods()); }
 const	std::string									&Server::get_inlocation_root( void ) const { return (this->_ConfServer.get_inlocation_root()); }
 const	autoindexvalue								&Server::get_inlocation_autoindex( void ) const { return (this->_ConfServer.get_inlocation_autoindex()); }
+const	std::string									&Server::get_inlocation_return( void ) const { return (this->_ConfServer.get_inlocation_return()); }

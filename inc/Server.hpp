@@ -34,6 +34,7 @@ class Server
 		const	std::vector<std::string>					&get_inlocation_allow_methods( void ) const ;
 		const	std::string									&get_inlocation_root( void ) const ;
 		const	autoindexvalue								&get_inlocation_autoindex( void ) const ;
+		const	std::string									&get_inlocation_return( void ) const ;
 
 		~Server();
 };
