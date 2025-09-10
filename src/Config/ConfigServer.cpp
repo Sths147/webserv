@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/09/10 14:15:24 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/09/10 15:18:53 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,6 +169,10 @@ void	ConfigServer::set_root( const std::string &str){ this->_root = str;}
 void	ConfigServer::set_autoindex( const autoindexvalue v ) { this->_autoindex = v; }
 
 
+/* ------   _return   ------ */
+void	ConfigServer::set_return( const std::string &str ) { this->_return = str; }
+
+
 /* ------   location   ------ */
 
 void	ConfigServer::print_location( void ){
@@ -201,6 +205,8 @@ const	std::vector<std::string>					&ConfigServer::get_allow_methods( void ) cons
 const	size_t										&ConfigServer::get_client_max_body_size( void ) const { return (this->_client_max_body_size); }
 const	std::string									&ConfigServer::get_root( void ) const { return (this->_root); }
 const	autoindexvalue								&ConfigServer::get_autoindex( void ) const { return (this->_autoindex); }
+
+const	std::string									&ConfigServer::get_return( void ) const { return (this->_return); }
 
 
 

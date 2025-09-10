@@ -48,6 +48,7 @@ class ConfigLocation
 		void	set_return( const std::string &str );
 
 
+
 		bool														check_location( const std::string &key ) const ;
 		const bool													&get_absolut( void ) const ;
 		const	std::string											&get_location( void ) const;

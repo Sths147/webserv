@@ -21,6 +21,7 @@ class ConfigServer
 		size_t											_client_max_body_size;
 		std::string										_root;
 		autoindexvalue									_autoindex;
+		std::string										_return;// 301  ..?
 
 		int												_last_i_location;
 		std::vector<ConfigLocation>						_vConfLocal;
@@ -49,6 +50,7 @@ class ConfigServer
 			void	set_client_max_body_size( const std::string &str);
 			void	set_root( const std::string &str);
 			void	set_autoindex( const autoindexvalue v );
+			void	set_return( const std::string &str );
 			void	set_new_location( const std::string &perm, const bool &b);
 
 			/* --- set in vector location index--- */
@@ -70,6 +72,7 @@ class ConfigServer
 			const	size_t												&get_client_max_body_size( void ) const ;
 			const	std::string											&get_root( void ) const ;
 			const	autoindexvalue										&get_autoindex( void ) const ;
+			const	std::string											&get_return( void ) const ;
 
 			/* --- GET inlocation --- */
 			bool														check_location( std::string key ) ;
