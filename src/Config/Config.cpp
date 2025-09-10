@@ -125,6 +125,15 @@ void			Config::set_in_location( std::string &directive, std::string &line, int &
 		else
 			throw (MyException("Error : autoindex unknow value", line));
 
+	} else if (directive == "return") {
+
+		std::vector<std::string> vec_arg =  ConfigUtils::get_multi_token(line);
+
+		if (vec_arg[0] == "301")
+			this->_vConfServer[server].set_inlocation_return(location, vec_arg[1]);
+		else
+			throw (MyException("Error : directive return not allowed", line));
+
 	} else { // here we got "}" or error
 
 		if (directive != "\0")
@@ -179,7 +188,15 @@ void			Config::set_in_server( std::string &directive, std::string &line, int &se
 	} else if (directive == "client_max_body_size") {
 
 		std::string arg =  ConfigUtils::get_one_token(line);
-		this->_vConfServer[server].set_client_max_body_size(arg);//todo convert in bytes
+		try
+		{
+			this->_vConfServer[server].set_client_max_body_size(arg);
+		}
+		catch(const std::string &e)
+		{
+			throw (MyException(e, line));
+		}
+
 
 	} else if (directive == "root") {
 
@@ -301,14 +318,14 @@ void	Config::check_lunch( void ) {
 		for (size_t j = 0; j < vec_listen.size(); j++)
 		{
 			if (vec_listen[j].ip == 0){
+
 				unsigned int port = vec_listen[j].port;
 				if (map_port_ip.find(port) != map_port_ip.end()){
-					vec_listen[j].to_lunch = false;
-					// 	this->_vConfServer[i].set_listen_lunch_false(j);
-					// std::cout << "port = " << port << std::endl;
+					this->_vConfServer[i].set_listen_lunch_false(j);
 				} else {
 					map_port_ip[port].push_back(0);
 				}
+
 			}
 		}
 	}
@@ -321,6 +338,7 @@ void	Config::check_lunch( void ) {
 			if (ip != 0){
 				unsigned int port = vec_listen[j].port;
 				if (map_port_ip.find(port) != map_port_ip.end()) {
+
 					std::vector<unsigned int>& ip_vec = map_port_ip[port];
 					bool conflict_found = false;
 					for (size_t k = 0; k < ip_vec.size(); k++) {
@@ -334,6 +352,7 @@ void	Config::check_lunch( void ) {
 					} else {
 						map_port_ip[port].push_back(ip);
 					}
+
 				} else {
 					map_port_ip[port].push_back(ip);
 				}

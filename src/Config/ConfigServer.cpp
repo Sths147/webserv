@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/09/10 11:24:21 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/09/10 14:15:24 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "ConfigLocation.hpp"
 #include "MyException.hpp"
 
-ConfigServer::ConfigServer() : _autoindex(UNKNOWN), _last_i_location(-1) {}
+ConfigServer::ConfigServer() : _client_max_body_size(500000) ,_autoindex(UNKNOWN), _last_i_location(-1) {}
 ConfigServer::~ConfigServer() {}
 // ConfigServer::ConfigServer() {std::cout << "\ncontruct\n";}
 // ConfigServer::~ConfigServer() { std::cout << "\ndestru\n";}
@@ -139,16 +139,18 @@ void	ConfigServer::set_allow_methods( const std::vector<std::string> vec ){
 
 
 /* ------   _client_max_body_size   ------ */
-
+#include <sstream>
 void	ConfigServer::print_client_max_body_size( void ){
 	std::cout << "\nclient_max_body_size :"<< std::endl;
-	if (this->_client_max_body_size != "\0"){
 		std::cout << "'" << this->_client_max_body_size << "'" << std::endl;
-	}
 }
 void	ConfigServer::set_client_max_body_size( const std::string &str){
-	this->_client_max_body_size = str;
-} // convert
+
+	std::stringstream ss(str.c_str());
+	ss >> 	this->_client_max_body_size;
+	if (ss.fail())
+		throw (std::string("Error : failed client_max_body "));
+}
 
 
 /* ------   _root   ------ */
@@ -186,6 +188,7 @@ void	ConfigServer::set_inlocation_error_page(const int &i, const std::vector<std
 void	ConfigServer::set_inlocation_root(const int &i, const std::string &str){this->_vConfLocal[i].set_root(str);}
 void	ConfigServer::set_inlocation_autoindex(const int &i, const autoindexvalue b ) {this->_vConfLocal[i].set_autoindex(b);}
 
+void	ConfigServer::set_inlocation_return(const int &i, const std::string &str ) {this->_vConfLocal[i].set_return(str) ;}
 
 
 /* --- GET --- */
@@ -195,7 +198,7 @@ const	std::vector<std::string>					&ConfigServer::get_index( void ) const { retu
 const	std::map<unsigned short int, std::string>	&ConfigServer::get_error_page( void ) const { return (this->_error_page); }
 const	std::vector<std::string>					&ConfigServer::get_server_name( void ) const { return (this->_server_name); }
 const	std::vector<std::string>					&ConfigServer::get_allow_methods( void ) const { return (this->_allow_methods); }
-const	std::string									&ConfigServer::get_client_max_body_size( void ) const { return (this->_client_max_body_size); }
+const	size_t										&ConfigServer::get_client_max_body_size( void ) const { return (this->_client_max_body_size); }
 const	std::string									&ConfigServer::get_root( void ) const { return (this->_root); }
 const	autoindexvalue								&ConfigServer::get_autoindex( void ) const { return (this->_autoindex); }
 
@@ -237,14 +240,16 @@ bool						ConfigServer::check_location( std::string key )
 	return (false);
 }
 
-const	std::string									&ConfigServer::get_inlocation_location( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_location()); }
+const	std::string									&ConfigServer::get_inlocation_location( void )		const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_location()); }
 
-const	std::vector<std::string>					&ConfigServer::get_inlocation_index( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_index()); }
+const	std::vector<std::string>					&ConfigServer::get_inlocation_index( void )			const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_index()); }
 
-const	std::map<unsigned short int, std::string>	&ConfigServer::get_inlocation_error_page( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_error_page()); }
+const	std::map<unsigned short int, std::string>	&ConfigServer::get_inlocation_error_page( void )	const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_error_page()); }
 
-const	std::vector<std::string>					&ConfigServer::get_inlocation_allow_methods( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_allow_methods()); }
+const	std::vector<std::string>					&ConfigServer::get_inlocation_allow_methods( void )	const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_allow_methods()); }
 
-const	std::string									&ConfigServer::get_inlocation_root( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_root()); }
+const	std::string									&ConfigServer::get_inlocation_root( void )			const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_root()); }
 
-const	autoindexvalue								&ConfigServer::get_inlocation_autoindex( void ) const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_autoindex()); }
+const	autoindexvalue								&ConfigServer::get_inlocation_autoindex( void )		const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_autoindex()); }
+
+const	std::string									&ConfigServer::get_inlocation_return( void )		const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_return()); }

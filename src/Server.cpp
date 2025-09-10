@@ -29,8 +29,8 @@ static void set_address(struct sockaddr_in	&address, Listen &listen)
 	}
 	address.sin_port = htons(listen.port);
 }
-Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
+Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
 	std::vector<Listen> vec_listen = this->get_listen();
 	size_t size = vec_listen.size();
@@ -41,7 +41,7 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 	}
 	for (size_t i = 0; i < size; i++)
 	{
-			if (vec_listen[i].to_lunch) {
+		if (vec_listen[i].to_lunch) {
 			int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 			if (socket_fd < 0){
 				throw (MyException("Error : opening socket failed"));
@@ -101,7 +101,7 @@ const	std::vector<std::string>					&Server::get_index( void ) const { return (th
 const	std::map<unsigned short int, std::string>	&Server::get_error_page( void ) const { return (this->_ConfServer.get_error_page()); }
 const	std::vector<std::string>					&Server::get_server_name( void ) const { return (this->_ConfServer.get_server_name()); }
 const	std::vector<std::string>					&Server::get_allow_methods( void ) const { return (this->_ConfServer.get_allow_methods()); }
-const	std::string									&Server::get_client_max_body_size( void ) const { return (this->_ConfServer.get_client_max_body_size()); }
+const	size_t										&Server::get_client_max_body_size( void ) const { return (this->_ConfServer.get_client_max_body_size()); }
 const	std::string									&Server::get_root( void ) const { return (this->_ConfServer.get_root()); }
 const	autoindexvalue								&Server::get_autoindex( void ) const { return (this->_ConfServer.get_autoindex()); }
 
@@ -112,3 +112,4 @@ const	std::map<unsigned short int, std::string>	&Server::get_inlocation_error_pa
 const	std::vector<std::string>					&Server::get_inlocation_allow_methods( void ) const { return (this->_ConfServer.get_inlocation_allow_methods()); }
 const	std::string									&Server::get_inlocation_root( void ) const { return (this->_ConfServer.get_inlocation_root()); }
 const	autoindexvalue								&Server::get_inlocation_autoindex( void ) const { return (this->_ConfServer.get_inlocation_autoindex()); }
+const	std::string									&Server::get_inlocation_return( void ) const { return (this->_ConfServer.get_inlocation_return()); }

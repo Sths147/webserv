@@ -10,7 +10,6 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "MyException.hpp"
-#include "Struct.hpp"
 
 void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
@@ -22,13 +21,11 @@ bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &eve
 	for (size_t i = 0; i < vec_server.size(); i++)
 	{
 		std::vector<int> vec_socket_fd = vec_server[i]->get_socket_fd();
-
 		const std::vector<Listen> &vec_listen = vec_server[i]->get_listen();
 
 		for (size_t j = 0; j < vec_socket_fd.size(); j++)
 		{
 			if (event_fd == vec_socket_fd[j]){
-
 
 				int client_fd;
 				struct epoll_event ev;

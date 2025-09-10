@@ -22,7 +22,7 @@ class Server
 		const	std::map<unsigned short int, std::string>	&get_error_page( void ) const ;
 		const	std::vector<std::string>					&get_server_name( void ) const ;
 		const	std::vector<std::string>					&get_allow_methods( void ) const ;
-		const	std::string									&get_client_max_body_size( void ) const ;
+		const	size_t										&get_client_max_body_size( void ) const ;
 		const	std::string									&get_root( void ) const ;
 		const	autoindexvalue								&get_autoindex( void ) const ;
 
@@ -34,6 +34,7 @@ class Server
 		const	std::vector<std::string>					&get_inlocation_allow_methods( void ) const ;
 		const	std::string									&get_inlocation_root( void ) const ;
 		const	autoindexvalue								&get_inlocation_autoindex( void ) const ;
+		const	std::string									&get_inlocation_return( void ) const ;
 
 		~Server();
 };
