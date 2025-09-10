@@ -304,6 +304,8 @@ void	Config::check_lunch( void ) {
 				unsigned int port = vec_listen[j].port;
 				if (map_port_ip.find(port) != map_port_ip.end()){
 					vec_listen[j].to_lunch = false;
+					// 	this->_vConfServer[i].set_listen_lunch_false(j);
+					// std::cout << "port = " << port << std::endl;
 				} else {
 					map_port_ip[port].push_back(0);
 				}

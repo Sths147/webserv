@@ -87,9 +87,12 @@ bool												Server::check_listen( Listen &tmp ) const{
 	std::vector<Listen> vec_listen = this->get_listen();
 	for (size_t i = 0; i < vec_listen.size(); i++)
 	{
-		if ((vec_listen[i].ip == 0 || vec_listen[i].ip == tmp.ip) && vec_listen[i].port == tmp.port)
+		if ((vec_listen[i].ip == 0 || vec_listen[i].ip == tmp.ip) && vec_listen[i].port == tmp.port){
+			// std::cout << "check_listen find" << std::endl;
 			return true;
+		}
 	}
+	// std::cout << "check_listen not find" << std::endl;
 	return false;
 }
 const	std::vector<int>							&Server::get_socket_fd( void ) const { return (this->vector_socket_fd); }
