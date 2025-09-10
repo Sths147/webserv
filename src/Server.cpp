@@ -100,7 +100,7 @@ const	std::vector<std::string>					&Server::get_server_name( void ) const { retu
 const	std::vector<std::string>					&Server::get_allow_methods( void ) const { return (this->_ConfServer.get_allow_methods()); }
 const	std::string									&Server::get_client_max_body_size( void ) const { return (this->_ConfServer.get_client_max_body_size()); }
 const	std::string									&Server::get_root( void ) const { return (this->_ConfServer.get_root()); }
-
+const	autoindexvalue								&Server::get_autoindex( void ) const { return (this->_ConfServer.get_autoindex()); }
 
 bool												Server::check_location( const std::string key ) { return (this->_ConfServer.check_location(key)); }
 const	std::string									&Server::get_inlocation_location( void ) const { return (this->_ConfServer.get_inlocation_location()); }
@@ -108,3 +108,4 @@ const	std::vector<std::string>					&Server::get_inlocation_index( void ) const {
 const	std::map<unsigned short int, std::string>	&Server::get_inlocation_error_page( void ) const { return (this->_ConfServer.get_inlocation_error_page()); }
 const	std::vector<std::string>					&Server::get_inlocation_allow_methods( void ) const { return (this->_ConfServer.get_inlocation_allow_methods()); }
 const	std::string									&Server::get_inlocation_root( void ) const { return (this->_ConfServer.get_inlocation_root()); }
+const	autoindexvalue								&Server::get_inlocation_autoindex( void ) const { return (this->_ConfServer.get_inlocation_autoindex()); }

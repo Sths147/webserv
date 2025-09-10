@@ -6,7 +6,7 @@
 /*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/09/10 10:44:13 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/09/10 11:02:58 by fcretin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,14 @@ void	ConfigServer::print_listen( void ){
 	}
 }
 
+void	ConfigServer::set_raw_listen( Listen lis)
+{
+	this->_listen.push_back(lis);
+}
 
 void	ConfigServer::set_listen( const std::string &str)
 {
-	this->_listen.push_back(ConfigUtils::ip_host_parseur(str));//todo stocker
+	this->_listen.push_back(ConfigUtils::ip_host_parseur(str));
 }
 void	ConfigServer::set_listen_lunch_false( size_t index){
 	this->_listen[index].to_lunch = false;

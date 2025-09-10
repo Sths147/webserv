@@ -286,6 +286,13 @@ void Config::pars( void )
 
 void	Config::check_lunch( void ) {
 
+	for (size_t i = 0; i < this->_vConfServer.size(); i++)
+	{
+		std::vector<Listen> vec_listen = this->_vConfServer[i].get_listen();
+		if (vec_listen.size() == 0){
+			this->_vConfServer[i].set_raw_listen(Listen(0, 8080));
+		}
+	}
 
 	std::map<unsigned int, std::vector<unsigned int> > map_port_ip;
 	for (size_t i = 0; i < this->_vConfServer.size(); i++)
