@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/10 15:33:12 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/09/10 16:21:56 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,8 @@ const std::string	Request::parse_http_type(std::vector<char>& buff)
 
 	if (*k != SP)
 		set_return_code(400);
-	buff.erase(k);
+	if (k != buff.end())
+		buff.erase(k);
 	for (int i = 0; i < 8; i++)
 	{
 		if (k == buff.end())
@@ -126,11 +127,12 @@ const std::string	Request::parse_http_type(std::vector<char>& buff)
 		else if (*k != to_compare[i])
 			set_return_code(400);
 		result += *k;
-		buff.erase(k);
+		if (k != buff.end())
+			buff.erase(k);
 	}
-	if (*k == CR)
+	if (k != buff.end() && *k == CR)
 		buff.erase(k);
-	if (*k == LF)
+	if (k != buff.end() && *k == LF)
 	{
 		buff.erase(k);
 		return (result);
