@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:45:52 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/09 12:07:29 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/09/10 15:01:01 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,12 @@ class Response
 		unsigned short int									_status_code;
 		const std::string									_path;
 		const std::string									_http_type;
-		bool												_isdir;
 		std::string											_arguments;
 		std::string											_reason_phrase;
 		std::string											_content_type;
 		std::map<std::string, std::string>					_header;
 		std::string											_body;
+		bool												_autoindex;
 
 	public:
 		Response(Request &request, Server &server);
@@ -51,7 +51,7 @@ class Response
 		const std::string&	get_connection_header() const;
 		void				set_post_headers();
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
-		// void				treat_post(Request& request);
+		void				set_redirect(Server& server);
 };
 
 #endif
