@@ -21,8 +21,8 @@ class ConfigServer
 		std::string										_client_max_body_size; // convert max ?
 		std::string										_root;
 		autoindexvalue									_autoindex;
-		int												_last_i_location;
 
+		int												_last_i_location;
 		std::vector<ConfigLocation>						_vConfLocal;
 
 

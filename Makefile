@@ -88,7 +88,7 @@ SRCS				=		$(addprefix $(UTILS_DIR), $(SRC_UTILS))		\
 NAME				=		webserv
 CC					=		c++
 INCLUDES			=		-I$(HEADERS_DIR)
-CPPFLAGS			=		-Wall -Werror -Wextra -std=c++98 $(INCLUDES)
+CPPFLAGS			=		-Wall -Werror -Wextra -g3 -std=c++98 $(INCLUDES)
 CPPFLAGSS			=		-Weverything						 -Wno-padded -Wno-documentation-unknown-command -Wno-documentation -std=c++98 $(INCLUDES)
 NPD					=		--no-print-directory
 MAKE				:=		$(MAKE) -j $(NPD)
