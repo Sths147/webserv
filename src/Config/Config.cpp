@@ -77,12 +77,6 @@ static std::string locationDirectiveParsing(std::string line, bool &b) {
 
 	std::vector<std::string> vec = ConfigUtils::split(line, ' ');
 
-	// std::cout << std::endl;
-	// for (size_t i = 0; i < vec.size(); i++)
-	// {
-	// 	std::cout << "locationDirectiveParsing n*"<< i << " '" << vec[i] << "'"<<  std::endl;
-	// }
-
 	if (vec.size() < 2 && (vec[1][0] != '{'|| vec[2][0] != '{'))
 		throw (std::string("Error : bad format on this line..."));
 	size_t i = 0;
@@ -123,8 +117,13 @@ void			Config::set_in_location( std::string &directive, std::string &line, int &
 
 	} else if (directive == "autoindex") {
 
-		// std::string arg =  ConfigUtils::get_one_token(line);
-		// this->_vConfServer[server].set_inlocation_root(location, arg);
+		std::string arg =  ConfigUtils::get_one_token(line);
+		if (arg == "on")
+			this->_vConfServer[server].set_inlocation_autoindex(location, ON);
+		else if (arg == "off")
+			this->_vConfServer[server].set_inlocation_autoindex(location, OFF);
+		else
+			throw (MyException("Error : autoindex unknow value", line));
 
 	} else { // here we got "}" or error
 
@@ -186,6 +185,16 @@ void			Config::set_in_server( std::string &directive, std::string &line, int &se
 
 		std::string arg =  ConfigUtils::get_one_token(line);
 		this->_vConfServer[server].set_root(arg);
+
+	} else if (directive == "autoindex") {
+
+		std::string arg =  ConfigUtils::get_one_token(line);
+		if (arg == "on")
+			this->_vConfServer[server].set_autoindex(ON);
+		else if (arg == "off")
+			this->_vConfServer[server].set_autoindex(OFF);
+		else
+			throw (MyException("Error : autoindex unknow value", line));
 
 	} else { // here we got "}" or error
 
@@ -276,6 +285,7 @@ void Config::pars( void )
 
 
 void	Config::check_lunch( void ) {
+
 
 	std::map<unsigned int, std::vector<unsigned int> > map_port_ip;
 	for (size_t i = 0; i < this->_vConfServer.size(); i++)
