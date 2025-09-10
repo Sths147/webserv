@@ -179,7 +179,15 @@ void			Config::set_in_server( std::string &directive, std::string &line, int &se
 	} else if (directive == "client_max_body_size") {
 
 		std::string arg =  ConfigUtils::get_one_token(line);
-		this->_vConfServer[server].set_client_max_body_size(arg);//todo convert in bytes
+		try
+		{
+			this->_vConfServer[server].set_client_max_body_size(arg);
+		}
+		catch(const std::string &e)
+		{
+			throw (MyException(e, line));
+		}
+
 
 	} else if (directive == "root") {
 

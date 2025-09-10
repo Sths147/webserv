@@ -12,7 +12,6 @@
 #include "Config.hpp"
 #include "Server.hpp"
 #include "MyException.hpp"
-#include "Struct.hpp"
 #include "Response.hpp"
 #include <map>
 

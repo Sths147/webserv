@@ -10,7 +10,6 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "MyException.hpp"
-#include "Struct.hpp"
 
 void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);

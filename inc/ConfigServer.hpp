@@ -18,7 +18,7 @@ class ConfigServer
 		std::map<unsigned short int, std::string>		_error_page;
 		std::vector<std::string>						_server_name;
 		std::vector<std::string>						_allow_methods;
-		std::string										_client_max_body_size; // convert max ?
+		size_t											_client_max_body_size;
 		std::string										_root;
 		autoindexvalue									_autoindex;
 
@@ -66,7 +66,7 @@ class ConfigServer
 			const	std::map<unsigned short int, std::string>			&get_error_page( void ) const ;
 			const	std::vector<std::string>							&get_server_name( void ) const ;
 			const	std::vector<std::string>							&get_allow_methods( void ) const ;
-			const	std::string											&get_client_max_body_size( void ) const ;
+			const	size_t												&get_client_max_body_size( void ) const ;
 			const	std::string											&get_root( void ) const ;
 			const	autoindexvalue										&get_autoindex( void ) const ;
 
