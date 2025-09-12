@@ -96,11 +96,13 @@ int main(int ac, char **av)
 			}
 			else if (nfds == 0){
 				std::cout << "Debug : check_timeout";
-				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end(); ++it) {
+				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
 					std::cout << " on clientfd "<< it->first <<std::endl;
 					if (!it->second.check_timeout()){
 						it->second.del_epoll_and_close(epoll_fd);
-						client_socket_server.erase(it);
+						client_socket_server.erase(it++);
+					} else {
+						++it;
 					}
 				}
 				std::cout<<std::endl;
