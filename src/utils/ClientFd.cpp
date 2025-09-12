@@ -18,7 +18,6 @@ void	ClientFd::refresh( void ) { this->_time_to_reset = std::time(NULL); }
 
 
 bool	ClientFd::check_timeout( void ) {
-	std::cout << "Debug : check_timeout" <<std::endl;
 	if (this->_time_to_reset < std::time(NULL))
 		return (false);
 	return (true);

@@ -3,7 +3,7 @@
 #define CLIENTFD_HPP
 
 
-#define TIMEOUT 30 //
+#define TIMEOUT 5 //
 
 #include <ctime>
 #include <iostream>

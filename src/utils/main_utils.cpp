@@ -19,7 +19,7 @@ void set_nonblocking(int socket_fd) {
 
 bool check_add_new_connection(const std::vector<Server *> &vec_server, int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server)
 {
-
+	std::cout << "Debug check_add_new_connection" << std::endl;
 	for (size_t i = 0; i < vec_server.size(); i++)
 	{
 		std::vector<int> vec_socket_fd = vec_server[i]->get_socket_fd();
