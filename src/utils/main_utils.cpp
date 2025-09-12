@@ -10,13 +10,15 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "MyException.hpp"
+#include "ClientFd.hpp"
 
 void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, Listen> &client_socket_server){
+bool check_add_new_connection(const std::vector<Server *> &vec_server, int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server)
+{
 
 	for (size_t i = 0; i < vec_server.size(); i++)
 	{
@@ -59,7 +61,7 @@ bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &eve
 
 				if (find == false)
 					return (false);
-				client_socket_server[client_fd] = tmp; // save the client with the listen struct
+				client_socket_server[client_fd] = ClientFd(client_fd, tmp); // save the client with the listen struct
 
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
@@ -80,7 +82,6 @@ bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &eve
 	}
 	return (false);
 }
-
 
 Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1){
 

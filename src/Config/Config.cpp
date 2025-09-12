@@ -128,7 +128,7 @@ void			Config::set_in_location( std::string &directive, std::string &line, int &
 	} else if (directive == "return") {
 
 		std::vector<std::string> vec_arg =  ConfigUtils::get_multi_token(line);
-		std::cout << "'"<< vec_arg[1] <<"'"<< std::endl;
+		// std::cout << "'"<< vec_arg[1] <<"'"<< std::endl;
 		if (vec_arg[0] == "301")
 			this->_vConfServer[server].set_inlocation_return(location, vec_arg[1]);
 		else

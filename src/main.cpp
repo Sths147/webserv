@@ -13,10 +13,11 @@
 #include "Server.hpp"
 #include "MyException.hpp"
 #include "Response.hpp"
+#include "ClientFd.hpp"
 #include <map>
 
 void set_nonblocking(int socket_fd);
-bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, Listen> &client_socket_server);
+bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server);
 Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
 
 
@@ -71,7 +72,7 @@ int main(int ac, char **av)
 
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
-	std::map<int, Listen> client_socket_server;
+	std::map<int, ClientFd> client_socket_server;
 
 	try {
 		while (1) {
@@ -83,9 +84,13 @@ int main(int ac, char **av)
 				close(epoll_fd);
 				return (1);
 			}
-			// else if (nfds == 0){
-			// 	check_fd()
-			// }
+			else if (nfds == 0){
+				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end(); ++it) {
+					if (it->second.check_timeout())
+						it->second.del_epoll_and_close(epoll_fd);
+					client_socket_server.erase(it);
+				}
+			}
 
 			for (int i = 0; i < nfds; i++) {
 
@@ -111,26 +116,26 @@ int main(int ac, char **av)
 					Request	req1(buffer);
 					// request[client_fd] = &req1;
 
-					Server *serv = find_server_from_map(client_socket_server[client_fd], vec_server,req1);
+					// std::cout << "Request From : " << client_socket_server[client_fd].get_listen().ip << ":" << client_socket_server[client_fd].get_listen().port << std::endl;
+					Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
 
 					Response rep(req1, *serv);
 					rep.write_response(client_fd);
 					// std::cout << rep.get_connection_header() << " connection header" << std::endl;
 					// std::cout << "type: " << req1.get_type() << std::endl;
-					// write (client_fd, "HTTP/1.1 200 \r\n\r\n <html><body><h1>Hello buddy</h1></body></html>", 65);
 					// if (rep.get_connection_header().compare("Keep-alive"))
-					close(client_fd);
+
+					client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
+					client_socket_server.erase(client_fd);
 				}
 			}
 		}
 	}
 	catch (std::exception& e)
 	{
-		std::cout << "BIG ERROR " << e.what() << std::endl;
+		// std::cout << "BIG ERROR " << e.what() << std::endl;
 	}
 	close(epoll_fd);
 	return (0);
 }
-
-
 
