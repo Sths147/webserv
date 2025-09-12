@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/10 15:35:07 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:25:09 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Response::Response(Request& request, Server& server)
 	//check if client max body size and implement return code accordingly
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
-	if (!server.get_inlocation_return().empty())
+	if (this->_status_code == 0 && !server.get_inlocation_return().empty())
 		this->set_status(301);
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	// std::cout << "PAAATH " << this->_path << std::endl;
@@ -327,7 +327,12 @@ void	Response::set_get_response()
 void	Response::set_post_response(Request& request)
 {
 	struct stat					sfile;
-	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
+	if (!stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode) && (sfile.st_mode & S_IWOTH))
+	{
+
+		std::cout << "HEEERE" << request.get_target() << std::endl;
+	}
+	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
 	{
 		std::fstream				file;
 
