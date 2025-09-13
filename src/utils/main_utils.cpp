@@ -55,8 +55,6 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (false);
 				}
 
-						std::cout	<< "client: " << ntohl(client_addr.sin_addr.s_addr) << ":"<< ntohs(client_addr.sin_port)
-									<< "\nserver: " << ntohl(server_addr.sin_addr.s_addr) << ":"<< ntohs(server_addr.sin_port) << std::endl;
 				bool find = false;
 				Listen tmp(ntohl(client_addr.sin_addr.s_addr), ntohs(server_addr.sin_port));
 				for (size_t i = 0; i < vec_listen.size(); i++)
@@ -98,24 +96,19 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 
 Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1){
 
-	if (vec_server.size() != 1){
-		for (size_t i = 0; i < vec_server.size(); i++)
-		{
-			if (vec_server[i]->check_listen(client_fd_info) && req1.check_hosts(vec_server[i]->get_server_name())){
-				// std::cout << "server find" << std::endl;
-				return (vec_server[i]);
-			}
+	for (size_t i = 0; i < vec_server.size(); i++)
+	{
+		if (vec_server[i]->check_listen(client_fd_info) && req1.check_hosts(vec_server[i]->get_server_name())){
+			return (vec_server[i]);
 		}
 	}
-	if (vec_server.size() != 1){
-		for (size_t i = 0; i < vec_server.size(); i++)
-		{
-			if (vec_server[i]->check_listen(client_fd_info)){
-				// std::cout << "server find" << std::endl;
-				return (vec_server[i]);
-			}
+	for (size_t i = 0; i < vec_server.size(); i++)
+	{
+		if (vec_server[i]->check_listen(client_fd_info)){
+			std::cout << i <<std::endl;
+			return (vec_server[i]);
 		}
 	}
-	// std::cout << "server not find" << std::endl;
+	std::cout << "server not find" << std::endl;
 	return (vec_server[0]);
 }
