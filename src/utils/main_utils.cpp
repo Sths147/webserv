@@ -19,7 +19,7 @@ void set_nonblocking(int socket_fd) {
 
 bool check_add_new_connection(const std::vector<Server *> &vec_server, int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server)
 {
-	std::cout << "Debug check_add_new_connection" << std::endl;
+	// std::cout << "Debug check_add_new_connection" << std::endl;
 	for (size_t i = 0; i < vec_server.size(); i++)
 	{
 		std::vector<int> vec_socket_fd = vec_server[i]->get_socket_fd();
@@ -39,6 +39,15 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (false);
 				}
 
+
+				struct linger sl;
+				sl.l_onoff = 1;  // option on
+				sl.l_linger = 0; // delai a 0s
+
+				if (setsockopt(client_fd, SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) < 0) { // l'envoie du paquet rst
+					std::cerr << "Setsockopt failed: " << strerror(errno) << std::endl;
+				}
+
 				struct sockaddr_in server_addr;
 				socklen_t server_len = sizeof(server_addr);
 				if (getsockname(vec_socket_fd[j], (struct sockaddr*)&server_addr, &server_len) != 0){
@@ -46,6 +55,8 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (false);
 				}
 
+						std::cout	<< "client: " << ntohl(client_addr.sin_addr.s_addr) << ":"<< ntohs(client_addr.sin_port)
+									<< "\nserver: " << ntohl(server_addr.sin_addr.s_addr) << ":"<< ntohs(server_addr.sin_port) << std::endl;
 				bool find = false;
 				Listen tmp(ntohl(client_addr.sin_addr.s_addr), ntohs(server_addr.sin_port));
 				for (size_t i = 0; i < vec_listen.size(); i++)
@@ -76,6 +87,8 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					close(client_fd);
 					return (true);
 				}
+
+				std::cout	<< GREEN << "add new connection " << RESET << client_fd << std::endl;
 				return (true);
 			}
 		}

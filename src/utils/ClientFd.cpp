@@ -1,6 +1,8 @@
 
 #include "ClientFd.hpp"
 
+#define RESET "\033[0m"
+#define RED "\033[31m"
 
 ClientFd::ClientFd( void ){}
 
@@ -18,8 +20,10 @@ void	ClientFd::refresh( void ) { this->_time_to_reset = std::time(NULL); }
 
 
 bool	ClientFd::check_timeout( void ) {
-	if (this->_time_to_reset < std::time(NULL))
+	if (this->_time_to_reset < std::time(NULL)){
+		std::cout << RED << " timeout" << RESET;
 		return (false);
+	}
 	return (true);
 }
 

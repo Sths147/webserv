@@ -31,15 +31,17 @@ int main(int ac, char **av)
 	//----------------------------parsing of the config file + creation of every instanse of server with his config----------------------------
 
 
-	int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
-	if (epoll_fd < 0){
-		std::cerr << "Error : Epoll creation failed" << std::endl;
-		return (1);
-	}
+	int epoll_fd;
+
 
 	std::vector<Server *> vec_server;
 	if (ac == 2){
 
+		epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+		if (epoll_fd < 0){
+			std::cerr << "Error : Epoll creation failed" << std::endl;
+			return (1);
+		}
 		try	{
 
 			//First parsing of the config file to delete every empty and commentary line.
@@ -66,8 +68,7 @@ int main(int ac, char **av)
 		}
 
 	} else {
-		std::cerr << "We need a Config file to lunch the server" << std::endl;
-		close(epoll_fd);
+		std::cerr << "One Config file to lunch the server" << std::endl;
 		return (1);
 	}
 
@@ -86,18 +87,18 @@ int main(int ac, char **av)
 			if (nfds < 0) {
 				if (interrupted) std::cerr << "SIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
-				for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end(); ++it){
+				for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
 					it->second.del_epoll_and_close(epoll_fd);
-					client_socket_server.erase(it);
+					client_socket_server.erase(it++);
 				}
 				for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 				close(epoll_fd);
 				return (1);
 			}
 			else if (nfds == 0){
-				std::cout << "Debug : check_timeout";
+				std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
 				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
-					std::cout << " on clientfd "<< it->first <<std::endl;
+					std::cout << "\n\ton clientfd "<< it->first;
 					if (!it->second.check_timeout()){
 						it->second.del_epoll_and_close(epoll_fd);
 						client_socket_server.erase(it++);
@@ -105,7 +106,7 @@ int main(int ac, char **av)
 						++it;
 					}
 				}
-				std::cout<<std::endl;
+				std::cout<<"\n"<<std::endl;
 				continue;
 			}
 
