@@ -188,7 +188,7 @@ std::string	Response::set_content_type(const std::string&	path)
 		if (!ext.empty())
 		{
 			std::ifstream file;
-			file.open("./server_files/mime_types.txt");
+			file.open("./server_files/mime_types.text");
 			if (file.is_open())
 			{
 				std::string line;
