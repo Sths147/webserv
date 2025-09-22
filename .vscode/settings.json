@@ -1,4 +1,9 @@
 {
+
+	"editor.bracketPairColorization.enabled": true,
+	"editor.guides.bracketPairs": "active",
+	"editor.guides.bracketPairsHorizontal": "active",
+	"editor.guides.highlightActiveIndentation": true
   "editor.fontSize": 16,
   "editor.cursorBlinking": "smooth",
   "editor.formatOnPaste": false,

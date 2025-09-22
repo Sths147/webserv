@@ -148,7 +148,7 @@ static void			skip_crlf(std::vector<char>& buff)
 	std::vector<char>::iterator	k = buff.begin();
 	while (1)
 	{
-		if (k != buff.end() &&*k == CR && (k + 1) != buff.end() && *(k + 1) == LF)
+		if (k != buff.end() && *k == CR && (k + 1) != buff.end() && *(k + 1) == LF)
 		{
 			buff.erase(k);
 			buff.erase(k);
