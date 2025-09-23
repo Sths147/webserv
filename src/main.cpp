@@ -100,7 +100,7 @@ int main(int ac, char **av)
 			else if (nfds == 0 ){
 				if (client_socket_server.begin() == client_socket_server.end())
 					continue;
-				std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
+				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
 			}
 			else if (nfds == 0){
 				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;

@@ -374,26 +374,33 @@ static std::vector<char>::iterator	find_iterator(std::vector<char>& buff, std::s
 		result += *it;
 		it++;
 	}
-	if (it == buff.end())
+	if (result.find(separator) == std::string::npos)
 		return (it);
-	result = "";
-	while (it != buff.begin() && result.find(separator) != std::string::npos)
+	std::string result2;
+	std::cout << "it|" << *it << "|" << std::endl;
+	while (it != buff.begin() && (result2.find(separator) == std::string::npos))
 	{
-		result += *it;
+		// std::cout << "Result|" << result << "|" << std::endl;
+		result2.insert(result2.begin(), *it);
 		it--;
+		std::cout << *it << std::ends;
 	}
+	// std::cout << "SEP|" << separator << "|" << std::endl;
+	// std::cout << "Result|" << result2 << "|" << std::endl;
 	while (it != buff.begin() && *it == '-')
 			it--;
+	if (it != buff.begin())
+		it--;
 	return (it);
 }
 
 void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 {
 	std::string line = get_buff_line(buff);
-	if (line.find("filename="))
+	if (line.find("filename=") == std::string::npos)
 	{
 		//to DEAL  EXCEPTION BAD REQUEST;
-		std::cout << "filename not found" << std::endl;
+		std::cout << "filename not found : line|" << line << "|" << std::endl;
 		return ;
 	}
 	std::string filename = line.substr(line.find("filename="));
@@ -424,11 +431,16 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 		std::string myplus;
 		plus >> myplus;
 		std::string newbase = base;
-		topen = newbase.insert(newbase.find_last_of('.'), myplus);
-		// std::cout << "To Open ::" << topen << std::endl;
+		if (newbase.find_last_of('.') != std::string::npos)
+			topen = newbase.insert(newbase.find_last_of('.'), myplus);
+		else
+			topen = newbase + myplus;
 		i++;
 		if (i == 65535)
+		{
+			this->set_status(502);
 			break ;
+		}
 	}
 }
 
@@ -452,16 +464,19 @@ void	Response::set_post_response(Request& request)
 		if (line.compare(sep2))
 			this->set_status(400);
 		request.print_headers();
-		std::cout << "|";
-		request.print_body();
-		std::cout << "|" << std::endl;
+		// std::cout << "|";
+		// request.print_body();
+		// std::cout << "|" << std::endl;
 		std::ofstream file;
 		open_file(file, buff);
 		do {
 			line = get_buff_line(buff);
-			std::cout << "|" << line << "|" << std::endl;
+			// std::cout << "|" << line << "|" << std::endl;
 		}
 		while (line.compare(""));
+		// for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
+		// 	std::cout << *it << std::ends;
+		// std::cout << "ENDHERE"<< std::endl;
 		std::vector<char>::iterator limit = find_iterator(buff, separator);
 		if (file.is_open())
 		{
