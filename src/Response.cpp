@@ -170,7 +170,7 @@ void	Response::fill_body_with_error_pages(Server& server)
 	{
 		path = reconstruct_path(server.get_root(), server.get_error_page().find(this->_status_code)->second);
 		stream.open(path.c_str());
-		std::cout << path << std::endl;
+		// std::cout << path << std::endl;
 		if (stream.is_open())
 		{
 			this->_content_type = set_content_type(path);
@@ -377,7 +377,7 @@ static std::vector<char>::iterator	find_iterator(std::vector<char>& buff, std::s
 	if (result.find(separator) == std::string::npos)
 		return (it);
 	std::string result2;
-	std::cout << "it|" << *it << "|" << std::endl;
+	// std::cout << "it|" << *it << "|" << std::endl;
 	while (it != buff.begin() && (result2.find(separator) == std::string::npos))
 	{
 		// std::cout << "Result|" << result << "|" << std::endl;
@@ -463,7 +463,7 @@ void	Response::set_post_response(Request& request)
 		std::string sep2 = separator.substr(separator.find_first_not_of('-'), separator.find_last_not_of('-'));
 		if (line.compare(sep2))
 			this->set_status(400);
-		request.print_headers();
+		// request.print_headers();
 		// std::cout << "|";
 		// request.print_body();
 		// std::cout << "|" << std::endl;
@@ -483,35 +483,12 @@ void	Response::set_post_response(Request& request)
 			for (std::vector<char>::iterator it = buff.begin(); it != limit; it++)
 				file << *it;
 		}
-		std::cout << "SUCCESS" << std::endl;
-		// std::getline(ss, line);
-		// delete_cr(line);
-
-
-		// do {
-		// 	std::getline(ss, line);
-		// 	delete_cr(line);
-		// }
-		// while (line.size() > 0);
-		// std::getline(ss, line);
-		// delete_cr(line);
-		// char str[1024];
-		// std::string finalstr = "";
-		// ss.read(str, 1024);
-		// while (finalstr.find(separator) == std::string::npos)
-		// {
-
-		// 	ss.read(line, 1024);
-		// 	if (ss.gcount() < 0)
-		// 		break ;
-		// 	finalstr.append(line);
-		// }
-		// // finalstr.erase(0);
-		// file << finalstr;
-		// file.close();
-		// finalstr = finalstr.substr(0, finalstr.find(separator));
-		// std::cout << "BEG|" << finalstr << "|EOB" << std::endl;
-
+		// std::cout << "SUCCESS" << std::endl;
+		if (this->_status_code == 0)
+		{
+			this->_body.append("File well uploaded");
+			this->set_post_headers();
+		}
 	}
 	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
 	{
