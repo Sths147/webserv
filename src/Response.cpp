@@ -274,7 +274,9 @@ void	Response::write_response(int& client_fd)
 	if (!(this->_body.empty()))
 		ss << this->_body;
 	response = ss.str();
-	send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
+	char buffer[32];
+	if(recv(client_fd, buffer, sizeof(buffer), MSG_PEEK | MSG_DONTWAIT) != 0)
+		send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
 }
 
 void	Response::set_get_response()
@@ -384,7 +386,7 @@ static std::vector<char>::iterator	find_iterator(std::vector<char>& buff, std::s
 		// std::cout << "Result|" << result << "|" << std::endl;
 		result2.insert(result2.begin(), *it);
 		it--;
-		std::cout << *it << std::ends;
+		// std::cout << *it << std::ends;
 	}
 	// std::cout << "SEP|" << separator << "|" << std::endl;
 	// std::cout << "Result|" << result2 << "|" << std::endl;
@@ -401,7 +403,8 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 	if (line.find("filename=") == std::string::npos)
 	{
 		//to DEAL  EXCEPTION BAD REQUEST;
-		std::cout << "filename not found : line|" << line << "|" << std::endl;
+		this->set_status(400);
+		std::cout << "filename not found" << std::endl;
 		return ;
 	}
 	std::string filename = line.substr(line.find("filename="));
@@ -411,6 +414,7 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 	if (filename.empty())
 	{
 		//to DEAL  EXCEPTION BAD REQUEST;
+		this->set_status(400);
 		std::cout << "filename empty" << std::endl;
 	}
 	// std::cout << "FILENAME 2|" << filename << "|" << std::endl;
