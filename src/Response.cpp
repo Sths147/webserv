@@ -18,6 +18,13 @@
 #include <dirent.h>
 #include <ctime>
 
+// enum http_types {
+//     CR = '\r',
+//     LF = '\n',
+//     SP = ' ',
+// 	HTAB = '\t'
+// } t_http_types;
+
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
 
@@ -324,13 +331,172 @@ void	Response::set_get_response()
 		set_status(403);
 }
 
+// static void	delete_cr(std::string& line)
+// {
+// 	if (line.find_first_of('\r') != std::string::npos && line.find_first_of('\r') == line.size() - 1)
+// 		line.erase(line.find_first_of('\r'));
+// }
+
+static bool fileExists(const std::string& filename)
+{
+    std::ifstream file(filename.c_str());
+    return file.good();
+}
+
+static std::string							get_buff_line(std::vector<char>& buff)
+{
+	std::string	return_value = "";
+	std::vector<char>::iterator it = buff.begin();
+
+	while (it != buff.end())
+	{
+		if (*it == '\r' && *(it + 1) && *(it + 1) == '\n')
+		{
+			buff.erase(it);
+			buff.erase(it);
+			return (return_value);
+		}
+		return_value += *it;
+		buff.erase(it);
+	}
+	return (return_value);
+}
+
+static std::vector<char>::iterator	find_iterator(std::vector<char>& buff, std::string& separator)
+{
+	std::string result;
+
+	std::vector<char>::iterator it = buff.begin();
+	while (it != buff.end())
+	{
+		if (result.find(separator) != std::string::npos)
+			break ;
+		result += *it;
+		it++;
+	}
+	if (it == buff.end())
+		return (it);
+	result = "";
+	while (it != buff.begin() && result.find(separator) != std::string::npos)
+	{
+		result += *it;
+		it--;
+	}
+	while (it != buff.begin() && *it == '-')
+			it--;
+	return (it);
+}
+
+void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
+{
+	std::string line = get_buff_line(buff);
+	if (line.find("filename="))
+	{
+		//to DEAL  EXCEPTION BAD REQUEST;
+		std::cout << "filename not found" << std::endl;
+		return ;
+	}
+	std::string filename = line.substr(line.find("filename="));
+	// std::cout << "FILENAME " << filename << "|" << "SIZE " << filename.size() << std::endl;
+	filename = filename.substr(filename.find_first_of("\"") + 1);
+	filename = filename.substr(0, filename.find_last_of("\""));
+	if (filename.empty())
+	{
+		//to DEAL  EXCEPTION BAD REQUEST;
+		std::cout << "filename empty" << std::endl;
+	}
+	// std::cout << "FILENAME 2|" << filename << "|" << std::endl;
+	// std::cout << this->_path << std::endl;
+	std::string topen = this->_path + "/" + filename;
+	size_t i = 1;
+	std::string base = topen;
+	while (1)
+	{
+		// std::cout << "Nous y voila" << std::endl;
+		if (!fileExists(topen))
+		{
+			file.open(topen.c_str());
+			if (file.is_open())
+				break ;
+		}
+		std::stringstream plus;
+		plus << "(" << i << ")";
+		std::string myplus;
+		plus >> myplus;
+		std::string newbase = base;
+		topen = newbase.insert(newbase.find_last_of('.'), myplus);
+		// std::cout << "To Open ::" << topen << std::endl;
+		i++;
+		if (i == 65535)
+			break ;
+	}
+}
+
 void	Response::set_post_response(Request& request)
 {
 	struct stat					sfile;
 	if (!stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode) && (sfile.st_mode & S_IWOTH))
 	{
+		std::string type = request.get_header("Content-Type");
+		std::vector<char> buff = request.get_body();
+		if ((type.find_first_of(';') == std::string::npos) || type.find("boundary=") == std::string::npos || type.substr(0, type.find_first_of(';')).compare("multipart/form-data"))
+			this->set_status(400);
+		std::string separator;
+		if (type.find(" boundary=") != std::string::npos)
+			separator = type.substr(type.find(" boundary=") + 10);
+		else
+			this->set_status(400);
+		std::string line = get_buff_line(buff);
+		line = line.substr(line.find_first_not_of('-'));
+		std::string sep2 = separator.substr(separator.find_first_not_of('-'), separator.find_last_not_of('-'));
+		if (line.compare(sep2))
+			this->set_status(400);
+		request.print_headers();
+		std::cout << "|";
+		request.print_body();
+		std::cout << "|" << std::endl;
+		std::ofstream file;
+		open_file(file, buff);
+		do {
+			line = get_buff_line(buff);
+			std::cout << "|" << line << "|" << std::endl;
+		}
+		while (line.compare(""));
+		std::vector<char>::iterator limit = find_iterator(buff, separator);
+		if (file.is_open())
+		{
+			for (std::vector<char>::iterator it = buff.begin(); it != limit; it++)
+				file << *it;
+		}
+		std::cout << "SUCCESS" << std::endl;
+		// std::getline(ss, line);
+		// delete_cr(line);
 
-		std::cout << "HEEERE" << request.get_target() << std::endl;
+
+		// do {
+		// 	std::getline(ss, line);
+		// 	delete_cr(line);
+		// }
+		// while (line.size() > 0);
+		// std::getline(ss, line);
+		// delete_cr(line);
+		// char str[1024];
+		// std::string finalstr = "";
+		// ss.read(str, 1024);
+		// while (finalstr.find(separator) == std::string::npos)
+		// {
+
+		// 	ss.read(line, 1024);
+		// 	if (ss.gcount() < 0)
+		// 		break ;
+		// 	finalstr.append(line);
+		// }
+		// // finalstr.erase(0);
+		// file << finalstr;
+		// file.close();
+		// finalstr = finalstr.substr(0, finalstr.find(separator));
+		// std::cout << "BEG|" << finalstr << "|EOB" << std::endl;
+
 	}
 	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
 	{
@@ -341,7 +507,7 @@ void	Response::set_post_response(Request& request)
 			set_status(500);
 		else
 		{
-			std::stringstream ss;
+			std::stringstream 	ss;
 			std::vector<char>	requestbody = request.get_body();
 			for (std::vector<char>::iterator it = requestbody.begin(); it != requestbody.end(); it++)
 				ss << *it;

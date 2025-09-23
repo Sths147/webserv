@@ -96,9 +96,9 @@ int main(int ac, char **av)
 				return (1);
 			}
 			else if (nfds == 0){
-				std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
+				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
 				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
-					std::cout << "\n\ton clientfd "<< it->first;
+					// std::cout << "\n\ton clientfd "<< it->first;
 					if (!it->second.check_timeout()){
 						it->second.del_epoll_and_close(epoll_fd);
 						client_socket_server.erase(it++);
@@ -106,7 +106,7 @@ int main(int ac, char **av)
 						++it;
 					}
 				}
-				std::cout<<"\n"<<std::endl;
+				// std::cout<<"\n"<<std::endl;
 				continue;
 			}
 

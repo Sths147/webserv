@@ -30,12 +30,9 @@ unsigned int	Request::_max_size = std::numeric_limits<uint>::max();
 Request::Request(std::vector<char>&buff)
 : _return_code(0), _type(parse_request_type(buff)), _target(parse_request_target(buff)), _http_type(parse_http_type(buff)), _header(parse_header(buff)), _body(buff)
 {
-	// for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); it++)
-	// {
-	// 	std::cout << it->first << "--" << it->second << std::endl;
-	// }
-	std::string	mybody(this->_body.begin(), this->_body.end());
+	// std::string	mybody(this->_body.begin(), this->_body.end());
 	// std::cout << "\n\n and here is the body" << mybody << std::endl;
+	// this->print_headers();
 	this->parse_headers();
 	// std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
 }
@@ -63,6 +60,17 @@ unsigned short int	Request::get_return_code() const
 {
 	return (this->_return_code);
 }
+
+// const std::string	Request::parse_body(std::vector<char>& buff)
+// {
+// 	std::string result = "";
+
+// 	for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
+// 	{
+// 		result += *it;
+// 	}
+// 	return (result);
+// }
 
 void	Request::set_return_code(const unsigned short int& code)
 {
@@ -317,4 +325,31 @@ const std::string	Request::get_content_type() const
 const std::vector<char>	Request::get_body() const
 {
 	return (this->_body);
+}
+
+void 		Request::print_body() const
+{
+	std::ofstream file;
+
+	file.open("test.txt");
+	for (std::vector<char>::const_iterator it = this->_body.begin(); it != this->_body.end(); it++)
+		file << *it;
+}
+
+void 		Request::print_headers() const
+{
+	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); it++)
+	{
+		std::cout << it->first << "--" << it->second << std::endl;
+	}
+}
+
+const std::string	Request::get_header(const std::string& first) const
+{
+	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); it++)
+	{
+		if (it->first.compare(first) == 0)
+			return (it->second);
+	}
+	return ("Unexisting header");
 }

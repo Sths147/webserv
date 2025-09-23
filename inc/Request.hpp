@@ -45,5 +45,7 @@ class Request
 		void										parse_headers();
 		const std::string							get_content_type() const;
 		const std::vector<char>						get_body() const;
+		const std::string							get_header(const std::string&) const;
+		void 										print_headers() const;
+		void										print_body() const;
 };
-

@@ -52,6 +52,7 @@ class Response
 		void				set_post_headers();
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		void				set_redirect(Server& server);
+		void				open_file(std::ofstream& file, std::vector<char>& buff);
 };
 
 #endif
