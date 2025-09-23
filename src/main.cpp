@@ -85,8 +85,10 @@ int main(int ac, char **av)
 
 			nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000);
 			if (nfds < 0) {
-				if (interrupted) std::cerr << "SIGINT detected." << std::endl;
+
+				if (interrupted) std::cout << "SIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
+
 				for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
 					it->second.del_epoll_and_close(epoll_fd);
 					client_socket_server.erase(it++);
@@ -95,6 +97,10 @@ int main(int ac, char **av)
 				close(epoll_fd);
 				return (1);
 			}
+			else if (nfds == 0 ){
+				if (client_socket_server.begin() == client_socket_server.end())
+					continue;
+				std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
 			else if (nfds == 0){
 				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
 				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
@@ -133,7 +139,6 @@ int main(int ac, char **av)
 					// std::map<int, Request*> request;
 					Request	req1(buffer);
 					// request[client_fd] = &req1;
-
 					// std::cout << "Request From : " << client_socket_server[client_fd].get_listen().ip << ":" << client_socket_server[client_fd].get_listen().port << std::endl;
 					Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
 
@@ -143,17 +148,17 @@ int main(int ac, char **av)
 					// std::cout << "type: " << req1.get_type() << std::endl;
 					// if (rep.get_connection_header().compare("Keep-alive"))
 
-					client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
-					client_socket_server.erase(client_fd);
+					client_socket_server[client_fd].refresh();
+					// client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
+					// client_socket_server.erase(client_fd);
 				}
 			}
 		}
 	}
-	catch (std::exception& e)
-	{
+	catch (std::exception& e) {
 		std::cout << "BIG ERROR " << e.what() << std::endl;
 	}
-	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end(); ++it){
+	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end(); ++it) {
 		it->second.del_epoll_and_close(epoll_fd);
 		client_socket_server.erase(it);
 	}
