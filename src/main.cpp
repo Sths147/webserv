@@ -2,6 +2,7 @@
 #define	MAX_REQUESTS_LINE	20
 #define MAX_EVENTS			10
 #define MAX_BUFFER			1024
+#define MAX_SIZE			500000000
 
 #include <netinet/in.h>
 #include <stdlib.h>
@@ -132,11 +133,15 @@ int main(int ac, char **av)
 						char				tmp;
 						bytes = recv(client_fd, &tmp, sizeof(char), 0);
 						buffer.push_back(tmp);
+						if (buffer.size() > MAX_SIZE)
+							break ;
 					}
 					while (bytes > 0);
 					if (buffer.empty())
 						throw std::runtime_error("empty request");
-
+					// for (std::vector<char>::iterator it = this->buffer.begin(); it != this->buffer.end(); it++)
+					// 	std::cout << *it << std::ends;
+					// std::cout << "|" << this->_body.size() << std::endl;
 					// std::map<int, Request*> request;
 					Request	req1(buffer);
 					// request[client_fd] = &req1;

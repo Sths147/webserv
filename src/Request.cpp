@@ -12,6 +12,7 @@
 
 #include "Request.hpp"
 #include <limits>
+#define MAX_SIZE			500000000
 
 enum http_types {
     CR = '\r',
@@ -19,8 +20,6 @@ enum http_types {
     SP = ' ',
 	HTAB = '\t'
 } t_http_types;
-
-unsigned int	Request::_max_size = std::numeric_limits<uint>::max();
 
 // Request::Request()
 // : _type("NOTYPE")
@@ -37,8 +36,21 @@ Request::Request(std::vector<char>&buff)
 	// std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
 }
 
+Request&	Request::operator=(const Request& other)
+{
+	this->_return_code = other.get_return_code();
+	this->_header = other.get_headers();
+	this->_body = other.get_body();
+	return (*this);
+}
+
 Request::~Request()
 {
+}
+
+const std::map<std::string, std::string>	Request::get_headers() const
+{
+	return (this->_header);
 }
 
 const std::string	Request::get_type() const
@@ -80,8 +92,27 @@ void	Request::set_return_code(const unsigned short int& code)
 
 void	Request::parse_headers()
 {
+
 	if (this->_header["Host"].empty())
 		this->set_return_code(400);
+	if (this->_header["Content-Length"].empty() && !this->_body.empty())
+	{
+		std::cout << "here|" << std::endl;
+		for (std::vector<char>::iterator it = this->_body.begin(); it != this->_body.end(); it++)
+			std::cout << (int)*it << std::ends;
+		std::cout << "|" << this->_body.size() << "|" << std::endl;
+		this->set_return_code(400);
+	}
+	else if (!this->_header["Content-Length"].empty())
+	{
+		std::cout << "there" << std::endl;
+		std::stringstream ss(this->_header["Content-Length"]);
+		size_t	len;
+		ss >> len;
+		if (len != this->_body.size())
+			this->set_return_code(400);
+	}
+
 }
 
 /*
@@ -172,6 +203,9 @@ const std::string	Request::parse_request_type(std::vector<char>& buff)
 {
 	std::string result;
 	std::vector<char>::iterator k = buff.begin();
+
+	if (buff.size() >= MAX_SIZE)
+		this->set_return_code(413);
 	skip_crlf(buff);
 	for (int i = 0; i < 10; i++)
 	{
@@ -190,8 +224,6 @@ const std::string	Request::parse_request_type(std::vector<char>& buff)
 	}
 	if (result.empty())
 		set_return_code(400);
-	// if (result.compare("GET") && result.compare("POST"))
-	// 	set_return_code(400);
 	return (result);
 }
 
@@ -213,6 +245,17 @@ std::map<std::string, std::string>	Request::parse_header(std::vector<char>& buff
 			set_return_code(400);
 		result[key] = line;
 		line = get_crlf_line(buff);
+	}
+	if (buff.size() < 1)
+		this->set_return_code(400);
+	else
+	{
+		std::vector<char>::iterator it = buff.begin();
+		if (*it == CR)
+			buff.erase(it);
+		if (*it != LF)
+			this->set_return_code(400);
+		buff.erase(it);
 	}
 	return (result);
 }
@@ -353,3 +396,4 @@ const std::string	Request::get_header(const std::string& first) const
 	}
 	return ("Unexisting header");
 }
+

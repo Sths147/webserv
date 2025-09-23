@@ -15,7 +15,6 @@
 class Request
 {
     private:
-		static	unsigned int						_max_size;
 		unsigned short int							_return_code;
 		const std::string							_type;
 		const std::string							_target;
@@ -28,13 +27,14 @@ class Request
 	public:
 		Request(std::vector<char>&);
 		~Request();
-		// Request&    operator=(const Request&);
+		Request&    								operator=(const Request&);
 		const std::string							get_type() const;
 		const std::string							get_target() const;
 		const std::string							get_http_version() const;
 		const std::string							parse_request_type(std::vector<char>& buff);
 		const std::string							parse_request_target(std::vector<char>& buff);
 		const std::string							parse_http_type(std::vector<char>& buff);
+		const std::map<std::string, std::string>	get_headers() const;
 		// Listen									set_listen();
 		bool										check_hosts(const std::vector<std::string>&) const;
 		std::map<std::string, std::string>			parse_header(std::vector<char>& buff);

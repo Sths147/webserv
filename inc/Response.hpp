@@ -30,12 +30,12 @@ class Response
 		std::map<std::string, std::string>					_header;
 		std::string											_body;
 		bool												_autoindex;
+		Response();
 
 	public:
 		Response(Request &request, Server &server);
-		void NewFunction();
 		~Response();
-
+		Response&	operator=(const Response&);
 		const std::string	determine_final_path(Request& request, Server& server);
 		void				set_error_response(Server& server);
 		void				set_status(const unsigned short int& code);
@@ -49,6 +49,13 @@ class Response
 		void				fill_body_with_error_pages(Server& server);
 		std::string			set_content_type(const std::string& path);
 		const std::string&	get_connection_header() const;
+		const unsigned short int&					get_status_code() const;
+		const std::string&							get_arguments() const;
+		const std::string&							get_reason_phrase() const;
+		const std::string&							get_content_type() const;
+		const std::string&							get_body() const;
+		const std::map<std::string, std::string>&	get_headers() const;
+		const bool&									get_autoindex() const;
 		void				set_post_headers();
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		void				set_redirect(Server& server);

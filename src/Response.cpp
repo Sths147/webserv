@@ -19,13 +19,6 @@
 #include <dirent.h>
 #include <ctime>
 
-// enum http_types {
-//     CR = '\r',
-//     LF = '\n',
-//     SP = ' ',
-// 	HTAB = '\t'
-// } t_http_types;
-
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
 
@@ -39,11 +32,11 @@ Response::Response(Request& request, Server& server)
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	//check if client max body size and implement return code accordingly
+	// std::cout << "Path :" << this->_path << std::endl;
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
 	if (this->_status_code == 0 && !server.get_inlocation_return().empty())
 		this->set_status(301);
-	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	// std::cout << "PAAATH " << this->_path << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
@@ -61,6 +54,56 @@ Response::Response(Request& request, Server& server)
 	else
 		this->set_error_response(server);
 }
+
+Response&	Response::operator=(const Response& other)
+{
+	this->_status_code = other.get_status_code();
+	this->_arguments = other.get_arguments();
+	this->_reason_phrase = other.get_reason_phrase();
+	this->_content_type = other.get_content_type();
+	this->_header = other.get_headers();
+	this->_body = other.get_body();
+	this->_autoindex = other.get_autoindex();
+	return (*this);
+}
+
+const unsigned short int&					Response::get_status_code() const
+{
+	return (this->_status_code);
+}
+
+const std::string&							Response::get_arguments() const
+{
+	return (this->_arguments);
+}
+
+const std::string&							Response::get_reason_phrase() const
+{
+	return (this->_reason_phrase);
+}
+
+const std::string&							Response::get_content_type() const
+{
+	return (this->_content_type);
+}
+
+const std::string&							Response::get_body() const
+{
+	return (this->_body);
+}
+
+const std::map<std::string, std::string>&	Response::get_headers() const
+{
+	return (this->_header);
+}
+
+const bool&									Response::get_autoindex() const
+{
+	return (this->_autoindex);
+}
+
+
+
 
 static std::string	set_full_path(Server& server, std::string& path)
 {
@@ -81,10 +124,12 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	std::string		full_path;
 	struct stat		sfile;
 
+	if (request.get_body().size() > server.get_client_max_body_size())
+	this->set_status(413);
 	path = request.get_target().substr(0, request.get_target().find_first_of('?'));
 	this->_autoindex = false;
 	if (path.length() < request.get_target().length())
-		this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
+	this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
 	if (server.check_location(path))
 	{
 		full_path = set_full_path(server, path);
@@ -93,9 +138,9 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 			if (!request.get_type().compare("GET"))
 			{
 				if (!server.get_inlocation_index().empty())
-					full_path += server.get_inlocation_index()[0];
+				full_path += server.get_inlocation_index()[0];
 				else if (!server.get_index().empty())
-					full_path += server.get_index()[0];
+				full_path += server.get_index()[0];
 				else if (server.get_autoindex() == ON)
 				{
 					this->_autoindex = true;
@@ -106,9 +151,12 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 		if (stat(full_path.c_str(), &sfile) < 0)
 		{
 			if (!stat(path.c_str(), &sfile) && !S_ISDIR(sfile.st_mode))
-				return (path);
+			return (path);
+			if (!server.get_inlocation_return().empty())
+				set_status(301);
 			set_status(404);
 		}
+		// std::cout << "request ret code: " << this->_status_code << std::endl;
 		return (full_path);
 	}
 	else
@@ -249,6 +297,7 @@ static std::string		reason_phrase(unsigned short int& code)
     httpErrorCodes[404] = "Not Found";
     httpErrorCodes[405] = "Method Not Allowed";
     httpErrorCodes[408] = "Request Timeout";
+    httpErrorCodes[413] = "Request Entity Too Large";
     httpErrorCodes[429] = "Too Many Requests";
     httpErrorCodes[500] = "Internal Server Error";
     httpErrorCodes[501] = "Not Implemented";
@@ -468,10 +517,10 @@ void	Response::set_post_response(Request& request)
 		std::string sep2 = separator.substr(separator.find_first_not_of('-'), separator.find_last_not_of('-'));
 		if (line.compare(sep2))
 			this->set_status(400);
-		// request.print_headers();
-		// std::cout << "|";
-		// request.print_body();
-		// std::cout << "|" << std::endl;
+		request.print_headers();
+		std::cout << "|";
+		request.print_body();
+		std::cout << "|" << std::endl;
 		std::ofstream file;
 		open_file(file, buff);
 		do {
