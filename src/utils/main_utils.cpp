@@ -103,7 +103,6 @@ Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_s
 	}
 	for (size_t i = 0; i < vec_server.size(); i++) {
 		if (vec_server[i]->check_listen(client_fd_info)) {
-			std::cout << i <<std::endl;
 			return (vec_server[i]);
 		}
 	}

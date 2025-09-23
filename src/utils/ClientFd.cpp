@@ -16,7 +16,7 @@ int		ClientFd::get_fd( void ) { return (this->_fd); }
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
 
 
-void	ClientFd::refresh( void ) { this->_time_to_reset = std::time(NULL); }
+void	ClientFd::refresh( void ) { this->_time_to_reset = std::time(NULL) + TIMEOUT; }
 
 
 bool	ClientFd::check_timeout( void ) {
