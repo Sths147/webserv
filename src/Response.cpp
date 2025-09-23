@@ -13,6 +13,7 @@
 #include "Response.hpp"
 #include <sstream>
 #include <sys/stat.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -273,7 +274,7 @@ void	Response::write_response(int& client_fd)
 	if (!(this->_body.empty()))
 		ss << this->_body;
 	response = ss.str();
-	write(client_fd, response.c_str(), response.length());
+	send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
 }
 
 void	Response::set_get_response()
