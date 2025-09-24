@@ -112,9 +112,6 @@ const bool&									Response::get_autoindex() const
 	return (this->_autoindex);
 }
 
-
-
-
 static std::string	set_full_path(Server& server, std::string& path)
 {
 	std::string	full_path;
@@ -128,6 +125,29 @@ static std::string	set_full_path(Server& server, std::string& path)
 	return (full_path);
 }
 
+static bool			check_path_permissions(std::string path, Request& request)
+{
+	struct stat sfile;
+
+	// std::cout << "Original" << path << std::endl;
+	while (path.find_last_of('/') != std::string::npos || !path.compare("/"))
+	{
+		// std::cout << "Path :" << path << std::endl;
+		size_t n = path.find_last_of('/');
+		// std::cout << "n:" << n << std::endl;
+		path.resize(n);
+		// std::cout << "Path :" << path << std::endl;
+		if (!stat(path.c_str(), &sfile))
+		{
+			if (!request.get_type().compare("GET") && !(sfile.st_mode & S_IROTH))
+				return (1);
+			else if ((!request.get_type().compare("POST") || !request.get_type().compare("DELETE")) && !(sfile.st_mode & S_IWOTH))
+				return (1);
+		}
+	}
+	return (0);
+}
+
 const std::string	Response::determine_final_path(Request& request, Server& server)
 {
 	std::string		path;
@@ -135,22 +155,32 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	struct stat		sfile;
 
 	if (request.get_body().size() > server.get_client_max_body_size())
-	this->set_status(413);
+		this->set_status(413);
 	path = request.get_target().substr(0, request.get_target().find_first_of('?'));
 	this->_autoindex = false;
 	if (path.length() < request.get_target().length())
-	this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
+		this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
 	if (server.check_location(path))
 	{
 		full_path = set_full_path(server, path);
+		// std::cout << "STATCODE|" << this->get_status_code() << std::endl;
+		// std::cout << "FULL PATH" << full_path << std::endl;
 		if (!stat(full_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 		{
 			if (!request.get_type().compare("GET"))
 			{
+				// std::cout << "L" << std::endl;
 				if (!server.get_inlocation_index().empty())
-				full_path += server.get_inlocation_index()[0];
+				{
+					// std::cout << "1" << std::endl;
+					full_path += server.get_inlocation_index()[0];
+				}
 				else if (!server.get_index().empty())
-				full_path += server.get_index()[0];
+				{
+
+					// std::cout << "2" << std::endl;
+					full_path += server.get_index()[0];
+				}
 				else if (server.get_autoindex() == ON)
 				{
 					this->_autoindex = true;
@@ -161,9 +191,13 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 		if (stat(full_path.c_str(), &sfile) < 0)
 		{
 			if (!stat(path.c_str(), &sfile) && !S_ISDIR(sfile.st_mode))
-			return (path);
+				return (path);
 			if (!server.get_inlocation_return().empty())
 				set_status(301);
+			if (check_path_permissions(full_path, request))
+				set_status(403);
+			//CHECK IF FOLDER IS FORBIDDEN OR IF PATH DOES NOT EXIST
+
 			set_status(404);
 		}
 		// std::cout << "request ret code: " << this->_status_code << std::endl;
@@ -341,8 +375,10 @@ void	Response::write_response(int& client_fd)
 void	Response::set_get_response()
 {
 	struct stat					sfile;
+	// std::cout << "PATH|" << this->get_path() << "|" << std::endl;
 	if (this->_autoindex == true)
 	{
+		std::cout << "here " << std::endl;
 		std::time_t result = std::time(NULL);
 		std::stringstream buffer;
 		std::string time_str;
@@ -461,9 +497,12 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 	std::string line = get_buff_line(buff);
 	if (line.find("filename=") == std::string::npos)
 	{
-		//to DEAL  EXCEPTION BAD REQUEST;
-		this->set_status(400);
+		// to DEAL  EXCEPTION BAD REQUEST;
+		// this->set_status(400);
 		std::cout << "filename not found|" << line << "|" << std::endl;
+		for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
+			std::cout << *it << std::ends;
+		std::cout << std::endl;
 		return ;
 	}
 	std::string filename = line.substr(line.find("filename="));
@@ -473,7 +512,7 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 	if (filename.empty())
 	{
 		//to DEAL  EXCEPTION BAD REQUEST;
-		this->set_status(400);
+		// this->set_status(400);
 		std::cout << "filename empty" << std::endl;
 	}
 	// std::cout << "FILENAME 2|" << filename << "|" << std::endl;
@@ -502,7 +541,7 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 		i++;
 		if (i == 65535)
 		{
-			this->set_status(502);
+			this->set_status(500);
 			break ;
 		}
 	}
@@ -515,6 +554,8 @@ void	Response::set_post_response(Request& request)
 	{
 		std::string type = request.get_header("Content-Type");
 		std::vector<char> buff = request.get_body();
+		// std::cout << "|" << buff.size() << "|" << std::endl;
+		// std::cout << "||" << request.get_body().size() << "||" << std::endl;
 		if ((type.find_first_of(';') == std::string::npos) || type.find("boundary=") == std::string::npos || type.substr(0, type.find_first_of(';')).compare("multipart/form-data"))
 			this->set_status(400);
 		std::string separator;
