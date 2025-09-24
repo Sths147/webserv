@@ -463,7 +463,7 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 	{
 		//to DEAL  EXCEPTION BAD REQUEST;
 		this->set_status(400);
-		std::cout << "filename not found" << std::endl;
+		std::cout << "filename not found|" << line << "|" << std::endl;
 		return ;
 	}
 	std::string filename = line.substr(line.find("filename="));
@@ -523,14 +523,15 @@ void	Response::set_post_response(Request& request)
 		else
 			this->set_status(400);
 		std::string line = get_buff_line(buff);
-		line = line.substr(line.find_first_not_of('-'));
+		if (line.find_first_not_of('-') != std::string::npos)
+			line = line.substr(line.find_first_not_of('-'));
 		std::string sep2 = separator.substr(separator.find_first_not_of('-'), separator.find_last_not_of('-'));
 		if (line.compare(sep2))
 			this->set_status(400);
-		request.print_headers();
-		std::cout << "|";
-		request.print_body();
-		std::cout << "|" << std::endl;
+		// request.print_headers();
+		// std::cout << "|";
+		// request.print_body();
+		// std::cout << "|" << std::endl;
 		std::ofstream file;
 		open_file(file, buff);
 		do {

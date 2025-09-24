@@ -2,7 +2,6 @@
 #define	MAX_REQUESTS_LINE	20
 #define MAX_EVENTS			10
 #define MAX_BUFFER			1024
-#define MAX_SIZE			500000000
 
 #include <netinet/in.h>
 #include <stdlib.h>
@@ -19,6 +18,8 @@
 #include "ClientFd.hpp"
 
 void set_nonblocking(int socket_fd);
+static bool find_end_of_headers(std::vector<char>& buffer);
+static bool	max_size_reached(std::vector<char>& body, Server& server);
 bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server);
 Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
 bool interrupted = false;
@@ -75,7 +76,7 @@ int main(int ac, char **av)
 
 	//----------------------------main loop event epoll add a new connection read a request response to his resquest----------------------------
 
-	std::cout << YELLOW <<"\n\tMain loop\n" << RESET << std::endl;
+	// std::cout << YELLOW <<"\n\tMain loop\n" << RESET << std::endl;
 
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
@@ -127,18 +128,16 @@ int main(int ac, char **av)
 
 					// Handle client data
 					std::vector<char>	buffer;
-
-					ssize_t				bytes = 1;
+					ssize_t bytes = 1;
 					do {
 						char				tmp;
 						bytes = recv(client_fd, &tmp, sizeof(char), 0);
 						buffer.push_back(tmp);
-						if (buffer.size() > MAX_SIZE)
-							break ;
 					}
-					while (bytes > 0);
+					while (bytes > 0 && !find_end_of_headers(buffer));
 					if (buffer.empty())
-						throw std::runtime_error("empty request");
+						continue ;
+
 					// for (std::vector<char>::iterator it = this->buffer.begin(); it != this->buffer.end(); it++)
 					// 	std::cout << *it << std::ends;
 					// std::cout << "|" << this->_body.size() << std::endl;
@@ -148,6 +147,19 @@ int main(int ac, char **av)
 					// std::cout << "Request From : " << client_socket_server[client_fd].get_listen().ip << ":" << client_socket_server[client_fd].get_listen().port << std::endl;
 					Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
 
+					std::vector<char>	body;
+					do {
+						char				tmp;
+						bytes = recv(client_fd, &tmp, sizeof(char), 0);
+						body.push_back(tmp);
+					}
+					while (bytes > 0 && !max_size_reached(body, *serv));
+					if (serv->get_client_max_body_size() &&  (body.size() >  serv->get_client_max_body_size()))
+						req1.set_return_code(413);
+					else
+						req1.add_body(body);
+					// std::cout << "Body size|" << body.size() << std::endl;
+					// std::cout << req1.get_return_code() << std::endl;
 					Response rep(req1, *serv);
 					rep.write_response(client_fd);
 					// std::cout << rep.get_connection_header() << " connection header" << std::endl;
@@ -170,5 +182,35 @@ int main(int ac, char **av)
 	}
 	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 	close(epoll_fd);
+	return (0);
+}
+
+
+static bool find_end_of_headers(std::vector<char>& buffer)
+{
+	if (buffer.size() < 4)
+		return (0);
+	else
+	{
+		std::vector<char>::iterator it = buffer.end() - 4;
+		if (*it++ != '\r')
+			return (0);
+		if (*it++ != '\n')
+			return (0);
+		if (*it++ != '\r')
+			return (0);
+		if (*it++ != '\n')
+			return (0);
+	}
+	// std::cout << "FINI" << std::endl;
+	return (1);
+}
+
+static bool	max_size_reached(std::vector<char>& body, Server& server)
+{
+	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
+	{
+		return (1);
+	}
 	return (0);
 }
