@@ -2,7 +2,6 @@
 #define	MAX_REQUESTS_LINE	20
 #define MAX_EVENTS			10
 #define MAX_BUFFER			1024
-#define MAX_SIZE			500000000
 
 #include <netinet/in.h>
 #include <stdlib.h>
@@ -18,14 +17,25 @@
 #include "Response.hpp"
 #include "ClientFd.hpp"
 
-void set_nonblocking(int socket_fd);
-bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server);
-Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
-bool interrupted = false;
+void		set_nonblocking(int socket_fd);
+bool		check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server);
+Server		*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
+bool		epollctl(int epoll_fd, int client_fd, const int events, int op);
 
+bool interrupted = true;
 void signalHandler(int) {
-	interrupted = true;
+	interrupted = false;
 }
+
+
+
+int sig = false;
+void sigpipehandler(int){
+	sig = true;
+	interrupted = false;
+}
+
+#include <cstring>
 
 int main(int ac, char **av)
 {
@@ -38,9 +48,9 @@ int main(int ac, char **av)
 	std::vector<Server *> vec_server;
 	if (ac == 2){
 
-		epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+		epoll_fd = epoll_create(1);
 		if (epoll_fd < 0){
-			std::cerr << "Error : Epoll creation failed" << std::endl;
+			std::cerr << "epoll_create failed" << std::endl;
 			return (1);
 		}
 		try	{
@@ -81,15 +91,20 @@ int main(int ac, char **av)
 	struct epoll_event events[MAX_EVENTS];
 	std::map<int, ClientFd> client_socket_server;
 	std::signal(SIGINT, signalHandler);
+
+	// Ou capturer le signal
+	signal(SIGPIPE, sigpipehandler);
 	try {
-		while (1) {
+
+		while (interrupted) {
 
 			nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000);
+			// std::cout << "epoll_wait" << std::endl;
 			if (nfds < 0) {
 
-				if (interrupted) std::cout << "SIGINT detected." << std::endl;
+				if (sig) std::cout << "error sigpiep : " << strerror(errno) << std::endl;
+				else if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
-
 				for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
 					it->second.del_epoll_and_close(epoll_fd);
 					client_socket_server.erase(it++);
@@ -98,15 +113,68 @@ int main(int ac, char **av)
 				close(epoll_fd);
 				return (1);
 			}
-			else if (nfds == 0 ){
-				if (client_socket_server.begin() == client_socket_server.end())
-					continue;
-				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
-			}
-			else if (nfds == 0){
-				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
+			else if ( nfds > 0 ){
+
+				for (int i = 0; i < nfds; i++) {
+
+					int client_fd = events[i].data.fd;
+					// std::cout << "request fd = " << client_fd << std::endl;
+					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
+
+						if (events[i].events & EPOLLIN) {
+
+							std::cout << "EPOLLIN" << std::endl;
+							// Handle client data
+							std::vector<char>	buffer;
+
+							ssize_t				bytes = 1;
+							do {
+								char				tmp;
+								bytes = recv(client_fd, &tmp, sizeof(char), 0);
+								buffer.push_back(tmp);
+							}
+							while (bytes > 0);
+							if (buffer.empty())
+								throw std::runtime_error("Empty request");
+
+							Request	req1(buffer);
+
+							Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server, req1);
+							Response res(req1, *serv);
+							// res.write_response(client_fd);
+
+							client_socket_server[client_fd].set_response(res);
+
+
+							if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)){
+								close(client_fd);
+								break;
+							}
+
+						}
+						 else if (events[i].events & EPOLLOUT ) {
+							// std::cout << "EPOLLOUT" << std::endl;
+							client_socket_server[client_fd].send(client_fd);
+							// client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
+							// if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)){
+							// 	close(client_fd);
+							// 	return (true);
+							// }
+							// return 1;
+						} else if (events[i].events & EPOLLRDHUP ) {
+								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
+								client_socket_server.erase(client_fd);
+						}
+					}
+				}
+
+			} else {
+
+				// if (client_socket_server.begin() == client_socket_server.end())
+				// 	continue;
+				std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
 				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
-					// std::cout << "\n\ton clientfd "<< it->first;
+					std::cout << "\n\ton clientfd "<< it->first;
 					if (!it->second.check_timeout()){
 						it->second.del_epoll_and_close(epoll_fd);
 						client_socket_server.erase(it++);
@@ -114,61 +182,27 @@ int main(int ac, char **av)
 						++it;
 					}
 				}
-				// std::cout<<"\n"<<std::endl;
-				continue;
-			}
-
-			for (int i = 0; i < nfds; i++) {
-
-				int client_fd = events[i].data.fd;
-				// std::cout << "request fd = " << client_fd << std::endl;
-				if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
-
-
-					// Handle client data
-					std::vector<char>	buffer;
-
-					ssize_t				bytes = 1;
-					do {
-						char				tmp;
-						bytes = recv(client_fd, &tmp, sizeof(char), 0);
-						buffer.push_back(tmp);
-						if (buffer.size() > MAX_SIZE)
-							break ;
-					}
-					while (bytes > 0);
-					if (buffer.empty())
-						throw std::runtime_error("empty request");
-					// for (std::vector<char>::iterator it = this->buffer.begin(); it != this->buffer.end(); it++)
-					// 	std::cout << *it << std::ends;
-					// std::cout << "|" << this->_body.size() << std::endl;
-					// std::map<int, Request*> request;
-					Request	req1(buffer);
-					// request[client_fd] = &req1;
-					// std::cout << "Request From : " << client_socket_server[client_fd].get_listen().ip << ":" << client_socket_server[client_fd].get_listen().port << std::endl;
-					Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
-
-					Response rep(req1, *serv);
-					rep.write_response(client_fd);
-					// std::cout << rep.get_connection_header() << " connection header" << std::endl;
-					// std::cout << "type: " << req1.get_type() << std::endl;
-					// if (rep.get_connection_header().compare("Keep-alive"))
-
-					client_socket_server[client_fd].refresh();
-					// client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
-					// client_socket_server.erase(client_fd);
-				}
+				std::cout<<"\n"<<std::endl;
+				// continue;
 			}
 		}
 	}
 	catch (std::exception& e) {
 		std::cout << "BIG ERROR " << e.what() << std::endl;
 	}
-	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end(); ++it) {
+
+	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
 		it->second.del_epoll_and_close(epoll_fd);
-		client_socket_server.erase(it);
+		client_socket_server.erase(it++);
 	}
 	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 	close(epoll_fd);
+	if (sig){ std::cout << "error sigpiep : " << strerror(errno) << std::endl;
+		return 1;
+	}else if (!interrupted){
+		std::cout << "\nSIGINT detected." << std::endl;
+		return (1);
+	}
 	return (0);
 }
+
