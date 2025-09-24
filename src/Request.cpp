@@ -12,7 +12,6 @@
 
 #include "Request.hpp"
 #include <limits>
-#define MAX_SIZE			500000000
 
 enum http_types {
     CR = '\r',
@@ -27,12 +26,13 @@ enum http_types {
 // }
 
 Request::Request(std::vector<char>&buff)
-: _return_code(0), _type(parse_request_type(buff)), _target(parse_request_target(buff)), _http_type(parse_http_type(buff)), _header(parse_header(buff)), _body(buff)
+: _return_code(0), _type(parse_request_type(buff)), _target(parse_request_target(buff)), _http_type(parse_http_type(buff)), _header(parse_header(buff))
 {
 	// std::string	mybody(this->_body.begin(), this->_body.end());
 	// std::cout << "\n\n and here is the body" << mybody << std::endl;
 	// this->print_headers();
 	this->parse_headers();
+	// std::cout << "NOW" << this->get_return_code() << std::endl;
 	// std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
 }
 
@@ -83,6 +83,11 @@ unsigned short int	Request::get_return_code() const
 // 	}
 // 	return (result);
 // }
+
+void	Request::add_body(std::vector<char>& to_add)
+{
+	this->_body = to_add;
+}
 
 void	Request::set_return_code(const unsigned short int& code)
 {
@@ -204,8 +209,6 @@ const std::string	Request::parse_request_type(std::vector<char>& buff)
 	std::string result;
 	std::vector<char>::iterator k = buff.begin();
 
-	if (buff.size() >= MAX_SIZE)
-		this->set_return_code(413);
 	skip_crlf(buff);
 	for (int i = 0; i < 10; i++)
 	{
