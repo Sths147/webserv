@@ -95,23 +95,23 @@ void	Request::parse_headers()
 
 	if (this->_header["Host"].empty())
 		this->set_return_code(400);
-	if (this->_header["Content-Length"].empty() && !this->_body.empty())
-	{
-		std::cout << "here|" << std::endl;
-		for (std::vector<char>::iterator it = this->_body.begin(); it != this->_body.end(); it++)
-			std::cout << (int)*it << std::ends;
-		std::cout << "|" << this->_body.size() << "|" << std::endl;
-		this->set_return_code(400);
-	}
-	else if (!this->_header["Content-Length"].empty())
-	{
-		std::cout << "there" << std::endl;
-		std::stringstream ss(this->_header["Content-Length"]);
-		size_t	len;
-		ss >> len;
-		if (len != this->_body.size())
-			this->set_return_code(400);
-	}
+	// if (this->_header["Content-Length"].empty() && !this->_body.empty())
+	// {
+	// 	std::cout << "here|" << std::endl;
+	// 	for (std::vector<char>::iterator it = this->_body.begin(); it != this->_body.end(); it++)
+	// 		std::cout << (int)*it << std::ends;
+	// 	std::cout << "|" << this->_body.size() << "|" << std::endl;
+	// 	this->set_return_code(400);
+	// }
+	// else if (!this->_header["Content-Length"].empty())
+	// {
+	// 	std::cout << "there" << std::endl;
+	// 	std::stringstream ss(this->_header["Content-Length"]);
+	// 	size_t	len;
+	// 	ss >> len;
+	// 	// if (len != this->_body.size())
+	// 	// 	this->set_return_code(400);
+	// }
 
 }
 
@@ -246,17 +246,17 @@ std::map<std::string, std::string>	Request::parse_header(std::vector<char>& buff
 		result[key] = line;
 		line = get_crlf_line(buff);
 	}
-	if (buff.size() < 1)
-		this->set_return_code(400);
-	else
-	{
-		std::vector<char>::iterator it = buff.begin();
-		if (*it == CR)
-			buff.erase(it);
-		if (*it != LF)
-			this->set_return_code(400);
-		buff.erase(it);
-	}
+	// if (buff.size() < 1)
+	// 	this->set_return_code(400);
+	// else
+	// {
+	// 	std::vector<char>::iterator it = buff.begin();
+	// 	if (*it == CR)
+	// 		buff.erase(it);
+	// 	if (*it != LF)
+	// 		this->set_return_code(400);
+	// 	buff.erase(it);
+	// }
 	return (result);
 }
 
