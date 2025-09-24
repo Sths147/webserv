@@ -67,6 +67,16 @@ Response&	Response::operator=(const Response& other)
 	return (*this);
 }
 
+const std::string& 							Response::get_path() const
+{
+	return (this->_path);
+}
+
+const std::string& 							Response::get_http_type() const
+{
+	return (this->_http_type);
+}
+
 const unsigned short int&					Response::get_status_code() const
 {
 	return (this->_status_code);

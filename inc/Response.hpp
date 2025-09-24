@@ -22,8 +22,8 @@ class Response
 {
 	private:
 		unsigned short int									_status_code;
-		const std::string									_path;
-		const std::string									_http_type;
+		std::string											_path;
+		std::string											_http_type;
 		std::string											_arguments;
 		std::string											_reason_phrase;
 		std::string											_content_type;
@@ -54,6 +54,8 @@ class Response
 		const std::string&							get_reason_phrase() const;
 		const std::string&							get_content_type() const;
 		const std::string&							get_body() const;
+		const std::string&							get_path() const;
+		const std::string&							get_http_type() const;
 		const std::map<std::string, std::string>&	get_headers() const;
 		const bool&									get_autoindex() const;
 		void				set_post_headers();
