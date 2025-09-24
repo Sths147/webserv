@@ -22,6 +22,7 @@
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
 
+Response::Response() {}
 Response::~Response()
 {
 }

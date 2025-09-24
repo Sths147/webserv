@@ -4,7 +4,8 @@
 #define RESET "\033[0m"
 #define RED "\033[31m"
 
-ClientFd::ClientFd( void ){}
+ClientFd::ClientFd( void ):
+_fd(0){}
 
 ClientFd::ClientFd( int fd , Listen &listen ) :
 _fd(fd),
@@ -26,7 +27,6 @@ bool	ClientFd::check_timeout( void ) {
 	}
 	return (true);
 }
-
 
 #include <unistd.h>
 #include <sys/epoll.h>

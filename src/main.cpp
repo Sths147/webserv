@@ -23,11 +23,13 @@ static bool	max_size_reached(std::vector<char>& body, Server& server);
 static bool	check_body(Request& request, Server& server, std::vector<char>& body);
 bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server);
 Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
-bool interrupted = false;
+bool interrupted = true;
 
 void signalHandler(int) {
-	interrupted = true;
+	interrupted = false;
 }
+
+#include <cstring>
 
 int main(int ac, char **av)
 {
@@ -40,9 +42,9 @@ int main(int ac, char **av)
 	std::vector<Server *> vec_server;
 	if (ac == 2){
 
-		epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+		epoll_fd = epoll_create(1);
 		if (epoll_fd < 0){
-			std::cerr << "Error : Epoll creation failed" << std::endl;
+			std::cerr << "epoll_create failed" << std::endl;
 			return (1);
 		}
 		try	{
@@ -84,14 +86,15 @@ int main(int ac, char **av)
 	std::map<int, ClientFd> client_socket_server;
 	std::signal(SIGINT, signalHandler);
 	try {
-		while (1) {
+
+		while (interrupted) {
 
 			nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000);
+			// std::cout << "epoll_wait" << std::endl;
 			if (nfds < 0) {
 
-				if (interrupted) std::cout << "SIGINT detected." << std::endl;
+				if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
-
 				for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
 					it->second.del_epoll_and_close(epoll_fd);
 					client_socket_server.erase(it++);
@@ -99,33 +102,15 @@ int main(int ac, char **av)
 				for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 				close(epoll_fd);
 				return (1);
-			}
-			else if (nfds == 0 ){
-				if (client_socket_server.begin() == client_socket_server.end())
-					continue;
-				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
-			}
-			else if (nfds == 0){
-				// std::cout << YELLOW << "\ncheck_timeout :"<< RESET;
-				for (std::map<int, ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
-					// std::cout << "\n\ton clientfd "<< it->first;
-					if (!it->second.check_timeout()){
-						it->second.del_epoll_and_close(epoll_fd);
-						client_socket_server.erase(it++);
-					} else {
-						++it;
-					}
-				}
-				// std::cout<<"\n"<<std::endl;
-				continue;
-			}
+			} else if ( nfds > 0 ) {
 
-			for (int i = 0; i < nfds; i++) {
+				for (int i = 0; i < nfds; i++) {
 
-				int client_fd = events[i].data.fd;
-				// std::cout << "request fd = " << client_fd << std::endl;
-				if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
+					int client_fd = events[i].data.fd;
+					// std::cout << "request fd = " << client_fd << std::endl;
+					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
 
+						if (events[i].events & EPOLLIN) {
 
 					// Handle client data
 					std::vector<char>	buffer;
@@ -139,15 +124,22 @@ int main(int ac, char **av)
 					while (bytes > 0 && !find_end_of_headers(buffer));
 					if (buffer.empty())
 						continue ;
+							// Handle client data
+							std::vector<char>	buffer;
+							ssize_t bytes = 1;
+							do {
+								char				tmp;
+								bytes = recv(client_fd, &tmp, sizeof(char), 0);
+								buffer.push_back(tmp);
+							}
+							while (bytes > 0 && !find_end_of_headers(buffer));
+							if (buffer.empty())
+								continue ;
 
-					// for (std::vector<char>::iterator it = this->buffer.begin(); it != this->buffer.end(); it++)
-					// 	std::cout << *it << std::ends;
-					// std::cout << "|" << this->_body.size() << std::endl;
-					// std::map<int, Request*> request;
-					Request	req1(buffer);
-					// request[client_fd] = &req1;
-					// std::cout << "Request From : " << client_socket_server[client_fd].get_listen().ip << ":" << client_socket_server[client_fd].get_listen().port << std::endl;
-					Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
+							Request	req1(buffer);
+
+							Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
+
 
 					std::vector<char>	body;
 					do {
@@ -176,6 +168,31 @@ int main(int ac, char **av)
 					client_socket_server[client_fd].refresh();
 					// client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
 					// client_socket_server.erase(client_fd);
+							std::vector<char>	body;
+							do {
+								char				tmp;
+								bytes = recv(client_fd, &tmp, sizeof(char), 0);
+								body.push_back(tmp);
+							}
+							while (bytes > 0 && !max_size_reached(body, *serv));
+							if (serv->get_client_max_body_size() && (body.size() > serv->get_client_max_body_size()))
+								req1.set_return_code(413);
+							else
+								req1.add_body(body);
+
+							Response rep(req1, *serv);
+							rep.write_response(client_fd);
+							if (!rep.get_connection_header().compare("Keep-alive")) {
+								client_socket_server[client_fd].refresh();
+							} else{
+								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
+								client_socket_server.erase(client_fd);
+							}
+						} else if (events[i].events & EPOLLRDHUP ) {
+								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
+								client_socket_server.erase(client_fd);
+						}
+					}
 				}
 			}
 		}
@@ -183,15 +200,20 @@ int main(int ac, char **av)
 	catch (std::exception& e) {
 		std::cout << "BIG ERROR " << e.what() << std::endl;
 	}
-	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end(); ++it) {
+
+	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
 		it->second.del_epoll_and_close(epoll_fd);
-		client_socket_server.erase(it);
+		client_socket_server.erase(it++);
 	}
 	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 	close(epoll_fd);
+	if (!interrupted){
+		std::cout << "\nSIGINT detected." << std::endl;
+		return (1);
+	}
 	return (0);
-}
 
+}
 
 static bool find_end_of_headers(std::vector<char>& buffer)
 {

@@ -8,9 +8,25 @@
 #include <cstring>
 #include "Config.hpp"
 #include "Server.hpp"
-#include "Request.hpp"
 #include "MyException.hpp"
 #include "ClientFd.hpp"
+
+
+bool epollctl(int epoll_fd, int client_fd, const int events, int op){
+
+	struct epoll_event ev;
+	std::memset(&ev, 0, sizeof(ev));
+
+	ev.events = EPOLLRDHUP | events ;// EPOLLIN : EPOLLOUT
+	ev.data.fd = client_fd;
+
+	// op = EPOLL_CTL_ADD : EPOLL_CTL_MOD
+	if (epoll_ctl(epoll_fd, op, client_fd, &ev) < 0) {
+		std::cerr << "epoll_ctl failed :" << strerror(errno) << std::endl;
+		return (false);
+	}
+	return true;
+}
 
 void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
@@ -30,12 +46,11 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 			if (event_fd == vec_socket_fd[j]){
 
 				int client_fd;
-				struct epoll_event ev;
 				struct sockaddr_in client_addr;
 				socklen_t client_len = sizeof(client_addr);
 				client_fd = accept(vec_socket_fd[j], (struct sockaddr*)&client_addr, &client_len);
 				if (client_fd < 0) {
-					std::cerr << "Accept failed :" << strerror(errno) << std::endl;
+					std::cerr << "accept failed :" << strerror(errno) << std::endl;
 					return (false);
 				}
 
@@ -43,9 +58,8 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 				struct linger sl;
 				sl.l_onoff = 1;  // option on
 				sl.l_linger = 0; // delai a 0s
-
 				if (setsockopt(client_fd, SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) < 0) { // l'envoie du paquet rst
-					std::cerr << "Setsockopt failed: " << strerror(errno) << std::endl;
+					std::cerr << "setsockopt failed: " << strerror(errno) << std::endl;
 				}
 
 				struct sockaddr_in server_addr;
@@ -54,6 +68,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					std::cerr << "getsockname failed :" << strerror(errno) << std::endl;
 					return (false);
 				}
+
 
 				bool find = false;
 				Listen tmp(ntohl(client_addr.sin_addr.s_addr), ntohs(server_addr.sin_port));
@@ -67,25 +82,17 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					// 				<< "tmp: " << tmp.ip << ":"<< tmp.port << std::endl;
 					// }
 				}
-
 				if (find == false)
 					return (false);
-				client_socket_server[client_fd] = ClientFd(client_fd, tmp); // save the client with the listen struct
+
 
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
-
-				// Add client socket to epoll
-				ev.events = EPOLLIN | EPOLLET; // Edge-triggered
-				ev.data.fd = client_fd;
-
-				// std::cout << "New connection fd = " << client_fd << std::endl;
-				if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
-					std::cerr << "Epoll add client socket failed :" << strerror(errno) << std::endl;
+				if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_ADD)) {
 					close(client_fd);
 					return (true);
 				}
-
+				client_socket_server[client_fd] = ClientFd(client_fd, tmp); // save the client with the listen struct
 				std::cout	<< GREEN << "add new connection " << RESET << client_fd << std::endl;
 				return (true);
 			}

@@ -30,9 +30,9 @@ class Response
 		std::map<std::string, std::string>					_header;
 		std::string											_body;
 		bool												_autoindex;
-		Response();
 
 	public:
+		Response();
 		Response(Request &request, Server &server);
 		~Response();
 		Response&	operator=(const Response&);

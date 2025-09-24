@@ -8,6 +8,7 @@
 #include <ctime>
 #include <iostream>
 
+#include "Response.hpp"
 #include "ConfigUtils.hpp"
 
 class ClientFd
@@ -16,6 +17,7 @@ class ClientFd
 		int			_fd;
 		time_t		_time_to_reset; //sec
 		Listen		_host_port;
+		Response	_res;
 
 	public:
 		ClientFd( void );
