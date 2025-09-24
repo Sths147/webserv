@@ -27,14 +27,6 @@ void signalHandler(int) {
 	interrupted = false;
 }
 
-
-
-int sig = false;
-void sigpipehandler(int){
-	sig = true;
-	interrupted = false;
-}
-
 #include <cstring>
 
 int main(int ac, char **av)
@@ -91,9 +83,6 @@ int main(int ac, char **av)
 	struct epoll_event events[MAX_EVENTS];
 	std::map<int, ClientFd> client_socket_server;
 	std::signal(SIGINT, signalHandler);
-
-	// Ou capturer le signal
-	signal(SIGPIPE, sigpipehandler);
 	try {
 
 		while (interrupted) {
@@ -102,8 +91,7 @@ int main(int ac, char **av)
 			// std::cout << "epoll_wait" << std::endl;
 			if (nfds < 0) {
 
-				if (sig) std::cout << "error sigpiep : " << strerror(errno) << std::endl;
-				else if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
+				if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
 				for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
 					it->second.del_epoll_and_close(epoll_fd);
@@ -112,8 +100,7 @@ int main(int ac, char **av)
 				for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 				close(epoll_fd);
 				return (1);
-			}
-			else if ( nfds > 0 ){
+			} else if ( nfds > 0 ){
 
 				for (int i = 0; i < nfds; i++) {
 
@@ -141,26 +128,13 @@ int main(int ac, char **av)
 
 							Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server, req1);
 							Response res(req1, *serv);
-							// res.write_response(client_fd);
-
-							client_socket_server[client_fd].set_response(res);
-
+							res.write_response(client_fd);
 
 							if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)){
 								close(client_fd);
 								break;
 							}
 
-						}
-						 else if (events[i].events & EPOLLOUT ) {
-							// std::cout << "EPOLLOUT" << std::endl;
-							client_socket_server[client_fd].send(client_fd);
-							// client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
-							// if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)){
-							// 	close(client_fd);
-							// 	return (true);
-							// }
-							// return 1;
 						} else if (events[i].events & EPOLLRDHUP ) {
 								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
 								client_socket_server.erase(client_fd);
@@ -197,9 +171,7 @@ int main(int ac, char **av)
 	}
 	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 	close(epoll_fd);
-	if (sig){ std::cout << "error sigpiep : " << strerror(errno) << std::endl;
-		return 1;
-	}else if (!interrupted){
+	if (!interrupted){
 		std::cout << "\nSIGINT detected." << std::endl;
 		return (1);
 	}

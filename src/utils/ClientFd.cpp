@@ -27,18 +27,6 @@ bool	ClientFd::check_timeout( void ) {
 	}
 	return (true);
 }
-void	ClientFd::set_response(Response res) {
-	this->_res = res;
-}
-
-void	ClientFd::send(int fd ){
-	std:: cout << "BODY|" << this->_res.get_body() << "|" << std::endl;
-	std::cout << "--------NOW DISPLAYING HEADERS---------" << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = this->_res.get_headers().begin(); it != this->_res.get_headers().end(); it++)
-		std::cout << it->first << "--" << it->second << std::endl;
-	std::cout << "--------END DISPLAYING HEADERS---------" << std::endl;
-	this->_res.write_response(fd);
-}
 
 #include <unistd.h>
 #include <sys/epoll.h>

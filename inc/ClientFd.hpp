@@ -26,8 +26,6 @@ class ClientFd
 		Listen	get_listen( void );
 		void	refresh( void );
 		bool	check_timeout( void );
-		void	set_response(Response res);
-		void	send(int fd);
 		void	del_epoll_and_close( int epoll_fd );
 
 
