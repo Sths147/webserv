@@ -16,14 +16,9 @@
 #include "MyException.hpp"
 #include "Response.hpp"
 #include "ClientFd.hpp"
+#include "main_utils.hpp"
 
-void set_nonblocking(int socket_fd);
-static bool find_end_of_headers(std::vector<char>& buffer);
-static bool	max_size_reached(std::vector<char>& body, Server& server);
-static bool	check_body(Request& request, Server& server, std::vector<char>& body);
-bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server);
-Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
-
+//SIGNAL SIGINT
 bool interrupted = true;
 void signalHandler(int) {
 	interrupted = false;
@@ -93,19 +88,15 @@ int main(int ac, char **av)
 
 				if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
-				for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
-					it->second.del_epoll_and_close(epoll_fd);
-					client_socket_server.erase(it++);
-				}
-				for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
-				close(epoll_fd);
+
+				clean_exit(client_socket_server, epoll_fd, vec_server);
+
 				return (1);
 			} else if ( nfds > 0 ) {
 
 				for (int i = 0; i < nfds; i++) {
 
 					int client_fd = events[i].data.fd;
-					// std::cout << "request fd = " << client_fd << std::endl;
 					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
 
 						if (events[i].events & EPOLLIN) {
@@ -147,6 +138,7 @@ int main(int ac, char **av)
 
 								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
 								client_socket_server.erase(client_fd);
+
 							}
 
 						} else if (events[i].events & EPOLLRDHUP ) {
@@ -159,74 +151,13 @@ int main(int ac, char **av)
 				}
 			}
 		}
+	} catch (std::exception& e) {
+		std::cout << e.what() << std::endl;
 	}
-	catch (std::exception& e) {
-		std::cout << "BIG ERROR " << e.what() << std::endl;
-	}
-
-	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();){
-		it->second.del_epoll_and_close(epoll_fd);
-		client_socket_server.erase(it++);
-	}
-	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
-	close(epoll_fd);
+	clean_exit(client_socket_server, epoll_fd, vec_server);
 	if (!interrupted){
 		std::cout << "\nSIGINT detected." << std::endl;
 		return (1);
 	}
 	return (0);
-
-}
-
-static bool find_end_of_headers(std::vector<char>& buffer)
-{
-	if (buffer.size() < 4)
-		return (0);
-	else
-	{
-		std::vector<char>::iterator it = buffer.end() - 4;
-		if (*it++ != '\r')
-			return (0);
-		if (*it++ != '\n')
-			return (0);
-		if (*it++ != '\r')
-			return (0);
-		if (*it++ != '\n')
-			return (0);
-	}
-	// std::cout << "FINI" << std::endl;
-	return (1);
-}
-
-static bool	max_size_reached(std::vector<char>& body, Server& server)
-{
-	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
-	{
-		return (1);
-	}
-	return (0);
-}
-
-static bool	check_body(Request& request, Server& server, std::vector<char>& body)
-{
-	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
-	{
-		request.set_return_code(413);
-		return (0);
-	}
-	if (request.get_header("Content-Length").compare("Unexisting header"))
-	{
-		std::stringstream ss(request.get_header("Content-Length"));
-		size_t	len;
-		ss >> len;
-		if (body.size() == 1 && body[0] == '\n')
-			body.erase(body.begin());
-		if (len != body.size())
-		{
-			request.set_return_code(400);
-			return (0);
-		}
-		return (1);
-	}
-	return (1);
 }

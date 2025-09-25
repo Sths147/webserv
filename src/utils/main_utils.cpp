@@ -12,6 +12,17 @@
 #include "ClientFd.hpp"
 
 
+
+void clean_exit(std::map<int , ClientFd> &client_socket_server, int &epoll_fd, std::vector<Server *> &vec_server){
+
+	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
+		it->second.del_epoll_and_close(epoll_fd);
+		client_socket_server.erase(it++);
+	}
+	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
+	close(epoll_fd);
+}
+
 bool epollctl(int epoll_fd, int client_fd, const int events, int op){
 
 	struct epoll_event ev;
@@ -20,7 +31,7 @@ bool epollctl(int epoll_fd, int client_fd, const int events, int op){
 	ev.events = EPOLLRDHUP | events ;// EPOLLIN : EPOLLOUT
 	ev.data.fd = client_fd;
 
-	// op = EPOLL_CTL_ADD : EPOLL_CTL_MOD
+	// op = EPOLL_CTL_ADD
 	if (epoll_ctl(epoll_fd, op, client_fd, &ev) < 0) {
 		std::cerr << "epoll_ctl failed :" << strerror(errno) << std::endl;
 		return (false);
@@ -81,14 +92,80 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1){
 
 	for (size_t i = 0; i < vec_server.size(); i++) {
+
 		if (vec_server[i]->check_listen(client_fd_info) && req1.check_hosts(vec_server[i]->get_server_name())) {
+
 			return (vec_server[i]);
 		}
 	}
 	for (size_t i = 0; i < vec_server.size(); i++) {
+
 		if (vec_server[i]->check_listen(client_fd_info)) {
+
 			return (vec_server[i]);
 		}
 	}
 	return (vec_server[0]);
+}
+
+
+
+
+
+
+
+
+
+
+bool find_end_of_headers(std::vector<char>& buffer)
+{
+	if (buffer.size() < 4)
+		return (0);
+	else
+	{
+		std::vector<char>::iterator it = buffer.end() - 4;
+		if (*it++ != '\r')
+			return (0);
+		if (*it++ != '\n')
+			return (0);
+		if (*it++ != '\r')
+			return (0);
+		if (*it++ != '\n')
+			return (0);
+	}
+	// std::cout << "FINI" << std::endl;
+	return (1);
+}
+
+bool	max_size_reached(std::vector<char>& body, Server& server)
+{
+	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
+	{
+		return (1);
+	}
+	return (0);
+}
+
+bool	check_body(Request& request, Server& server, std::vector<char>& body)
+{
+	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
+	{
+		request.set_return_code(413);
+		return (0);
+	}
+	if (request.get_header("Content-Length").compare("Unexisting header"))
+	{
+		std::stringstream ss(request.get_header("Content-Length"));
+		size_t	len;
+		ss >> len;
+		if (body.size() == 1 && body[0] == '\n')
+			body.erase(body.begin());
+		if (len != body.size())
+		{
+			request.set_return_code(400);
+			return (0);
+		}
+		return (1);
+	}
+	return (1);
 }

@@ -36,6 +36,7 @@ HEADERS				:=		ClientFd.hpp		\
 							ConfigServer.hpp	\
 							ConfigUtils.hpp		\
 							ErrorException.hpp	\
+							main_utils.hpp		\
 							MyException.hpp		\
 							Response.hpp		\
 							Server.hpp
