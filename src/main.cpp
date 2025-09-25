@@ -110,19 +110,6 @@ int main(int ac, char **av)
 
 						if (events[i].events & EPOLLIN) {
 
-					// // Handle client data
-					// std::vector<char>	buffer;
-					// ssize_t bytes = 1;
-					// do {
-					// 	char				tmp;
-					// 	bytes = recv(client_fd, &tmp, sizeof(char), 0);
-					// 	if (bytes > 0)
-					// 		buffer.push_back(tmp);
-					// }
-					// while (bytes > 0 && !find_end_of_headers(buffer));
-					// if (buffer.empty())
-					// 	continue ;
-							// Handle client data
 							std::vector<char>	buffer;
 							ssize_t bytes = 1;
 							do {
@@ -137,50 +124,27 @@ int main(int ac, char **av)
 							Request	req1(buffer);
 
 							Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
-					std::vector<char>	body;
-					do {
-						char				tmp;
-						bytes = recv(client_fd, &tmp, sizeof(char), 0);
-						if (bytes > 0)
-							body.push_back(tmp);
-					}
-					while (bytes > 0 && !max_size_reached(body, *serv));
-					// std::cout << "--------NOW DISPLAYING BODY-----" << std::endl;
-					// for (std::vector<char>::iterator it = body.begin(); it != body.end(); it++)
-					// 	std::cout << *it << std::ends;
-					// std::cout << "--------FINISHED DISPLAYING BODY-----" << std::endl;
-					if (check_body(req1, *serv, body))
-						req1.add_body(body);
-					// std::cout << "Body size|" << body.size() << std::endl;
-					// std::cout << "Body2 size|" << req1.get_body().size() << std::endl;
 
-					// std::cout << req1.get_return_code() << std::endl;
-					Response rep(req1, *serv);
-					rep.write_response(client_fd);
-					// std::cout << rep.get_connection_header() << " connection header" << std::endl;
-					// std::cout << "type: " << req1.get_type() << std::endl;
-					// if (rep.get_connection_header().compare("Keep-alive"))
+							std::vector<char>	body;
+							do {
+								char				tmp;
+								bytes = recv(client_fd, &tmp, sizeof(char), 0);
+								if (bytes > 0)
+									body.push_back(tmp);
+							}
+							while (bytes > 0 && !max_size_reached(body, *serv));
+							if (check_body(req1, *serv, body))
+								req1.add_body(body);
 
-					client_socket_server[client_fd].refresh();
-					// client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
-					// client_socket_server.erase(client_fd);
-							// std::vector<char>	body;
-							// do {
-							// 	char				tmp;
-							// 	bytes = recv(client_fd, &tmp, sizeof(char), 0);
-							// 	body.push_back(tmp);
-							// }
-							// while (bytes > 0 && !max_size_reached(body, *serv));
-							// if (serv->get_client_max_body_size() && (body.size() > serv->get_client_max_body_size()))
-							// 	req1.set_return_code(413);
-							// else
-							// 	req1.add_body(body);
+							Response rep(req1, *serv);
+							rep.write_response(client_fd);
 
-							// Response rep(req1, *serv);
-							// rep.write_response(client_fd);
 							if (!rep.get_connection_header().compare("Keep-alive")) {
+
 								client_socket_server[client_fd].refresh();
+
 							} else {
+
 								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
 								client_socket_server.erase(client_fd);
 							}
