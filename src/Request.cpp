@@ -84,7 +84,7 @@ unsigned short int	Request::get_return_code() const
 // 	return (result);
 // }
 
-void	Request::add_body(std::vector<char>& to_add)
+void	Request::add_body(std::vector<char> to_add)
 {
 	this->_body = to_add;
 }

@@ -48,5 +48,5 @@ class Request
 		const std::string							get_header(const std::string&) const;
 		void 										print_headers() const;
 		void										print_body() const;
-		void										add_body(std::vector<char>&);
+		void										add_body(std::vector<char> );
 };
