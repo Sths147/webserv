@@ -11,6 +11,7 @@ void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t p
 	if (ConfigUtils::find_first_not_of_space(str, pos) != std::string::npos) {
 		if (str[_pos] == '#')
 			return ;
+		// std::cout << "pos : " << pos << "_pos : " << _pos << std::endl;
 		throw (MyException("Error : extra charater... ", str));
 	}
 	return  ;
@@ -37,6 +38,23 @@ size_t ConfigUtils::get_pos( void ) {
 	return (_pos);
 }
 
+// std::string	ConfigUtils::parse_location(const std::string& input, const size_t pos) {
+// 	std::string token;
+
+// 	ConfigUtils::find_first_not_of_space(input, pos);
+// 	while (_pos < input.size()) {
+// 		char c = input[_pos];
+
+// 		if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '{' || c == '}')
+// 			break;
+
+// 		token += c;
+// 		_pos++;
+// 	}
+// 	// ConfigUtils::find_first_not_of_space(input, _pos);
+// 	return (token);
+// }
+
 std::string	ConfigUtils::parse_token(const std::string& input, const size_t pos) {
 	std::string token;
 
@@ -62,7 +80,7 @@ std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input
 	while (_pos < input.size()) {
 		while (_pos < input.size()) {
 			c = input[_pos];
-			if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ';' || c == '{' || c == '}')
+			if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ';')
 				break;
 			token += c;
 			_pos++;
@@ -78,17 +96,34 @@ std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input
 	return (vec);
 }
 
-std::string	ConfigUtils::get_one_token(const std::string &str) {
+std::string	ConfigUtils::get_one_token(const std::string &str) { //----------------------------------------
+
 	std::string arg = ConfigUtils::parse_token(str, _pos);
-	if (_pos == str.find_first_of(';'))
-		ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
+	if (_pos == str.find_first_of(';')){
+
+		if (_pos != std::string::npos)
+			ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
+		else {
+			throw (MyException("Error : bad format on this line...", str));
+		}
+	} else {
+		throw (MyException("Error : bad format on this line...", str));
+	}
 	return (arg);
 }
 
 std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
 	std::vector<std::string> vec = ConfigUtils::parse_multi_token(str, _pos);
-	if (_pos == str.find_first_of(';'))
-		ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
+	if (_pos == str.find_first_of(';')){
+
+		if (_pos != std::string::npos)
+			ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
+		else {
+			throw (MyException("Error : bad format on this line...", str));
+		}
+	} else {
+		throw (MyException("Error : bad format on this line...", str));
+	}
 	return (vec);
 }
 

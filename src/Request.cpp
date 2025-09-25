@@ -30,8 +30,10 @@ Request::Request(std::vector<char>&buff)
 {
 	// std::string	mybody(this->_body.begin(), this->_body.end());
 	// std::cout << "\n\n and here is the body" << mybody << std::endl;
-	// this->print_headers();
 	this->parse_headers();
+	std::cout << "--------START PRINT HEADERS---------" << std::endl;
+	this->print_headers();
+	std::cout << "--------END PRINT HEADERS---------" << std::endl;
 	// std::cout << "NOW" << this->get_return_code() << std::endl;
 	// std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
 }

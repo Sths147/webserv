@@ -83,7 +83,7 @@ void	ConfigServer::print_error_page( void ){
 void	ConfigServer::set_error_page( const std::vector<std::string> vec ){
 
 	if (vec.size() != 2)
-		throw (std::string("Error : 'error code | the page error' bad format on this line "));
+		throw (std::string("Error : 'error code | the page error' bad format on this line... "));
 	if ( vec[0].size() > 3 )
 		throw (std::string("Error : unknown error page on this line "));
 	unsigned short int page = std::atoi(vec[0].c_str());
