@@ -94,13 +94,14 @@ void	ConfigLocation::print_root( void ) {
 
 void	ConfigLocation::set_root(const std::string &str) { this->_root = str; }
 
-
-
-
 void	ConfigLocation::set_autoindex( const autoindexvalue b ) {this->_autoindex = b;}
 
 void	ConfigLocation::set_return( const std::string &str ) { this->_return = str; }
 
+
+void	ConfigLocation::set_cgi_path( const std::string &str ) { this->_cgi_path = str; }
+
+void	ConfigLocation::set_cgi_extension( const std::string &str ) { this->_cgi_extension = str; }
 
 
 
@@ -129,3 +130,8 @@ const std::string										&ConfigLocation::get_root( void ) const { return (thi
 const autoindexvalue									&ConfigLocation::get_autoindex( void ) const { return (this->_autoindex); }
 
 const std::string										&ConfigLocation::get_return( void ) const { return (this->_return); }
+
+const std::string										&ConfigLocation::get_cgi_path( void ) const { return (this->_cgi_path); }
+
+const std::string										&ConfigLocation::get_cgi_extension( void ) const { return (this->_cgi_extension); }
+

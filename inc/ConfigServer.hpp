@@ -60,6 +60,8 @@ class ConfigServer
 			void	set_inlocation_root(const int &i, const std::string &str);
 			void	set_inlocation_autoindex(const int &i, const autoindexvalue b );
 			void	set_inlocation_return(const int &i, const std::string &str );
+			void	set_inlocation_cgi_path(const int &i, const std::string &str );
+			void	set_inlocation_cgi_extension(const int &i, const std::string &str );
 
 
 

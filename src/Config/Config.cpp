@@ -134,6 +134,16 @@ void			Config::set_in_location( std::string &directive, std::string &line, int &
 		else
 			throw (MyException("Error : directive return not allowed", line));
 
+	} else if (directive == "cgi_path") {
+
+		std::string arg = ConfigUtils::get_one_token(line);
+		this->_vConfServer[server].set_inlocation_cgi_path(location, arg);
+
+	} else if (directive == "cgi_extension") {
+
+		std::string arg = ConfigUtils::get_one_token(line);
+		this->_vConfServer[server].set_inlocation_cgi_extension(location, arg);
+
 	} else { // here we got "}" or error
 
 		if (directive != "\0")

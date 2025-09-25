@@ -37,11 +37,11 @@ int main(int ac, char **av)
 	if (ac == 2){
 
 		epoll_fd = epoll_create(1);
-		if (epoll_fd < 0){
+		if (epoll_fd < 0) {
 			std::cerr << "epoll_create failed" << std::endl;
 			return (1);
 		}
-		try	{
+		try {
 
 			//First parsing of the config file to delete every empty and commentary line.
 			Config config(av[1]);
@@ -57,9 +57,9 @@ int main(int ac, char **av)
 				Server *ptr = new Server(config.copy_config_server(i), epoll_fd);
 				vec_server.push_back(ptr);
 			}
-		}
-		catch(const std::exception& e)
-		{
+
+		} catch(const std::exception& e) {
+
 			std::cerr << e.what() << std::endl;
 			for (size_t i = 0; i < vec_server.size(); i++) { delete vec_server[i]; }
 			close(epoll_fd);
@@ -90,8 +90,8 @@ int main(int ac, char **av)
 				else std::cerr << "Epoll wait failed" << std::endl;
 
 				clean_exit(client_socket_server, epoll_fd, vec_server);
-
 				return (1);
+
 			} else if ( nfds > 0 ) {
 
 				for (int i = 0; i < nfds; i++) {
@@ -122,8 +122,8 @@ int main(int ac, char **av)
 								bytes = recv(client_fd, &tmp, sizeof(char), 0);
 								if (bytes > 0)
 									body.push_back(tmp);
-							}
-							while (bytes > 0 && !max_size_reached(body, *serv));
+							} while (bytes > 0 && !max_size_reached(body, *serv));
+
 							if (check_body(req1, *serv, body))
 								req1.add_body(body);
 

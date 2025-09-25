@@ -191,9 +191,9 @@ void	ConfigServer::set_inlocation_allow_methods(const int &i, const std::vector<
 void	ConfigServer::set_inlocation_error_page(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_error_page(arg);}
 void	ConfigServer::set_inlocation_root(const int &i, const std::string &str){this->_vConfLocal[i].set_root(str);}
 void	ConfigServer::set_inlocation_autoindex(const int &i, const autoindexvalue b ) {this->_vConfLocal[i].set_autoindex(b);}
-
 void	ConfigServer::set_inlocation_return(const int &i, const std::string &str ) {this->_vConfLocal[i].set_return(str) ;}
-
+void	ConfigServer::set_inlocation_cgi_path(const int &i, const std::string &str ) { this->_vConfLocal[i].set_cgi_path(str); }
+void	ConfigServer::set_inlocation_cgi_extension(const int &i, const std::string &str ) { this->_vConfLocal[i].set_cgi_extension(str); }
 
 /* --- GET --- */
 

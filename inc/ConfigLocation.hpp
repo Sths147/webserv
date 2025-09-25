@@ -27,6 +27,10 @@ class ConfigLocation
 		autoindexvalue								_autoindex;
 		std::string									_return;// 301  ..?
 
+		std::string									_cgi_path;
+		std::string									_cgi_extension;
+
+
 		void	print_index( void );
 		void	print_error_page( void );
 		void	print_allow_methods( void );
@@ -46,6 +50,8 @@ class ConfigLocation
 		void	set_root( const std::string &str);
 		void	set_autoindex( const autoindexvalue b );
 		void	set_return( const std::string &str );
+		void	set_cgi_path( const std::string &str );
+		void	set_cgi_extension( const std::string &str );
 
 
 
@@ -58,6 +64,9 @@ class ConfigLocation
 		const	std::string											&get_root( void ) const ;
 		const	autoindexvalue										&get_autoindex( void ) const ;
 		const	std::string											&get_return( void ) const ;
+
+		const	std::string											&get_cgi_path( void ) const ;
+		const	std::string											&get_cgi_extension( void ) const ;
 
 		~ConfigLocation();
 };
