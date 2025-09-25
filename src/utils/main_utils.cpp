@@ -54,37 +54,13 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (false);
 				}
 
-
 				struct linger sl;
-				sl.l_onoff = 1;  // option on
+				sl.l_onoff = 1; // option on
 				sl.l_linger = 0; // delai a 0s
 				if (setsockopt(client_fd, SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) < 0) { // l'envoie du paquet rst
 					std::cerr << "setsockopt failed: " << strerror(errno) << std::endl;
+					return (true);
 				}
-
-				struct sockaddr_in server_addr;
-				socklen_t server_len = sizeof(server_addr);
-				if (getsockname(vec_socket_fd[j], (struct sockaddr*)&server_addr, &server_len) != 0){
-					std::cerr << "getsockname failed :" << strerror(errno) << std::endl;
-					return (false);
-				}
-
-
-				bool find = false;
-				Listen tmp(ntohl(client_addr.sin_addr.s_addr), ntohs(server_addr.sin_port));
-				for (size_t i = 0; i < vec_listen.size(); i++)
-				{
-					if ((vec_listen[i].ip == 0 || vec_listen[i].ip == tmp.ip) && vec_listen[i].port == tmp.port){
-						find = true;
-					}
-					// else {
-					// 	std::cout	<< "tmp: " << ntohl(client_addr.sin_addr.s_addr) << ":"<< ntohs(server_addr.sin_port)
-					// 				<< "tmp: " << tmp.ip << ":"<< tmp.port << std::endl;
-					// }
-				}
-				if (find == false)
-					return (false);
-
 
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
@@ -92,7 +68,8 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					close(client_fd);
 					return (true);
 				}
-				client_socket_server[client_fd] = ClientFd(client_fd, tmp); // save the client with the listen struct
+				client_socket_server[client_fd] = ClientFd(client_fd, vec_listen[j]); // save the client with the listen struct
+
 				std::cout	<< GREEN << "add new connection " << RESET << client_fd << std::endl;
 				return (true);
 			}

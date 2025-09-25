@@ -36,9 +36,7 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 	size_t size = vec_listen.size();
 	struct epoll_event ev;
 	struct sockaddr_in	address;
-	if (size == 0){
-		throw (MyException("todo faire un bind part defaut"));
-	}
+
 	for (size_t i = 0; i < size; i++)
 	{
 		if (vec_listen[i].to_lunch) {

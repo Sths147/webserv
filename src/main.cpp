@@ -22,13 +22,12 @@ static bool find_end_of_headers(std::vector<char>& buffer);
 static bool	max_size_reached(std::vector<char>& body, Server& server);
 bool	check_add_new_connection( const std::vector<Server *> &vec_server,	int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server);
 Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1);
-bool interrupted = true;
 
+bool interrupted = true;
 void signalHandler(int) {
 	interrupted = false;
 }
 
-#include <cstring>
 
 int main(int ac, char **av)
 {
@@ -89,7 +88,6 @@ int main(int ac, char **av)
 		while (interrupted) {
 
 			nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000);
-			// std::cout << "epoll_wait" << std::endl;
 			if (nfds < 0) {
 
 				if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
@@ -144,13 +142,16 @@ int main(int ac, char **av)
 							rep.write_response(client_fd);
 							if (!rep.get_connection_header().compare("Keep-alive")) {
 								client_socket_server[client_fd].refresh();
-							} else{
+							} else {
 								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
 								client_socket_server.erase(client_fd);
 							}
+
 						} else if (events[i].events & EPOLLRDHUP ) {
+
 								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
 								client_socket_server.erase(client_fd);
+
 						}
 					}
 				}

@@ -7,7 +7,7 @@
 ClientFd::ClientFd( void ):
 _fd(0){}
 
-ClientFd::ClientFd( int fd , Listen &listen ) :
+ClientFd::ClientFd( int fd , const Listen &listen ) :
 _fd(fd),
 _time_to_reset(std::time(NULL) + TIMEOUT),
 _host_port(listen.ip, listen.port) {}

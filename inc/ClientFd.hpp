@@ -21,7 +21,7 @@ class ClientFd
 
 	public:
 		ClientFd( void );
-		ClientFd(int fd, Listen &listen);
+		ClientFd(int fd, const Listen &listen);
 		int		get_fd( void );
 		Listen	get_listen( void );
 		void	refresh( void );
