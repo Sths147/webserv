@@ -28,7 +28,7 @@ Response::~Response()
 }
 
 Response::Response(Request& request, Server& server)
-: _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1")
+: _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type())
 {
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
@@ -54,6 +54,8 @@ Response::Response(Request& request, Server& server)
 		this->set_redirect(server);
 	else
 		this->set_error_response(server);
+	this->print_headers();
+	std::cout << "-------------------------" << std::endl;
 }
 
 Response&	Response::operator=(const Response& other)
@@ -744,3 +746,90 @@ void				Response::check_allowed_method(const std::string& _method_requested, Ser
 		this->set_status(405);
 	}
 }
+
+void 		Response::print_headers() const {
+
+	for (std::map<std::string, std::string>::const_iterator it = this->_header.begin(); it != this->_header.end(); it++) {
+
+		std::cout << it->first << "=" << it->second << std::endl;
+	}
+}
+
+// static void			creat_envp(){
+// 	std::vector<std::string> vec_string;
+
+// }
+
+// int				Response::exec_cgi(void){
+// 	this
+// 	//creat envp
+
+
+// 	this->cgi()
+// }
+
+
+// int				Response::cgi(char *path, char **script, char **envp) {
+
+// 	pid_t	pid;
+// 	int		status;
+// 	int		pipe_in[2];
+// 	int		pipe_out[2];
+// 	const bool	secound_pipe = this->_type == "POST";
+
+// 	if (pipe(pipe_out) == -1){
+
+// 		close(pipe_out[0]);
+// 		close(pipe_out[1]);
+// 		return (-1);
+// 	}
+// 	if (secound_pipe) {
+
+// 		if (pipe(pipe_in) == -1) {
+
+// 			close(pipe_out[0]);
+// 			close(pipe_out[1]);
+// 			close(pipe_in[0]);
+// 			close(pipe_in[1]);
+// 			return (-1);
+// 		}
+// 	}
+// 	pid = fork();
+// 	if (pid == -1){
+
+// 		close(pipe_out[0]);
+// 		close(pipe_out[1]);
+// 		if (secound_pipe) {
+
+// 			close(pipe_in[0]);
+// 			close(pipe_in[1]);
+// 		}
+// 		return (-1);
+
+// 	} else if (pid == 0) {
+
+// 		dup2(pipe_out[1], 1);
+// 		close(pipe_out[0]);
+// 		close(pipe_out[1]);
+// 		if (secound_pipe) {
+
+// 			dup2(pipe_in[0], 0);
+// 			close(pipe_in[0]);
+// 			close(pipe_in[1]);
+// 		}
+// 		execve(path, script, envp);
+
+// 	} else {
+// 		dup2(pipe_out[0], 0);
+// 		close(pipe_out[0]);
+// 		close(pipe_out[1]);
+// 		if (secound_pipe) {
+
+// 			dup2(pipe_in[1], 1);
+// 			close(pipe_in[0]);
+// 			close(pipe_in[1]);
+// 		}
+
+// 		// waitpid(pid, &status, /*nowait just to know if its work*/ );
+// 	}
+// }

@@ -29,6 +29,7 @@ class Response
 		std::string											_content_type;
 		std::map<std::string, std::string>					_header;
 		std::string											_body;
+		std::string											_type;
 		bool												_autoindex;
 
 	public:
@@ -62,6 +63,9 @@ class Response
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		void				set_redirect(Server& server);
 		void				open_file(std::ofstream& file, std::vector<char>& buff);
+		void 				print_headers() const ;
+		// int					exec_cgi(void);
+		int					cgi(char *path, char **script, char **envp);
 };
 
 #endif

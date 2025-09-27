@@ -5,7 +5,7 @@
 ConfigLocation::ConfigLocation() {}
 ConfigLocation::~ConfigLocation() {}
 
-ConfigLocation::ConfigLocation( const std::string &perm , const bool &b) : _location(perm), _absolut(b) {}
+ConfigLocation::ConfigLocation( const std::string &perm , const bool &b) : _location(perm), _absolut(b), _autoindex(ON) {}
 
 
 void	ConfigLocation::print_all( void ){

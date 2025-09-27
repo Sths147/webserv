@@ -339,7 +339,7 @@ bool	Request::check_hosts(const std::vector<std::string>& server_names) const
 	{
 		if (it->first == "Host")
 		{
-			std::stringstream		ss(it->second);
+			std::stringstream		ss(it->second);// = 127.0.0.2:8090
 			std::string				host;
 			while (ss >> host)
 				result.push_back(host);

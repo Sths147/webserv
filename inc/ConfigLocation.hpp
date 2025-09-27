@@ -9,8 +9,7 @@
 
 enum autoindexvalue {
 	ON,
-	OFF,
-	UNKNOWN
+	OFF
 };
 
 class ConfigLocation
@@ -20,11 +19,11 @@ class ConfigLocation
 		ConfigLocation( void );
 		std::string									_location; // location "/" {
 		bool										_absolut; // location "=" / {
+		autoindexvalue								_autoindex;
 		std::vector<std::string>					_index;
 		std::map<unsigned short int, std::string>	_error_page;
 		std::vector<std::string>					_allow_methods;
 		std::string									_root;
-		autoindexvalue								_autoindex;
 		std::string									_return;// 301  ..?
 
 		std::string									_cgi_path;
