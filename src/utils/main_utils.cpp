@@ -84,25 +84,6 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 	return (false);
 }
 
-Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_server, Request &req1){
-
-	for (size_t i = 0; i < vec_server.size(); i++) {
-
-		if (vec_server[i]->check_listen(client_fd_info) && req1.check_hosts(vec_server[i]->get_server_name())) {
-
-			return (vec_server[i]);
-		}
-	}
-	for (size_t i = 0; i < vec_server.size(); i++) {
-
-		if (vec_server[i]->check_listen(client_fd_info)) {
-
-			return (vec_server[i]);
-		}
-	}
-	return (vec_server[0]);
-}
-
 
 
 

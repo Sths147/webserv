@@ -5,6 +5,7 @@
 
 #include <map>
 #include <csignal>
+#include <cstring>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/epoll.h>
@@ -25,6 +26,7 @@ bool interrupted = true;
 void signalHandler(int) {
 	interrupted = false;
 }
+
 
 
 int main(int ac, char **av)
@@ -85,7 +87,6 @@ int main(int ac, char **av)
 
 		while (interrupted) {
 
-			std::cout << "epollwait" << std::endl;
 			nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000);
 			if (nfds < 0) {
 
@@ -103,33 +104,21 @@ int main(int ac, char **av)
 					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, fd_client_fd)) {
 
 
-
-
-
-
-
-
 						// std::cout << "connection ok " << std::endl;
 
-
 						if (events[i].events & EPOLLIN) {
-
-
-
-
 
 							// std::cout << GREEN << "EPOLLIN" <<RESET << std::endl;
 
 							char				tmp[MAX_BUFFER + 1];
+							std::memset(&tmp, 0, sizeof(tmp));
 
 							ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
 							if (bytes < 0){
 								throw (MyException("recv error"));
 							}
 
-							tmp[MAX_BUFFER] ='\0';
-
-							fd_client_fd[client_fd].add_buffer(tmp);
+							fd_client_fd[client_fd].add_buffer(tmp, vec_server);
 
 							if (bytes < MAX_BUFFER) {
 
@@ -146,16 +135,9 @@ int main(int ac, char **av)
 
 						} else if (events[i].events & EPOLLOUT ) {
 
-
-
-
-							std::cout << GREEN << "EPOLLOUT" <<RESET << std::endl;
-
 							try
 							{
-
 								if (fd_client_fd[client_fd].send_response(client_fd) == true){
-
 									// if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
 									// 	close(client_fd);
 									// 	return (true);
