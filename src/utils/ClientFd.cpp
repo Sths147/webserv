@@ -8,7 +8,7 @@
 
 ClientFd::ClientFd( void ) {}
 
-ClientFd::ClientFd(const Listen &listen ) : _header_saved(false), _server(NULL), _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _response("") {
+ClientFd::ClientFd(const Listen &listen ) : _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _body_check(false) ,_header_saved(false), _server(NULL), _response("") {
 
 	this->_response =
 		"HTTP/1.1 404 OK\r\n"
@@ -18,8 +18,6 @@ ClientFd::ClientFd(const Listen &listen ) : _header_saved(false), _server(NULL),
 		"<html><head><title>Welcome</title></head>"
 		"<body><h2>Hello, World!</h2></body></html>";
 }
-
-
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
 {
@@ -36,6 +34,25 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 	return	*this;
 }
 
+Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
+
+/*----timeout----*/
+
+void	ClientFd::refresh( void ) { this->_time_to_reset = std::time(NULL) + TIMEOUT; }
+
+bool	ClientFd::check_timeout( void ) {
+	if (this->_time_to_reset < std::time(NULL)){
+		std::cout << RED << "Timeout" << RESET<<std::endl;
+		return (false);
+	}
+	return (true);
+}
+
+/*----timeout----*/
+
+bool			ClientFd::get_body_check( void ) { return(this->_body_check); }
+bool			ClientFd::get_header_saved( void ) { return(this->_header_saved); }
+
 void			ClientFd::print_vec(std::vector<char> &vec) {
 
 	if (vec.begin() == vec.end()) {
@@ -48,8 +65,59 @@ void			ClientFd::print_vec(std::vector<char> &vec) {
 	std::cout << ss.str() << std::endl;
 }
 
+static bool find_end_of_headers(std::vector<char>& buffer)
+{
+	if (buffer.size() < 4){
+		return (0);
+	} else {
 
-void ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
+		std::vector<char>::iterator it = buffer.end() - 4;
+		if (*it++ != '\r')
+			return (0);
+		if (*it++ != '\n')
+			return (0);
+		if (*it++ != '\r')
+			return (0);
+		if (*it != '\n')
+			return (0);
+	}
+	return (1);
+}
+
+static bool	max_size_reached(std::vector<char>& body, Server *server)
+{
+	if (server->get_client_max_body_size() && (body.size() > server->get_client_max_body_size())) {
+		return (1);
+	}
+	return (0);
+}
+
+
+
+void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
+
+	for (size_t i = 0; str[i]; i++) {
+
+		this->_buffer.push_back(str[i]);
+		if (!this->_header_saved && find_end_of_headers(this->_buffer)) {
+
+			this->_header = this->_buffer;
+			this->_buffer.clear();
+			this->_header_saved = true;
+			this->find_server_from_map(vec_server);
+			// this->_request.add_header(this->_header)
+		}
+	}
+	if (this->_header_saved && max_size_reached(this->_buffer, this->_server)){
+		// this->_request.set_return_code(413);
+		;
+	}
+	// this->print_vec(this->_header);
+	// this->print_vec(this->_buffer);
+}
+
+
+void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
 
 	if (!this->_header_saved){
 		return;
@@ -75,58 +143,6 @@ void ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
 
 
 
-
-
-static bool find_end_of_headers(std::vector<char>& buffer)
-{
-	if (buffer.size() < 4)
-		return (0);
-	else
-	{
-		std::vector<char>::iterator it = buffer.end() - 4;
-		if (*it++ != '\r')
-			return (0);
-		if (*it++ != '\n')
-			return (0);
-		if (*it++ != '\r')
-			return (0);
-		if (*it != '\n')
-			return (0);
-	}
-	return (1);
-}
-
-static bool	max_size_reached(std::vector<char>& body, Server *server)
-{
-	if (server->get_client_max_body_size() && (body.size() > server->get_client_max_body_size())) {
-		return (1);
-	}
-	return (0);
-}
-
-void	ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
-
-	for (size_t i = 0; str[i]; i++) {
-
-		this->_buffer.push_back(str[i]);
-		if (!this->_header_saved && find_end_of_headers(this->_buffer)) {
-
-			this->_header = this->_buffer;
-			this->_buffer.clear();
-			this->_header_saved = true;
-			this->find_server_from_map(vec_server);
-			// this->_request.add_header(this->_header)
-		}
-	}
-	if (this->_header_saved && max_size_reached(this->_buffer, this->_server)){
-		;
-		// this->_request.set_return_code(413);
-	}
-
-	// this->print_vec(this->_header);
-	// this->print_vec(this->_buffer);
-}
-
 bool		ClientFd::send_response( int client_fd ) {
 
 	ssize_t bytes = send(client_fd, this->_response.c_str(), std::min(this->_response.length(), static_cast<size_t>(SSIZE_MAX)), 0);
@@ -144,21 +160,25 @@ bool		ClientFd::send_response( int client_fd ) {
 
 
 
-Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
 
-void	ClientFd::refresh( void ) { this->_time_to_reset = std::time(NULL) + TIMEOUT; }
 
-bool	ClientFd::check_timeout( void ) {
-	if (this->_time_to_reset < std::time(NULL)){
-		std::cout << RED << "Timeout" << RESET<<std::endl;
-		return (false);
-	}
-	return (true);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #include <unistd.h>
 #include <sys/epoll.h>
-void	ClientFd::del_epoll_and_close( int epoll_fd, int client_fd ) {
+void		ClientFd::del_epoll_and_close( int epoll_fd, int client_fd ) {
 	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
 	close(client_fd);
 }
@@ -169,11 +189,6 @@ void	ClientFd::del_epoll_and_close( int epoll_fd, int client_fd ) {
 
 // bool	check_body(Request& request, Server& server, std::vector<char>& body)
 // {
-// 	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
-// 	{
-// 		request.set_return_code(413);
-// 		return (0);
-// 	}
 // 	if (request.get_header("Content-Length").compare("Unexisting header"))
 // 	{
 // 		std::stringstream ss(request.get_header("Content-Length"));
