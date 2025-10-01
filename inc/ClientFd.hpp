@@ -15,17 +15,17 @@ class ClientFd
 {
 	private:
 
-		time_t		_time_to_reset; //sec
-		Listen		_host_port;
+		time_t				_time_to_reset; //sec
+		Listen				_host_port;
 
 		bool				_body_check;
 		std::vector<char>	_buffer; // buffer when read and body if its was a POST
 		bool				_header_saved;
 		std::vector<char>	_header;
 
-		// Request		_request;
-		Response	_respons;
-		Server		*_server;
+		// Request				_request;
+		Response			_respons;
+		Server				*_server;
 
 
 		std::string	_response; // to delete

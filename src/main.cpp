@@ -80,7 +80,7 @@ int main(int ac, char **av)
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
 
-						std::map<int, ClientFd> fd_client_fd;
+	std::map<int, ClientFd> fd_to_info;
 
 	std::signal(SIGINT, signalHandler);
 	try {
@@ -93,7 +93,7 @@ int main(int ac, char **av)
 				if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
 
-				clean_exit(fd_client_fd, epoll_fd, vec_server);
+				clean_exit(fd_to_info, epoll_fd, vec_server);
 				return (1);
 
 			} else if ( nfds > 0 ) {
@@ -101,7 +101,7 @@ int main(int ac, char **av)
 				for (int i = 0; i < nfds; i++) {
 
 					int client_fd = events[i].data.fd;
-					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, fd_client_fd)) {
+					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, fd_to_info)) {
 
 
 						// std::cout << "connection ok " << std::endl;
@@ -118,16 +118,16 @@ int main(int ac, char **av)
 								throw (MyException("recv error"));
 							}
 
-							fd_client_fd[client_fd].add_buffer(tmp, vec_server);
+							fd_to_info[client_fd].add_buffer(tmp, vec_server);
 
-							if (bytes < MAX_BUFFER) {
+							if (fd_to_info[client_fd].get_header_saved()) {
 
 								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
 									close(client_fd);
 									return (true);
 								}
 
-								// fd_client_fd[client_fd].construct_response();
+								// fd_to_info[client_fd].construct_response();
 							}
 							//  else
 							// 	std::cout << "bytes de "<< bytes << std::endl;
@@ -137,35 +137,35 @@ int main(int ac, char **av)
 
 							try
 							{
-								if (fd_client_fd[client_fd].send_response(client_fd) == true){
+								if (fd_to_info[client_fd].send_response(client_fd) == true){
 									// if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
 									// 	close(client_fd);
 									// 	return (true);
 									// }
-									fd_client_fd[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-									fd_client_fd.erase(client_fd);
+									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+									fd_to_info.erase(client_fd);
 								}
 							}
 							catch(const int &e)
 							{
-								fd_client_fd[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-								fd_client_fd.erase(client_fd);
+								fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+								fd_to_info.erase(client_fd);
 							}
 
 						} else if ( events[i].events & EPOLLRDHUP ) {
 
-								fd_client_fd[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-								fd_client_fd.erase(client_fd);
+								fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+								fd_to_info.erase(client_fd);
 
 						}
 					}
 				}
 			} else {
 
-				for (std::map<int, ClientFd>::iterator it = fd_client_fd.begin(); it != fd_client_fd.end(); ){
+				for (std::map<int, ClientFd>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ){
 					if (!it->second.check_timeout()) {
-						fd_client_fd[it->first].del_epoll_and_close(epoll_fd, it->first);
-						fd_client_fd.erase(it++);
+						fd_to_info[it->first].del_epoll_and_close(epoll_fd, it->first);
+						fd_to_info.erase(it++);
 					} else {
 						it++;
 					}
@@ -199,7 +199,7 @@ int main(int ac, char **av)
 	} catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
 	}
-	clean_exit(fd_client_fd, epoll_fd, vec_server);
+	clean_exit(fd_to_info, epoll_fd, vec_server);
 	if (!interrupted){
 		std::cout << "\nSIGINT detected." << std::endl;
 		return (1);
@@ -222,7 +222,7 @@ int main(int ac, char **av)
 
 							// Request	req1(buffer);
 
-							// Server *serv = find_server_from_map(fd_client_fd[client_fd].get_listen(), vec_server,req1);
+							// Server *serv = find_server_from_map(fd_to_info[client_fd].get_listen(), vec_server,req1);
 
 							// std::vector<char>	body;
 							// do {
@@ -240,11 +240,11 @@ int main(int ac, char **av)
 
 							// if (!rep.get_connection_header().compare("Keep-alive")) {
 
-							// 	fd_client_fd[client_fd].refresh();
+							// 	fd_to_info[client_fd].refresh();
 
 							// } else {
 
-							// 	fd_client_fd[client_fd].del_epoll_and_close(epoll_fd);
-							// 	fd_client_fd.erase(client_fd);
+							// 	fd_to_info[client_fd].del_epoll_and_close(epoll_fd);
+							// 	fd_to_info.erase(client_fd);
 
 							// }

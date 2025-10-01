@@ -16,16 +16,18 @@ struct Listen
 	Listen(unsigned int cip, unsigned int cport) : ip(cip), port(cport), to_lunch(true) {}
 };
 
+
+
 class ConfigUtils
 {
 	private:
 
 		static size_t _pos;
-		ConfigUtils(/* args */);
+		ConfigUtils( void );
 
 	public:
 
-		~ConfigUtils();
+		~ConfigUtils() {}
 		static	size_t						get_pos( void );
 		static	Listen						ip_host_parseur( const std::string &str);
 
