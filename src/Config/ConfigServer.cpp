@@ -15,7 +15,7 @@
 #include "ConfigLocation.hpp"
 #include "MyException.hpp"
 
-ConfigServer::ConfigServer() : _client_max_body_size(500000) ,_autoindex(UNKNOWN), _last_i_location(-1) {}
+ConfigServer::ConfigServer() : _client_max_body_size(500000) ,_autoindex(ON), _last_i_location(-1) {}
 ConfigServer::~ConfigServer() {}
 // ConfigServer::ConfigServer() {std::cout << "\ncontruct\n";}
 // ConfigServer::~ConfigServer() { std::cout << "\ndestru\n";}

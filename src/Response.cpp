@@ -370,9 +370,9 @@ void	Response::write_response(int& client_fd)
 	if (!(this->_body.empty()))
 		ss << this->_body;
 	response = ss.str();
-	char buffer[32];
-	if(recv(client_fd, buffer, sizeof(buffer), MSG_PEEK | MSG_DONTWAIT) != 0)
-		send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
+	// char buffer[32];
+	// if(recv(client_fd, buffer, sizeof(buffer), MSG_PEEK | MSG_DONTWAIT) != 0)
+	send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
 }
 
 void	Response::set_get_response()

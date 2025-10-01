@@ -13,17 +13,17 @@
 
 
 
-void clean_exit(std::map<int , ClientFd> &client_socket_server, int &epoll_fd, std::vector<Server *> &vec_server){
+void clean_exit(std::map<int , ClientFd> &fd_client_fd, int &epoll_fd, std::vector<Server *> &vec_server){
 
-	for (std::map<int , ClientFd>::iterator it = client_socket_server.begin(); it != client_socket_server.end();) {
-		it->second.del_epoll_and_close(epoll_fd);
-		client_socket_server.erase(it++);
+	for (std::map<int , ClientFd>::iterator it = fd_client_fd.begin(); it != fd_client_fd.end();) {
+		it->second.del_epoll_and_close(epoll_fd, it->first);
+		fd_client_fd.erase(it++);
 	}
 	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 	close(epoll_fd);
 }
 
-bool epollctl(int epoll_fd, int client_fd, const int events, int op){
+bool epollctl(int epoll_fd, int client_fd, const int events, int op) {
 
 	struct epoll_event ev;
 	std::memset(&ev, 0, sizeof(ev));
@@ -44,44 +44,39 @@ void set_nonblocking(int socket_fd) {
 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-bool check_add_new_connection(const std::vector<Server *> &vec_server, int &event_fd, int &epoll_fd, std::map<int, ClientFd> &client_socket_server)
+bool check_add_new_connection(const std::vector<Server *> &vec_server, int &event_fd, int &epoll_fd, std::map<int, ClientFd> &fd_client_fd)
 {
 	// std::cout << "Debug check_add_new_connection" << std::endl;
 	for (size_t i = 0; i < vec_server.size(); i++)
 	{
 		std::vector<int> vec_socket_fd = vec_server[i]->get_socket_fd();
-		const std::vector<Listen> &vec_listen = vec_server[i]->get_listen();
 
 		for (size_t j = 0; j < vec_socket_fd.size(); j++)
 		{
 			if (event_fd == vec_socket_fd[j]){
 
+				const std::vector<Listen> &vec_listen = vec_server[i]->get_listen();
+
 				int client_fd;
-				struct sockaddr_in client_addr;
-				socklen_t client_len = sizeof(client_addr);
-				client_fd = accept(vec_socket_fd[j], (struct sockaddr*)&client_addr, &client_len);
+
+				client_fd = accept(vec_socket_fd[j], NULL, NULL);
 				if (client_fd < 0) {
 					std::cerr << "accept failed :" << strerror(errno) << std::endl;
 					return (false);
 				}
 
-				struct linger sl;
-				sl.l_onoff = 1; // option on
-				sl.l_linger = 0; // delai a 0s
-				if (setsockopt(client_fd, SOL_SOCKET, SO_LINGER, &sl, sizeof(sl)) < 0) { // l'envoie du paquet rst
-					std::cerr << "setsockopt failed: " << strerror(errno) << std::endl;
-					return (true);
-				}
-
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
+
 				if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_ADD)) {
 					close(client_fd);
 					return (true);
 				}
-				client_socket_server[client_fd] = ClientFd(client_fd, vec_listen[j]); // save the client with the listen struct
 
-				std::cout	<< GREEN << "add new connection " << RESET << client_fd << std::endl;
+				fd_client_fd[client_fd] = ClientFd(vec_listen[j]); // save the client with the listen struct
+
+				std::cout << GREEN << "add new connection " << RESET << client_fd << std::endl;
+
 				return (true);
 			}
 		}
@@ -115,57 +110,3 @@ Server	*find_server_from_map(Listen client_fd_info, std::vector<Server *> &vec_s
 
 
 
-
-
-bool find_end_of_headers(std::vector<char>& buffer)
-{
-	if (buffer.size() < 4)
-		return (0);
-	else
-	{
-		std::vector<char>::iterator it = buffer.end() - 4;
-		if (*it++ != '\r')
-			return (0);
-		if (*it++ != '\n')
-			return (0);
-		if (*it++ != '\r')
-			return (0);
-		if (*it++ != '\n')
-			return (0);
-	}
-	// std::cout << "FINI" << std::endl;
-	return (1);
-}
-
-bool	max_size_reached(std::vector<char>& body, Server& server)
-{
-	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
-	{
-		return (1);
-	}
-	return (0);
-}
-
-bool	check_body(Request& request, Server& server, std::vector<char>& body)
-{
-	if (server.get_client_max_body_size() &&  (body.size() >  server.get_client_max_body_size()))
-	{
-		request.set_return_code(413);
-		return (0);
-	}
-	if (request.get_header("Content-Length").compare("Unexisting header"))
-	{
-		std::stringstream ss(request.get_header("Content-Length"));
-		size_t	len;
-		ss >> len;
-		if (body.size() == 1 && body[0] == '\n')
-			body.erase(body.begin());
-		if (len != body.size())
-		{
-			request.set_return_code(400);
-			return (0);
-		}
-		return (1);
-	}
-	return (1);
-}

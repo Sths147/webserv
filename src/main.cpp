@@ -1,22 +1,24 @@
 #define MAX_EVENTS			10
 #define	MAX_REQUESTS_LINE	20
 #define MAX_EVENTS			10
-#define MAX_BUFFER			1024
+#define MAX_BUFFER			1048
 
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <sys/epoll.h>
 #include <map>
 #include <csignal>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "Config.hpp"
 #include "Server.hpp"
-#include "MyException.hpp"
 #include "Response.hpp"
 #include "ClientFd.hpp"
 #include "main_utils.hpp"
+#include "MyException.hpp"
+
+
 
 //SIGNAL SIGINT
 bool interrupted = true;
@@ -28,8 +30,6 @@ void signalHandler(int) {
 int main(int ac, char **av)
 {
 	//----------------------------parsing of the config file + creation of every instanse of server with his config----------------------------
-
-
 	int epoll_fd;
 
 
@@ -77,19 +77,22 @@ int main(int ac, char **av)
 
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
-	std::map<int, ClientFd> client_socket_server;
+
+						std::map<int, ClientFd> fd_client_fd;
+
 	std::signal(SIGINT, signalHandler);
 	try {
 
 		while (interrupted) {
 
+			std::cout << "epollwait" << std::endl;
 			nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000);
 			if (nfds < 0) {
 
 				if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
 
-				clean_exit(client_socket_server, epoll_fd, vec_server);
+				clean_exit(fd_client_fd, epoll_fd, vec_server);
 				return (1);
 
 			} else if ( nfds > 0 ) {
@@ -97,67 +100,169 @@ int main(int ac, char **av)
 				for (int i = 0; i < nfds; i++) {
 
 					int client_fd = events[i].data.fd;
-					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, client_socket_server)) {
+					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, fd_client_fd)) {
+
+
+
+
+
+
+
+
+						// std::cout << "connection ok " << std::endl;
+
 
 						if (events[i].events & EPOLLIN) {
 
-							std::vector<char>	buffer;
-							ssize_t bytes = 1;
-							do {
-								char				tmp;
-								bytes = recv(client_fd, &tmp, sizeof(char), 0);
-								buffer.push_back(tmp);
-							}
-							while (bytes > 0 && !find_end_of_headers(buffer));
-							if (buffer.empty())
-								continue ;
 
-							Request	req1(buffer);
 
-							Server *serv = find_server_from_map(client_socket_server[client_fd].get_listen(), vec_server,req1);
 
-							std::vector<char>	body;
-							do {
-								char				tmp;
-								bytes = recv(client_fd, &tmp, sizeof(char), 0);
-								if (bytes > 0)
-									body.push_back(tmp);
-							} while (bytes > 0 && !max_size_reached(body, *serv));
 
-							if (check_body(req1, *serv, body))
-								req1.add_body(body);
+							// std::cout << GREEN << "EPOLLIN" <<RESET << std::endl;
 
-							Response rep(req1, *serv);
-							rep.write_response(client_fd);
+							char				tmp[MAX_BUFFER + 1];
 
-							if (!rep.get_connection_header().compare("Keep-alive")) {
-
-								client_socket_server[client_fd].refresh();
-
-							} else {
-
-								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
-								client_socket_server.erase(client_fd);
-
+							ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
+							if (bytes < 0){
+								throw (MyException("recv error"));
 							}
 
-						} else if (events[i].events & EPOLLRDHUP ) {
+							tmp[MAX_BUFFER] ='\0';
 
-								client_socket_server[client_fd].del_epoll_and_close(epoll_fd);
-								client_socket_server.erase(client_fd);
+							fd_client_fd[client_fd].add_buffer(tmp);
+
+							if (bytes < MAX_BUFFER) {
+
+								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
+									close(client_fd);
+									return (true);
+								}
+
+								// fd_client_fd[client_fd].construct_response();
+							}
+							//  else
+							// 	std::cout << "bytes de "<< bytes << std::endl;
+
+
+						} else if (events[i].events & EPOLLOUT ) {
+
+
+
+
+							std::cout << GREEN << "EPOLLOUT" <<RESET << std::endl;
+
+							try
+							{
+
+								if (fd_client_fd[client_fd].send_response(client_fd) == true){
+
+									// if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
+									// 	close(client_fd);
+									// 	return (true);
+									// }
+									fd_client_fd[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+									fd_client_fd.erase(client_fd);
+								}
+							}
+							catch(const int &e)
+							{
+								fd_client_fd[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+								fd_client_fd.erase(client_fd);
+							}
+
+						} else if ( events[i].events & EPOLLRDHUP ) {
+
+								fd_client_fd[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+								fd_client_fd.erase(client_fd);
 
 						}
 					}
 				}
+			} else {
+
+				for (std::map<int, ClientFd>::iterator it = fd_client_fd.begin(); it != fd_client_fd.end(); ){
+					if (!it->second.check_timeout()) {
+						fd_client_fd[it->first].del_epoll_and_close(epoll_fd, it->first);
+						fd_client_fd.erase(it++);
+					} else {
+						it++;
+					}
+				}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			}
 		}
+
 	} catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
 	}
-	clean_exit(client_socket_server, epoll_fd, vec_server);
+	clean_exit(fd_client_fd, epoll_fd, vec_server);
 	if (!interrupted){
 		std::cout << "\nSIGINT detected." << std::endl;
 		return (1);
 	}
 	return (0);
 }
+
+
+							// std::vector<char>	buffer;
+							// ssize_t bytes = 1;
+							// do {
+							// 	char				tmp;
+							// 	bytes = recv(client_fd, &tmp, sizeof(char), 0);
+							// 	buffer.push_back(tmp);
+							// }
+							// while (bytes > 0 && !find_end_of_headers(buffer));
+							// if (buffer.empty())
+							// 	continue ;
+ 							// continue;
+
+							// Request	req1(buffer);
+
+							// Server *serv = find_server_from_map(fd_client_fd[client_fd].get_listen(), vec_server,req1);
+
+							// std::vector<char>	body;
+							// do {
+							// 	char				tmp;
+							// 	bytes = recv(client_fd, &tmp, sizeof(char), 0);
+							// 	if (bytes > 0)
+							// 		body.push_back(tmp);
+							// } while (bytes > 0 && !max_size_reached(body, *serv));
+
+							// if (check_body(req1, *serv, body))
+								// req1.add_body(body);
+
+							// Response rep(req1, *serv);
+							// rep.write_response(client_fd);
+
+							// if (!rep.get_connection_header().compare("Keep-alive")) {
+
+							// 	fd_client_fd[client_fd].refresh();
+
+							// } else {
+
+							// 	fd_client_fd[client_fd].del_epoll_and_close(epoll_fd);
+							// 	fd_client_fd.erase(client_fd);
+
+							// }
