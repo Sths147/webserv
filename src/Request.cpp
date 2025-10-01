@@ -20,16 +20,18 @@ enum http_types {
 	HTAB = '\t'
 } t_http_types;
 
-// Request::Request()
-// : _type("NOTYPE")
-// {
-// }
+Request::Request()
+{
+}
 
-Request::Request(std::vector<char>&buff)
-: _return_code(0), _type(parse_request_type(buff)), _target(parse_request_target(buff)), _http_type(parse_http_type(buff)), _header(parse_header(buff))
+void 		Request::add_header(std::vector<char>&buff)
 {
 	// std::string	mybody(this->_body.begin(), this->_body.end());
 	// std::cout << "\n\n and here is the body" << mybody << std::endl;
+	this->_type = parse_request_type(buff);
+	this->_target = parse_request_target(buff);
+	this->_http_type = parse_http_type(buff);
+	this->_header = parse_header(buff);
 	this->parse_headers();
 	std::cout << "--------START PRINT HEADERS---------" << std::endl;
 	this->print_headers();
@@ -49,6 +51,8 @@ Request&	Request::operator=(const Request& other)
 Request::~Request()
 {
 }
+
+
 
 const std::map<std::string, std::string>	Request::get_headers() const
 {

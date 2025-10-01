@@ -16,18 +16,18 @@ class Request
 {
     private:
 		unsigned short int							_return_code;
-		const std::string							_type;
-		const std::string							_target;
-		const std::string							_http_type;
+		std::string									_type;
+		std::string									_target;
+		std::string									_http_type;
 		std::map<std::string, std::string>			_header;
-		const std::string							_server_name;
+		std::string									_server_name;
 		std::vector<char>							_body;
-		Request();
 
 	public:
-		Request(std::vector<char>&);
+		Request();
 		~Request();
 		Request&    								operator=(const Request&);
+		void 										add_header(std::vector<char>&);
 		const std::string							get_type() const;
 		const std::string							get_target() const;
 		const std::string							get_http_version() const;
