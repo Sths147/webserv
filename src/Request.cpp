@@ -22,6 +22,7 @@ enum http_types {
 
 Request::Request()
 {
+	this->_return_code = 0;
 }
 
 void 		Request::add_header(std::vector<char>&buff)
