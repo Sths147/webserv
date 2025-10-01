@@ -28,7 +28,7 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 		this->_header = other._header;
 		this->_time_to_reset = other._time_to_reset;
 		this->_host_port = other._host_port;
-		this->_respons = other._respons;
+		// this->_respons = other._respons;
 		this->_response = other._response;
 	}
 	return	*this;
@@ -50,10 +50,11 @@ bool	ClientFd::check_timeout( void ) {
 
 /*----timeout----*/
 
-bool			ClientFd::get_body_check( void ) { return(this->_body_check); }
-bool			ClientFd::get_header_saved( void ) { return(this->_header_saved); }
+const std::string		ClientFd::get_type() const { return(this->_request.get_type()); }
+bool					ClientFd::get_body_check( void ) { return(this->_body_check); }
+bool					ClientFd::get_header_saved( void ) { return(this->_header_saved); }
 
-void			ClientFd::print_vec(std::vector<char> &vec) {
+void					ClientFd::print_vec(std::vector<char> &vec) {
 
 	if (vec.begin() == vec.end()) {
 		return;
@@ -94,6 +95,31 @@ static bool	max_size_reached(std::vector<char>& body, Server *server)
 
 
 
+
+static bool	check_body(Request& request, Server *server, std::vector<char>& body)
+{
+	if (server->get_client_max_body_size() &&  (body.size() >  server->get_client_max_body_size()))
+	{
+		request.set_return_code(413);
+		return (0);
+	}
+	if (request.get_header("Content-Length").compare("Unexisting header"))
+	{
+		std::stringstream ss(request.get_header("Content-Length"));
+		size_t	len;
+		ss >> len;
+		if (body.size() == 1 && body[0] == '\n')
+			body.erase(body.begin());
+		if (len != body.size())
+		{
+			request.set_return_code(400);
+			return (0);
+		}
+		return (1);
+	}
+	return (1);
+}
+
 void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 
 	for (size_t i = 0; str[i]; i++) {
@@ -105,12 +131,13 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 			this->_buffer.clear();
 			this->_header_saved = true;
 			this->find_server_from_map(vec_server);
-			// this->_request.add_header(this->_header)
+			this->_request.add_header(this->_header);
 		}
 	}
-	if (this->_header_saved && max_size_reached(this->_buffer, this->_server)){
-		// this->_request.set_return_code(413);
-		;
+	if (this->_header_saved && this->_request.get_type() == "POST" && max_size_reached(this->_buffer, this->_server)){
+		if(check_body(this->_request, this->_server, this->_buffer)) {
+			this->_request.add_body(this->_buffer);
+		}
 	}
 	// this->print_vec(this->_header);
 	// this->print_vec(this->_buffer);
@@ -125,7 +152,7 @@ void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
 
 	for (size_t i = 0; i < vec_server.size(); i++) {
 
-		if (vec_server[i]->check_listen(this->_host_port)) { // && this->_request.check_hosts(vec_server[i]->get_server_name())) {
+		if (vec_server[i]->check_listen(this->_host_port) && this->_request.check_hosts(vec_server[i]->get_server_name())) {
 
 			this->_server = vec_server[i];
 		}
@@ -185,23 +212,3 @@ void		ClientFd::del_epoll_and_close( int epoll_fd, int client_fd ) {
 
 
 
-
-
-// bool	check_body(Request& request, Server& server, std::vector<char>& body)
-// {
-// 	if (request.get_header("Content-Length").compare("Unexisting header"))
-// 	{
-// 		std::stringstream ss(request.get_header("Content-Length"));
-// 		size_t	len;
-// 		ss >> len;
-// 		if (body.size() == 1 && body[0] == '\n')
-// 			body.erase(body.begin());
-// 		if (len != body.size())
-// 		{
-// 			request.set_return_code(400);
-// 			return (0);
-// 		}
-// 		return (1);
-// 	}
-// 	return (1);
-// }

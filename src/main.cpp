@@ -120,14 +120,16 @@ int main(int ac, char **av)
 
 							fd_to_info[client_fd].add_buffer(tmp, vec_server);
 
-							if (fd_to_info[client_fd].get_header_saved()) {
+							if (fd_to_info[client_fd].get_header_saved() && (!(fd_to_info[client_fd].get_type() == "POST") || fd_to_info[client_fd].get_body_check())) {
 
 								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
 									close(client_fd);
 									return (true);
 								}
+								// Response rep(req1, *serv);
+								// rep.write_response(client_fd);
+								// fd_to_info[client_fd].set_response();
 
-								// fd_to_info[client_fd].construct_response();
 							}
 							//  else
 							// 	std::cout << "bytes de "<< bytes << std::endl;
