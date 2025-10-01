@@ -354,9 +354,9 @@ static std::string		reason_phrase(unsigned short int& code)
 	return (httpErrorCodes[code]);
 }
 
-void	Response::write_response(int& client_fd)
+std::string	Response::construct_response(void)
 {
-	std::string	response;
+	// std::string	response;
 	std::stringstream ss;
 
 	ss << this->_http_type << " " << this->_status_code << " " << this->_reason_phrase;
@@ -369,10 +369,11 @@ void	Response::write_response(int& client_fd)
 	ss << "\r\n";
 	if (!(this->_body.empty()))
 		ss << this->_body;
-	response = ss.str();
+	// response = ss.str();
 	// char buffer[32];
 	// if(recv(client_fd, buffer, sizeof(buffer), MSG_PEEK | MSG_DONTWAIT) != 0)
-	send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
+	// send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
+	return (ss.str());
 }
 
 void	Response::set_get_response()

@@ -40,7 +40,8 @@ class Response
 		const std::string	determine_final_path(Request& request, Server& server);
 		void				set_error_response(Server& server);
 		void				set_status(const unsigned short int& code);
-		void				write_response(int&	client_fd);
+		// void				write_response(int&	client_fd);
+		std::string			construct_response(void);
 		void				set_get_response();
 		void				set_get_headers();
 		void				set_error_headers();

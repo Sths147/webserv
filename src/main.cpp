@@ -126,13 +126,8 @@ int main(int ac, char **av)
 									close(client_fd);
 									return (true);
 								}
-								// Response rep(req1, *serv);
-								// rep.write_response(client_fd);
-								// fd_to_info[client_fd].set_response();
-
+								fd_to_info[client_fd].creat_response();
 							}
-							//  else
-							// 	std::cout << "bytes de "<< bytes << std::endl;
 
 
 						} else if (events[i].events & EPOLLOUT ) {

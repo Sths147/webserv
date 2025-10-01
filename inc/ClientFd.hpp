@@ -24,11 +24,10 @@ class ClientFd
 		std::vector<char>	_header;
 
 		Request				_request;
-		// Response			_respons;
 		Server				*_server;
+		std::string			_response;
 
 
-		std::string	_response; // to delete
 
 		void			find_server_from_map(std::vector<Server *> &vec_server);
 
@@ -45,12 +44,15 @@ class ClientFd
 		/*----timeout----*/
 
 
+
 		const std::string	get_type() const;
 		bool				get_body_check( void );
 		bool				get_header_saved( void );
 
 		void				print_vec(std::vector<char> &vec);
 		void				add_buffer( char *str, std::vector<Server *> &vec_server );
+
+		void				creat_response( void );
 		bool				send_response( int client_fd );
 
 

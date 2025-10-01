@@ -169,6 +169,11 @@ void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
 
 
 
+void				ClientFd::creat_response( void ) {
+
+	Response rep(this->_request, *this->_server);
+	this->_response = rep.construct_response();
+}
 
 bool		ClientFd::send_response( int client_fd ) {
 
