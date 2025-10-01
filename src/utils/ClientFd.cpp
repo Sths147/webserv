@@ -167,11 +167,18 @@ void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
 	this->_server = vec_server[0];
 }
 
-
+bool				ClientFd::check_alive( void ) {
+	return (this->_alive);
+}
 
 void				ClientFd::creat_response( void ) {
 
 	Response rep(this->_request, *this->_server);
+	if (!rep.get_connection_header().compare("Keep-alive")) {
+		this->_alive = true;
+	} else {
+		this->_alive = false;
+	}
 	this->_response = rep.construct_response();
 }
 

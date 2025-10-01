@@ -103,44 +103,52 @@ int main(int ac, char **av)
 					int client_fd = events[i].data.fd;
 					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, fd_to_info)) {
 
-
-						// std::cout << "connection ok " << std::endl;
-
 						if (events[i].events & EPOLLIN) {
 
-							// std::cout << GREEN << "EPOLLIN" <<RESET << std::endl;
+							fd_to_info[client_fd].refresh();
 
 							char				tmp[MAX_BUFFER + 1];
 							std::memset(&tmp, 0, sizeof(tmp));
 
 							ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
 							if (bytes < 0){
-								throw (MyException("recv error"));
+								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
+									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+									fd_to_info.erase(client_fd);
+									close(client_fd);
+									continue;
+								}
 							}
 
 							fd_to_info[client_fd].add_buffer(tmp, vec_server);
 
 							if (fd_to_info[client_fd].get_header_saved() && (!(fd_to_info[client_fd].get_type() == "POST") || fd_to_info[client_fd].get_body_check())) {
-
 								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
+									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+									fd_to_info.erase(client_fd);
 									close(client_fd);
-									return (true);
+									continue;
 								}
 								fd_to_info[client_fd].creat_response();
 							}
-
-
 						} else if (events[i].events & EPOLLOUT ) {
 
 							try
 							{
+								fd_to_info[client_fd].refresh();
+
 								if (fd_to_info[client_fd].send_response(client_fd) == true){
-									// if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
-									// 	close(client_fd);
-									// 	return (true);
-									// }
-									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-									fd_to_info.erase(client_fd);
+									if (fd_to_info[client_fd].check_alive()) {
+										if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
+											fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+											fd_to_info.erase(client_fd);
+											close(client_fd);
+											continue;
+										}
+									} else {
+										fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+										fd_to_info.erase(client_fd);
+									}
 								}
 							}
 							catch(const int &e)
@@ -148,12 +156,10 @@ int main(int ac, char **av)
 								fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
 								fd_to_info.erase(client_fd);
 							}
-
 						} else if ( events[i].events & EPOLLRDHUP ) {
 
 								fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
 								fd_to_info.erase(client_fd);
-
 						}
 					}
 				}
@@ -167,29 +173,6 @@ int main(int ac, char **av)
 						it++;
 					}
 				}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 			}
 		}
 

@@ -25,6 +25,7 @@ class ClientFd
 
 		Request				_request;
 		Server				*_server;
+		bool				_alive;
 		std::string			_response;
 
 
@@ -48,6 +49,7 @@ class ClientFd
 		const std::string	get_type() const;
 		bool				get_body_check( void );
 		bool				get_header_saved( void );
+		bool				check_alive( void );
 
 		void				print_vec(std::vector<char> &vec);
 		void				add_buffer( char *str, std::vector<Server *> &vec_server );
