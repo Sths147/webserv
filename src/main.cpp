@@ -122,7 +122,8 @@ int main(int ac, char **av)
 
 							fd_to_info[client_fd].add_buffer(tmp, vec_server);
 
-							if (fd_to_info[client_fd].get_header_saved() && (!(fd_to_info[client_fd].get_type() == "POST") || fd_to_info[client_fd].get_body_check())) {
+							if (fd_to_info[client_fd].get_header_saved() && !(fd_to_info[client_fd].get_type() == "POST")) {
+
 								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
 									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
 									fd_to_info.erase(client_fd);
@@ -130,7 +131,20 @@ int main(int ac, char **av)
 									continue;
 								}
 								fd_to_info[client_fd].creat_response();
+
 							}
+							// else if (fd_to_info[client_fd].get_header_saved() && (fd_to_info[client_fd].get_type() == "POST") && ) {
+
+							// 	if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
+							// 		fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+							// 		fd_to_info.erase(client_fd);
+							// 		close(client_fd);
+							// 		continue;
+							// 	}
+							// 	fd_to_info[client_fd].creat_response();
+
+							// }
+
 						} else if (events[i].events & EPOLLOUT ) {
 
 							try
@@ -138,7 +152,7 @@ int main(int ac, char **av)
 								fd_to_info[client_fd].refresh();
 
 								if (fd_to_info[client_fd].send_response(client_fd) == true){
-									if (fd_to_info[client_fd].check_alive()) {
+									if (!fd_to_info[client_fd].check_alive()) {
 										if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
 											fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
 											fd_to_info.erase(client_fd);

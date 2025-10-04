@@ -8,30 +8,32 @@
 
 ClientFd::ClientFd( void ) {}
 
-ClientFd::ClientFd(const Listen &listen ) : _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _body_check(false) ,_header_saved(false), _server(NULL), _response("") {
-
-	this->_response =
-		"HTTP/1.1 404 OK\r\n"
-		"Content-Type: text/html\r\n"
-		"Connection: close\r\n"
-		"\r\n"
-		"<html><head><title>Welcome</title></head>"
-		"<body><h2>Hello, World!</h2></body></html>";
+ClientFd::ClientFd(const Listen &listen ) : _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _body_check(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
 }
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
 {
 	// std::cout << BLUE << "Operator '=' is Called" << RESET << std::endl;
 	if (this != &other){
+		this->_time_to_reset = other._time_to_reset;
+		this->_host_port = other._host_port;
+
+		this->_body_check = other._body_check;
 		this->_buffer = other._buffer;
 		this->_header_saved = other._header_saved;
 		this->_header = other._header;
-		this->_time_to_reset = other._time_to_reset;
-		this->_host_port = other._host_port;
-		// this->_respons = other._respons;
+
+		this->_request = other._request;
+		this->_server = other._server;
+		this->_alive = other._alive;
 		this->_response = other._response;
 	}
 	return	*this;
+}
+
+
+ClientFd::~ClientFd( void ) {
+	delete this->_request;
 }
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
@@ -50,7 +52,7 @@ bool	ClientFd::check_timeout( void ) {
 
 /*----timeout----*/
 
-const std::string		ClientFd::get_type() const { return(this->_request.get_type()); }
+const std::string		ClientFd::get_type() const { return(this->_request->get_type()); }
 bool					ClientFd::get_body_check( void ) { return(this->_body_check); }
 bool					ClientFd::get_header_saved( void ) { return(this->_header_saved); }
 
@@ -122,6 +124,8 @@ static bool	check_body(Request& request, Server *server, std::vector<char>& body
 
 void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 
+	if (this->_request == NULL)
+		this->_request = new Request;
 	for (size_t i = 0; str[i]; i++) {
 
 		this->_buffer.push_back(str[i]);
@@ -131,12 +135,12 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 			this->_buffer.clear();
 			this->_header_saved = true;
 			this->find_server_from_map(vec_server);
-			this->_request.add_header(this->_header);
+			this->_request->add_header(this->_header);
 		}
 	}
-	if (this->_header_saved && this->_request.get_type() == "POST" && max_size_reached(this->_buffer, this->_server)){
-		if(check_body(this->_request, this->_server, this->_buffer)) {
-			this->_request.add_body(this->_buffer);
+	if (this->_header_saved && this->_request->get_type() == "POST" && max_size_reached(this->_buffer, this->_server)){
+		if(check_body(*this->_request, this->_server, this->_buffer)) {
+			this->_request->add_body(this->_buffer);
 		}
 	}
 	// this->print_vec(this->_header);
@@ -152,7 +156,7 @@ void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
 
 	for (size_t i = 0; i < vec_server.size(); i++) {
 
-		if (vec_server[i]->check_listen(this->_host_port) && this->_request.check_hosts(vec_server[i]->get_server_name())) {
+		if (vec_server[i]->check_listen(this->_host_port) && this->_request->check_hosts(vec_server[i]->get_server_name())) {
 
 			this->_server = vec_server[i];
 		}
@@ -173,7 +177,7 @@ bool				ClientFd::check_alive( void ) {
 
 void				ClientFd::creat_response( void ) {
 
-	Response rep(this->_request, *this->_server);
+	Response rep(*this->_request, *this->_server);
 	if (!rep.get_connection_header().compare("Keep-alive")) {
 		this->_alive = true;
 	} else {

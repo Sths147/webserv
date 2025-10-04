@@ -23,7 +23,7 @@ class ClientFd
 		bool				_header_saved;
 		std::vector<char>	_header;
 
-		Request				_request;
+		Request				*_request;
 		Server				*_server;
 		bool				_alive;
 		std::string			_response;
@@ -36,6 +36,7 @@ class ClientFd
 		ClientFd( void );
 		ClientFd(const Listen &listen);
 		ClientFd &operator=( const ClientFd &other );
+		~ClientFd( void );
 
 		Listen				get_listen( void );
 
