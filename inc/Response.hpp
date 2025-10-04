@@ -12,7 +12,6 @@
 
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
-
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
@@ -31,7 +30,10 @@ class Response
 		std::string											_body;
 		std::string											_type;
 		bool												_autoindex;
+		std::vector<std::string>							_envp;
 
+		void						_creat_envp(Request &req);
+		std::vector<const char *>	_extrac_envp( void );
 	public:
 		Response();
 		Response(Request &request, Server &server);

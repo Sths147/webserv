@@ -27,9 +27,14 @@ Response::~Response()
 {
 }
 
+#define RESET "\033[0m"
+#define RED "\033[31m"
+
 Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type())
 {
+	this->_creat_envp(request);
+
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	//check if client max body size and implement return code accordingly
@@ -356,7 +361,6 @@ static std::string		reason_phrase(unsigned short int& code)
 
 std::string	Response::construct_response(void)
 {
-	// std::string	response;
 	std::stringstream ss;
 
 	ss << this->_http_type << " " << this->_status_code << " " << this->_reason_phrase;
@@ -367,12 +371,10 @@ std::string	Response::construct_response(void)
 			ss << it->first << ": " << it->second << "\r\n";
 	}
 	ss << "\r\n";
-	if (!(this->_body.empty()))
+	if (!(this->_body.empty())){
 		ss << this->_body;
-	// response = ss.str();
-	// char buffer[32];
-	// if(recv(client_fd, buffer, sizeof(buffer), MSG_PEEK | MSG_DONTWAIT) != 0)
-	// send(client_fd, response.c_str(), response.length(), MSG_DONTWAIT);
+		// std::cout << RED << this->_body.c_str() <<RESET<< std::endl; //comm--flo
+	}
 	return (ss.str());
 }
 
@@ -413,6 +415,7 @@ void	Response::set_get_response()
 	}
 	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IROTH))
 	{
+		// std::cout << RED << "je suis path.c_str(): " << this->_path.c_str() <<RESET<< std::endl; //comm--flo
 		std::ifstream				file;
 		std::string					line;
 		std::vector<std::string>	all_lines;
@@ -756,15 +759,60 @@ void 		Response::print_headers() const {
 	}
 }
 
-// static void			creat_envp(){
-// 	std::vector<std::string> vec_string;
 
-// }
 
+
+
+static std::string normalize_header_cgi_metavariable(const std::string& header_name) {
+	std::string normalized_name = "HTTP_";
+
+	// 1. Convert caps and underscore.
+	for (size_t i = 0; i < header_name.size(); i++) {
+		char c = header_name[i];
+		if (c == '-') {
+			normalized_name += '_';
+		} else {
+			normalized_name += std::toupper(static_cast<unsigned char>(c));
+		}
+	}
+
+	// 2. For content -> type and lenght do not change.
+	if (normalized_name == "HTTP_CONTENT_TYPE") {
+		return "CONTENT_TYPE";
+	}
+	if (normalized_name == "HTTP_CONTENT_LENGTH") {
+		return "CONTENT_LENGTH";
+	}
+	//3. More special case.
+
+	return (normalized_name);
+}
+
+void			Response::_creat_envp(Request &req) {
+
+	const std::map<std::string, std::string> ptr = req.get_headers();
+
+	for (std::map<std::string, std::string>::const_iterator it = ptr.begin();
+		it != ptr.end(); it++) {
+
+		std::string str = normalize_header_cgi_metavariable(it->first) + "=" + it->second;
+		this->_envp.push_back(str);
+	}
+}
+
+
+
+std::vector<const char *> Response::_extrac_envp( void ) {
+
+	std::vector<const char *> vec_char;
+
+	for (size_t i = 0; i < this->_envp.size(); i++)
+	{
+		vec_char.push_back(this->_envp[i].c_str());
+	}
+	return vec_char;
+}
 // int				Response::exec_cgi(void){
-// 	this
-// 	//creat envp
-
 
 // 	this->cgi()
 // }

@@ -6,3 +6,5 @@ webserv
 .objs
 deps
 .vscode
+out
+out*
