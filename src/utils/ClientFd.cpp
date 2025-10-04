@@ -6,7 +6,7 @@
 #define RESET "\033[0m"
 #define RED "\033[31m"
 
-ClientFd::ClientFd( void ) {}
+ClientFd::ClientFd( void ) :_request(NULL) {}
 
 ClientFd::ClientFd(const Listen &listen ) : _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _body_check(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
 }
@@ -23,7 +23,7 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 		this->_header_saved = other._header_saved;
 		this->_header = other._header;
 
-		this->_request = other._request;
+		// this->_request = other._request; // never copie or its will be "double free"
 		this->_server = other._server;
 		this->_alive = other._alive;
 		this->_response = other._response;
@@ -33,7 +33,8 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 
 
 ClientFd::~ClientFd( void ) {
-	delete this->_request;
+	if (this->_request != NULL)
+		delete this->_request;
 }
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
@@ -177,7 +178,12 @@ bool				ClientFd::check_alive( void ) {
 
 void				ClientFd::creat_response( void ) {
 
+	if (this->_request == NULL) {
+		return ;
+	}
 	Response rep(*this->_request, *this->_server);
+	delete this->_request;
+	this->_request = NULL;
 	if (!rep.get_connection_header().compare("Keep-alive")) {
 		this->_alive = true;
 	} else {

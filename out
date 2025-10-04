@@ -1,10 +1,10 @@
-==34990== Memcheck, a memory error detector
-==34990== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==34990== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==34990== Memcheck, a memory error detector
-==34990== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==34990== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==34990== Command: ./webserv conf/mini.conf
-==34990== 
-==34990== Command: ./webserv conf/mini.conf
-==34990== 
+==35714== Memcheck, a memory error detector
+==35714== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==35714== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==35714== Command: ./webserv conf/mini.conf
+==35714== 
+==35714== Memcheck, a memory error detector
+==35714== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==35714== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==35714== Command: ./webserv conf/mini.conf
+==35714== 
