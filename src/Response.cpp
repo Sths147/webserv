@@ -33,15 +33,21 @@ Response::~Response()
 Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type())
 {
-	this->_creat_envp(request);
-
+	
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
-	//check if client max body size and implement return code accordingly
-	// std::cout << "Path :" << this->_path << std::endl;
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
-	if (this->_status_code == 0 && !server.get_inlocation_return().empty())
+	//	if (cgi())
+	// {
+	// 	this->_creat_envp(request);
+	// 	//exe code
+	// 	// write result -> Body
+	// 	// set_headers();
+	// }
+	//check if client max body size and implement return code accordingly
+	// std::cout << "Path :" << this->_path << std::endl;
+	else if (this->_status_code == 0 && !server.get_inlocation_return().empty())
 		this->set_status(301);
 	// std::cout << "PAAATH " << this->_path << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
