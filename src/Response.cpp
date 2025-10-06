@@ -27,8 +27,8 @@ Response::~Response()
 {
 }
 
-#define RESET "\033[0m"
-#define RED "\033[31m"
+// #define RESET "\033[0m"
+// #define RED "\033[31m"
 
 Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type())
@@ -751,6 +751,15 @@ void				Response::check_allowed_method(const std::string& _method_requested, Ser
 	}
 }
 
+
+
+
+
+
+
+
+
+
 void 		Response::print_headers() const {
 
 	for (std::map<std::string, std::string>::const_iterator it = this->_header.begin(); it != this->_header.end(); it++) {
@@ -758,10 +767,6 @@ void 		Response::print_headers() const {
 		std::cout << it->first << "=" << it->second << std::endl;
 	}
 }
-
-
-
-
 
 static std::string normalize_header_cgi_metavariable(const std::string& header_name) {
 	std::string normalized_name = "HTTP_";
@@ -783,6 +788,11 @@ static std::string normalize_header_cgi_metavariable(const std::string& header_n
 	if (normalized_name == "HTTP_CONTENT_LENGTH") {
 		return "CONTENT_LENGTH";
 	}
+
+	/*
+	QUERY_SRING
+	*/
+
 	//3. More special case.
 
 	return (normalized_name);
@@ -792,15 +802,25 @@ void			Response::_creat_envp(Request &req) {
 
 	const std::map<std::string, std::string> ptr = req.get_headers();
 
+	this->_envp.push_back(std::string("SERVER_SOFTWARE=WEBSERVE/1.0"));
+	this->_envp.push_back(std::string("GATEWAY_INTERFACE=HTTP/1.1"));
 	for (std::map<std::string, std::string>::const_iterator it = ptr.begin();
 		it != ptr.end(); it++) {
 
 		std::string str = normalize_header_cgi_metavariable(it->first) + "=" + it->second;
 		this->_envp.push_back(str);
 	}
+	// this->_envp.push_back(std::string("REQUEST_METHOD="+ /*path*/));
+	// this->_envp.push_back(std::string("SCRIPT_NAME="+ /*path*/)); // data_heure.sh
+	// this->_envp.push_back(std::string("PATH_INFO="+ /*path*/));// /cgi/cgi-bash/
+	// this->_envp.push_back(std::string("SERVER_PROTOCOL="+ /*path*/));
+	// this->_envp.push_back(std::string("QUERY_SRING="+ /*?.....*/));
+	
+	
+	
+	//dont care but better
+	// this->_envp.push_back(std::string("PATH_TRANSLATED="+ /*path*/));// /home/fcretin/project/webserv/server_files/cgi/cgi-bash/
 }
-
-
 
 std::vector<const char *> Response::_extrac_envp( void ) {
 
@@ -812,9 +832,11 @@ std::vector<const char *> Response::_extrac_envp( void ) {
 	}
 	return vec_char;
 }
+
 // int				Response::exec_cgi(void){
 
-// 	this->cgi()
+// 	std::vector<const char *> vec_char = this->_extrac_envp()
+	// char **env = vec_char.data(;)
 // }
 
 
