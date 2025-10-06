@@ -30,6 +30,39 @@ Response::~Response()
 // #define RESET "\033[0m"
 // #define RED "\033[31m"
 
+bool Response::_is_cgi(Request& request, Server& server) {
+
+	(void)server;
+	std::string path = request.get_target().substr(0, request.get_target().find_first_of('?'));
+	// std::cout << "path: '" << path << "'"<< std::endl;
+	if (path.empty() || path.find('.') == std::string::npos) {
+		// std::cout << "FALSE1"<< std::endl;
+		return false;
+	}
+	if (!server.check_location(path)) {
+		// std::cout << "FALSE2: check_location not found"<< std::endl;
+		return false;
+	}
+
+	std::string extension = path.substr(path.find('.'), path.length());
+	// std::cout << "extension: '" << extension << "'"<< std::endl;
+	// std::cout << "server.get_inlocation_cgi_extension(): '" << server.get_inlocation_cgi_extension() << "'"<< std::endl;
+	if (server.get_inlocation_cgi_extension().find(extension) != std::string::npos && ()) {
+		std::cout << "FALSE3"<< std::endl;
+		return false;
+	}
+
+	//check if config.cgi_extension if config.cgi.path&extension
+	
+	
+	
+	
+	return true;
+
+
+}
+
+
 Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type())
 {
@@ -38,16 +71,16 @@ Response::Response(Request& request, Server& server)
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
-	//	if (cgi())
-	// {
-	// 	this->_creat_envp(request);
-	// 	//exe code
-	// 	// write result -> Body
-	// 	// set_headers();
-	// }
+	if (this->_is_cgi(request, server))
+	{
+		this->_creat_envp(request);
+		//exe code
+		// write result -> Body
+		// set_headers();
+	}
 	//check if client max body size and implement return code accordingly
 	// std::cout << "Path :" << this->_path << std::endl;
-	else if (this->_status_code == 0 && !server.get_inlocation_return().empty())
+	if (this->_status_code == 0 && !server.get_inlocation_return().empty())
 		this->set_status(301);
 	// std::cout << "PAAATH " << this->_path << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
@@ -809,7 +842,8 @@ void			Response::_creat_envp(Request &req) {
 	const std::map<std::string, std::string> ptr = req.get_headers();
 
 	this->_envp.push_back(std::string("SERVER_SOFTWARE=WEBSERVE/1.0"));
-	this->_envp.push_back(std::string("GATEWAY_INTERFACE=HTTP/1.1"));
+	this->_envp.push_back(std::string("GATEWAY_INTERFACE=CGI/1.1"));
+	this->_envp.push_back(std::string("SERVER_PROTOCOL=HTTP/1.1"));
 	for (std::map<std::string, std::string>::const_iterator it = ptr.begin();
 		it != ptr.end(); it++) {
 
@@ -820,12 +854,7 @@ void			Response::_creat_envp(Request &req) {
 	// req.get_target(); a toute la target /location/script.py?=ARG1OBJ1;
 	// this->_envp.push_back(std::string("SCRIPT_NAME=" +  /*path*/)); // data_heure.sh
 	// this->_envp.push_back(std::string("PATH_INFO=" + /*path*/));// /cgi/cgi-bash/
-	// this->_envp.push_back(std::string("SERVER_PROTOCOL="+ /*path*/));
 	this->_envp.push_back(std::string("QUERY_SRING="+ this->get_arguments()));
-	
-	
-	
-	//dont care but better
 	this->_envp.push_back(std::string("PATH_TRANSLATED="+ this->get_path()));// /home/fcretin/project/webserv/server_files/cgi/cgi-bash/
 }
 

@@ -257,3 +257,8 @@ const	std::string									&ConfigServer::get_inlocation_root( void )			const { i
 const	autoindexvalue								&ConfigServer::get_inlocation_autoindex( void )		const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_autoindex()); }
 
 const	std::string									&ConfigServer::get_inlocation_return( void )		const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_return()); }
+
+const	std::string									&ConfigServer::get_inlocation_cgi_path( void )		const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_cgi_path()); }
+
+const	std::string									&ConfigServer::get_inlocation_cgi_extension( void )	const { if (this->_last_i_location == -1) throw (MyException("Error : no location find vector index == -1")); return (this->_vConfLocal[this->_last_i_location].get_cgi_extension()); }
+

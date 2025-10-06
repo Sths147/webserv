@@ -34,6 +34,7 @@ class Response
 
 		void						_creat_envp(Request &req);
 		std::vector<const char *>	_extrac_envp( void );
+		bool						_is_cgi(Request& request, Server& server);
 	public:
 		Response();
 		Response(Request &request, Server &server);

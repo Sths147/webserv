@@ -35,6 +35,8 @@ class Server
 		const	std::string									&get_inlocation_root( void ) const ;
 		const	autoindexvalue								&get_inlocation_autoindex( void ) const ;
 		const	std::string									&get_inlocation_return( void ) const ;
+		const	std::string									&get_inlocation_cgi_path( void ) const ;
+		const	std::string									&get_inlocation_cgi_extension( void ) const ;
 
 		~Server();
 };
