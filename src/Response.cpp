@@ -810,16 +810,17 @@ void			Response::_creat_envp(Request &req) {
 		std::string str = normalize_header_cgi_metavariable(it->first) + "=" + it->second;
 		this->_envp.push_back(str);
 	}
-	// this->_envp.push_back(std::string("REQUEST_METHOD="+ /*path*/));
-	// this->_envp.push_back(std::string("SCRIPT_NAME="+ /*path*/)); // data_heure.sh
-	// this->_envp.push_back(std::string("PATH_INFO="+ /*path*/));// /cgi/cgi-bash/
+	this->_envp.push_back(std::string("REQUEST_METHOD=" + req.get_type() /*path*/));
+	// req.get_target(); a toute la target /location/script.py?=ARG1OBJ1;
+	// this->_envp.push_back(std::string("SCRIPT_NAME=" +  /*path*/)); // data_heure.sh
+	// this->_envp.push_back(std::string("PATH_INFO=" + /*path*/));// /cgi/cgi-bash/
 	// this->_envp.push_back(std::string("SERVER_PROTOCOL="+ /*path*/));
-	// this->_envp.push_back(std::string("QUERY_SRING="+ /*?.....*/));
+	this->_envp.push_back(std::string("QUERY_SRING="+ this->get_arguments()));
 	
 	
 	
 	//dont care but better
-	// this->_envp.push_back(std::string("PATH_TRANSLATED="+ /*path*/));// /home/fcretin/project/webserv/server_files/cgi/cgi-bash/
+	this->_envp.push_back(std::string("PATH_TRANSLATED="+ this->get_path()));// /home/fcretin/project/webserv/server_files/cgi/cgi-bash/
 }
 
 std::vector<const char *> Response::_extrac_envp( void ) {
