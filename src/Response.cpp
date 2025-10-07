@@ -70,10 +70,7 @@ bool Response::_is_cgi(Request& request, Server& server) {
 		return false;
 	}
 
-
-
 	return true;
-
 }
 
 
@@ -883,74 +880,80 @@ std::vector<const char *> Response::_extrac_envp( void ) {
 	return vec_char;
 }
 
-// int				Response::exec_cgi(void){
+void				Response::exec_cgi(void) {
 
-// 	std::vector<const char *> vec_char = this->_extrac_envp()
-	// char **env = vec_char.data(;)
-// }
+	std::vector<const char *> vec_char = this->_extrac_envp();
+	const char **env = vec_char.data();
+	(void)env;
 
 
-// int				Response::cgi(char *path, char **script, char **envp) {
+	// this->cgi( , , env);
 
-// 	pid_t	pid;
-// 	int		status;
-// 	int		pipe_in[2];
-// 	int		pipe_out[2];
-// 	const bool	secound_pipe = this->_type == "POST";
+}
 
-// 	if (pipe(pipe_out) == -1){
 
-// 		close(pipe_out[0]);
-// 		close(pipe_out[1]);
-// 		return (-1);
-// 	}
-// 	if (secound_pipe) {
+void				Response::cgi(char *path, char **script, char **envp) {
 
-// 		if (pipe(pipe_in) == -1) {
+	pid_t	pid;
+	// int		status;
+	int		pipe_in[2];
+	int		pipe_out[2];
+	const bool	secound_pipe = this->_type == "POST";
 
-// 			close(pipe_out[0]);
-// 			close(pipe_out[1]);
-// 			close(pipe_in[0]);
-// 			close(pipe_in[1]);
-// 			return (-1);
-// 		}
-// 	}
-// 	pid = fork();
-// 	if (pid == -1){
+	if (pipe(pipe_out) == -1){
 
-// 		close(pipe_out[0]);
-// 		close(pipe_out[1]);
-// 		if (secound_pipe) {
+		close(pipe_out[0]);
+		close(pipe_out[1]);
+		// return (-1);
+	}
+	if (secound_pipe) {
 
-// 			close(pipe_in[0]);
-// 			close(pipe_in[1]);
-// 		}
-// 		return (-1);
+		if (pipe(pipe_in) == -1) {
 
-// 	} else if (pid == 0) {
+			close(pipe_out[0]);
+			close(pipe_out[1]);
+			close(pipe_in[0]);
+			close(pipe_in[1]);
+			// return (-1);
+		}
+	}
+	pid = fork();
+	if (pid == -1){
 
-// 		dup2(pipe_out[1], 1);
-// 		close(pipe_out[0]);
-// 		close(pipe_out[1]);
-// 		if (secound_pipe) {
+		close(pipe_out[0]);
+		close(pipe_out[1]);
+		if (secound_pipe) {
 
-// 			dup2(pipe_in[0], 0);
-// 			close(pipe_in[0]);
-// 			close(pipe_in[1]);
-// 		}
-// 		execve(path, script, envp);
+			close(pipe_in[0]);
+			close(pipe_in[1]);
+		}
+		// return (-1);
 
-// 	} else {
-// 		dup2(pipe_out[0], 0);
-// 		close(pipe_out[0]);
-// 		close(pipe_out[1]);
-// 		if (secound_pipe) {
+	} else if (pid == 0) {
 
-// 			dup2(pipe_in[1], 1);
-// 			close(pipe_in[0]);
-// 			close(pipe_in[1]);
-// 		}
+		dup2(pipe_out[1], 1);
+		close(pipe_out[0]);
+		close(pipe_out[1]);
+		if (secound_pipe) {
 
-// 		// waitpid(pid, &status, /*nowait just to know if its work*/ );
-// 	}
-// }
+			dup2(pipe_in[0], 0);
+			close(pipe_in[0]);
+			close(pipe_in[1]);
+		}
+		execve(path, script, envp);
+		exit(0);
+
+	} else {
+		dup2(pipe_out[0], 0);
+		close(pipe_out[0]);
+		close(pipe_out[1]);
+		if (secound_pipe) {
+
+			dup2(pipe_in[1], 1);
+			close(pipe_in[0]);
+			close(pipe_in[1]);
+		}
+
+		// waitpid(pid, &status, /*nowait just to know if its work*/ );
+	}
+}

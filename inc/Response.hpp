@@ -68,8 +68,8 @@ class Response
 		void				set_redirect(Server& server);
 		void				open_file(std::ofstream& file, std::vector<char>& buff);
 		void 				print_headers() const ;
-		// int					exec_cgi(void);
-		int					cgi(char *path, char **script, char **envp);
+		void					exec_cgi(void);
+		void					cgi(char *path, char **script, char **envp);
 };
 
 #endif
