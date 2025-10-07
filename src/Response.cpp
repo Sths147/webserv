@@ -34,31 +34,45 @@ bool Response::_is_cgi(Request& request, Server& server) {
 
 	(void)server;
 	std::string path = request.get_target().substr(0, request.get_target().find_first_of('?'));
-	// std::cout << "path: '" << path << "'"<< std::endl;
+	std::cout << "path: '" << path << "'"<< std::endl;
 	if (path.empty() || path.find('.') == std::string::npos) {
 		// std::cout << "FALSE1"<< std::endl;
 		return false;
 	}
+
 	if (!server.check_location(path)) {
 		// std::cout << "FALSE2: check_location not found"<< std::endl;
 		return false;
 	}
-
 	std::string extension = path.substr(path.find('.'), path.length());
+
 	// std::cout << "extension: '" << extension << "'"<< std::endl;
+	// std::cout << "server.get_inlocation_location(): '" << server.get_inlocation_location() << "'"<< std::endl;
 	// std::cout << "server.get_inlocation_cgi_extension(): '" << server.get_inlocation_cgi_extension() << "'"<< std::endl;
-	if (server.get_inlocation_cgi_extension().find(extension) != std::string::npos && ()) {
-		std::cout << "FALSE3"<< std::endl;
+
+	std::size_t cgi_extension_pos = server.get_inlocation_cgi_extension().find(extension);
+	if (cgi_extension_pos == std::string::npos) {
+		// std::cout << "FALSE3"<< std::endl;
+		return false;
+	}
+	if (server.get_inlocation_cgi_extension()[cgi_extension_pos + extension.length()] != '\0') {
+		// std::cout << "FALSE4"<< std::endl;
 		return false;
 	}
 
-	//check if config.cgi_extension if config.cgi.path&extension
-	
-	
-	
-	
-	return true;
+	std::size_t cgi_path_pos = server.get_inlocation_cgi_path().find(extension);
+	if	(cgi_path_pos == std::string::npos) {
+		std::cout << "FALSE5"<< std::endl;
+		return false;
+	}
+	if	(server.get_inlocation_cgi_path()[cgi_path_pos + extension.length()] != ':') {
+		std::cout << "FALSE6"<< std::endl;
+		return false;
+	}
 
+
+
+	return true;
 
 }
 

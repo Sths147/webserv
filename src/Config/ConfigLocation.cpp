@@ -99,7 +99,19 @@ void	ConfigLocation::set_autoindex( const autoindexvalue b ) {this->_autoindex =
 void	ConfigLocation::set_return( const std::string &str ) { this->_return = str; }
 
 
-void	ConfigLocation::set_cgi_path( const std::string &str ) { this->_cgi_path = str; }
+void	ConfigLocation::set_cgi_path( const std::string &str ) {
+
+	std::cout << str << std::endl;
+	if (str.find(":") == std::string::npos) {
+		throw (std::string("Error : something wrong it should be: 'extension:path'"));
+	}
+	std::size_t pos = str.find(":");
+	
+	if ( pos < 2 || str[pos + 1 ] == '\0' ) {
+		throw (std::string("Error : something wrong it should be: 'extension:path'"));
+	}
+	this->_cgi_path = str;
+}
 
 void	ConfigLocation::set_cgi_extension( const std::string &str ) { this->_cgi_extension = str; }
 

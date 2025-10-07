@@ -102,7 +102,9 @@ const	std::string									&Server::get_root( void )								const { return (this-
 const	autoindexvalue								&Server::get_autoindex( void )							const { return (this->_ConfServer.get_autoindex()); }
 const	std::string									&Server::get_return( void )								const { return (this->_ConfServer.get_return()); }
 
+
 bool												Server::check_location( const std::string key ) { return (this->_ConfServer.check_location(key)); }
+
 const	std::string									&Server::get_inlocation_location( void ) 				const { return (this->_ConfServer.get_inlocation_location()); }
 const	std::vector<std::string>					&Server::get_inlocation_index( void )					const { return (this->_ConfServer.get_inlocation_index()); }
 const	std::map<unsigned short int, std::string>	&Server::get_inlocation_error_page( void )				const { return (this->_ConfServer.get_inlocation_error_page()); }

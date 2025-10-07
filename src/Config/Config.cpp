@@ -136,8 +136,16 @@ void			Config::set_in_location( std::string &directive, std::string &line, int &
 	} else if (directive == "cgi_path") {
 
 		std::string arg = ConfigUtils::get_one_token(line);
-		std::cout << "cgi_path : "<< arg << std::endl;
-		this->_vConfServer[server].set_inlocation_cgi_path(location, arg);
+		// std::cout << "cgi_path : "<< arg << std::endl;
+		try
+		{
+			this->_vConfServer[server].set_inlocation_cgi_path(location, arg);
+		}
+		catch(const std::string& e)
+		{
+			throw (MyException(e, line));
+		}
+		
 
 	} else if (directive == "cgi_extension") {
 
