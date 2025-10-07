@@ -31,6 +31,8 @@ class Response
 		std::string											_type;
 		bool												_autoindex;
 		std::vector<std::string>							_envp;
+		std::string											_path_cgi;
+		std::string											_script_name;
 
 		void						_creat_envp(Request &req);
 		std::vector<const char *>	_extrac_envp( void );
@@ -69,7 +71,7 @@ class Response
 		void				open_file(std::ofstream& file, std::vector<char>& buff);
 		void 				print_headers() const ;
 		void					exec_cgi(void);
-		void					cgi(char *path, char **script, char **envp);
+		void					cgi(const char *path, const char **script, const char **envp);
 };
 
 #endif

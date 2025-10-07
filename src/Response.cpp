@@ -27,29 +27,25 @@ Response::~Response()
 {
 }
 
-// #define RESET "\033[0m"
-// #define RED "\033[31m"
+#define RESET "\033[0m"
+#define RED "\033[31m"
 
 bool Response::_is_cgi(Request& request, Server& server) {
 
-	(void)server;
 	std::string path = request.get_target().substr(0, request.get_target().find_first_of('?'));
-	std::cout << "path: '" << path << "'"<< std::endl;
+	// std::cout << "path: '" << path << "'"<< std::endl;
 	if (path.empty() || path.find('.') == std::string::npos) {
 		// std::cout << "FALSE1"<< std::endl;
 		return false;
 	}
-
 	if (!server.check_location(path)) {
 		// std::cout << "FALSE2: check_location not found"<< std::endl;
 		return false;
 	}
 	std::string extension = path.substr(path.find('.'), path.length());
-
 	// std::cout << "extension: '" << extension << "'"<< std::endl;
 	// std::cout << "server.get_inlocation_location(): '" << server.get_inlocation_location() << "'"<< std::endl;
 	// std::cout << "server.get_inlocation_cgi_extension(): '" << server.get_inlocation_cgi_extension() << "'"<< std::endl;
-
 	std::size_t cgi_extension_pos = server.get_inlocation_cgi_extension().find(extension);
 	if (cgi_extension_pos == std::string::npos) {
 		// std::cout << "FALSE3"<< std::endl;
@@ -59,17 +55,26 @@ bool Response::_is_cgi(Request& request, Server& server) {
 		// std::cout << "FALSE4"<< std::endl;
 		return false;
 	}
-
 	std::size_t cgi_path_pos = server.get_inlocation_cgi_path().find(extension);
 	if	(cgi_path_pos == std::string::npos) {
-		std::cout << "FALSE5"<< std::endl;
+		// std::cout << "FALSE5"<< std::endl;
 		return false;
 	}
 	if	(server.get_inlocation_cgi_path()[cgi_path_pos + extension.length()] != ':') {
-		std::cout << "FALSE6"<< std::endl;
+		// std::cout << "FALSE6"<< std::endl;
 		return false;
 	}
-
+	if (extension != server.get_inlocation_cgi_path().substr(0, server.get_inlocation_cgi_path().find(':'))) {
+		// std::cout << "FALSE7"<< std::endl;
+		return false;
+	}
+	this->_path_cgi = server.get_inlocation_cgi_path().substr(server.get_inlocation_cgi_path().find(':') + 1 , server.get_inlocation_cgi_path().size());
+	// std::cout <<this->_path_cgi<< std::endl;
+	if (this->_path_cgi.empty()) {
+		// std::cout << "FALSE8"<< std::endl;
+		return false;
+	}
+	std::cout << RED<< "TRUE"<<RESET<< std::endl;
 	return true;
 }
 
@@ -85,9 +90,9 @@ Response::Response(Request& request, Server& server)
 	if (this->_is_cgi(request, server))
 	{
 		this->_creat_envp(request);
-		//exe code
-		// write result -> Body
+		this->exec_cgi();
 		// set_headers();
+		return;
 	}
 	//check if client max body size and implement return code accordingly
 	// std::cout << "Path :" << this->_path << std::endl;
@@ -861,12 +866,12 @@ void			Response::_creat_envp(Request &req) {
 		std::string str = normalize_header_cgi_metavariable(it->first) + "=" + it->second;
 		this->_envp.push_back(str);
 	}
-	this->_envp.push_back(std::string("REQUEST_METHOD=" + req.get_type() /*path*/));
-	// req.get_target(); a toute la target /location/script.py?=ARG1OBJ1;
-	// this->_envp.push_back(std::string("SCRIPT_NAME=" +  /*path*/)); // data_heure.sh
-	// this->_envp.push_back(std::string("PATH_INFO=" + /*path*/));// /cgi/cgi-bash/
+	this->_envp.push_back(std::string("REQUEST_METHOD=" + req.get_type()));
 	this->_envp.push_back(std::string("QUERY_SRING="+ this->get_arguments()));
 	this->_envp.push_back(std::string("PATH_TRANSLATED="+ this->get_path()));// /home/fcretin/project/webserv/server_files/cgi/cgi-bash/
+	this->_envp.push_back(std::string("PATH_INFO=" + req.get_target().substr(0, req.get_target().find_last_of('/'))));// /cgi/cgi-bash/
+	this->_script_name = req.get_target().substr(req.get_target().find_last_of('/') + 1, req.get_target().size());
+	this->_envp.push_back(std::string("SCRIPT_NAME=" +  this->_script_name)); // data_heure.sh
 }
 
 std::vector<const char *> Response::_extrac_envp( void ) {
@@ -883,19 +888,41 @@ std::vector<const char *> Response::_extrac_envp( void ) {
 void				Response::exec_cgi(void) {
 
 	std::vector<const char *> vec_char = this->_extrac_envp();
-	const char **env = vec_char.data();
-	(void)env;
+	vec_char.push_back(NULL);
 
 
-	// this->cgi( , , env);
+	std::vector<const char *> vec_arg;
+	vec_arg.push_back(this->_path.c_str());
+	vec_arg.push_back(NULL);
+
+	// std::cout << "this->_path "<<this->_path<<std::endl;
+
+	this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data());
+	
+	
+	
+	
+
+
+
+
+
+	
+	// std::cout << "path "<<this->_path<<std::endl;
+	// (void)path;
+
+
 
 }
 
+#define MAX_BUFFER			1044
 
-void				Response::cgi(char *path, char **script, char **envp) {
+#include <sys/wait.h>
+#include <cstring>
+void				Response::cgi(const char *path, const char **script, const char **envp) {
 
 	pid_t	pid;
-	// int		status;
+	int		status;
 	int		pipe_in[2];
 	int		pipe_out[2];
 	const bool	secound_pipe = this->_type == "POST";
@@ -940,12 +967,11 @@ void				Response::cgi(char *path, char **script, char **envp) {
 			close(pipe_in[0]);
 			close(pipe_in[1]);
 		}
-		execve(path, script, envp);
+		execve(path, const_cast<char *const *>(script), const_cast<char *const *>(envp));
 		exit(0);
 
 	} else {
-		dup2(pipe_out[0], 0);
-		close(pipe_out[0]);
+		// close(pipe_out[0]);
 		close(pipe_out[1]);
 		if (secound_pipe) {
 
@@ -954,6 +980,25 @@ void				Response::cgi(char *path, char **script, char **envp) {
 			close(pipe_in[1]);
 		}
 
-		// waitpid(pid, &status, /*nowait just to know if its work*/ );
+		do
+		{
+			pid_t tmp = waitpid(pid, &status, WNOHANG);
+			if (tmp == pid) {
+				break;
+			}
+			char				buff[MAX_BUFFER + 1];
+			std::memset(&tmp, 0, sizeof(tmp));
+			
+			ssize_t bytes = recv(pipe_out[0], &buff, MAX_BUFFER , 0);
+			if (bytes > 0){
+				std::cout <<RED<< "READ PIPEOUT ERROR"<< RESET<<std::endl;
+				break;
+			}
+			this->_body+= tmp;
+			if (bytes == 0 || bytes < MAX_BUFFER) {
+				break;
+			}
+		} while (1);
+		
 	}
 }
