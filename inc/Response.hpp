@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:45:52 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/10 15:01:01 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/07 11:45:56 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class Response
 		void				set_get_response();
 		void				set_get_headers();
 		void				set_error_headers();
+		void				set_cgi_headers();
 		void				set_post_response(Request& request);
 		void				set_delete_response(Request& request);
 		void				set_delete_headers();

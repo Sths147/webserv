@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sithomas <sithomas@student.42lyon.fr>      +#+  +:+       +#+        */
+/*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/09/10 18:25:09 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/07 11:45:45 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -725,6 +725,21 @@ void	Response::set_delete_headers()
 void	Response::set_post_headers()
 {
 	this->_header["Content-Type"] = "text/plain";
+	this->_header["Connection"] = "Keep-alive";
+	std::stringstream ss;
+	std::string			len;
+	if (!this->_body.empty())
+	{
+		ss << this->_body.length();
+		ss >> len;
+		this->_header["Content-Length"] = len;
+	}
+}
+
+void	Response::set_cgi_headers()
+{
+	//
+	this->_header["Content-type"] = "text/plain";
 	this->_header["Connection"] = "Keep-alive";
 	std::stringstream ss;
 	std::string			len;
