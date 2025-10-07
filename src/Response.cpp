@@ -91,8 +91,9 @@ Response::Response(Request& request, Server& server)
 	{
 		this->_creat_envp(request);
 		this->exec_cgi();
-		// set_headers();
+		this->set_cgi_headers();
 		return;
+		// set_headers();
 	}
 	//check if client max body size and implement return code accordingly
 	// std::cout << "Path :" << this->_path << std::endl;
@@ -739,7 +740,7 @@ void	Response::set_post_headers()
 void	Response::set_cgi_headers()
 {
 	//
-	this->_header["Content-type"] = "text/plain";
+	// this->_header["Content-type"] = "text/plain";
 	this->_header["Connection"] = "Keep-alive";
 	std::stringstream ss;
 	std::string			len;
@@ -907,10 +908,11 @@ void				Response::exec_cgi(void) {
 
 
 	std::vector<const char *> vec_arg;
+	vec_arg.push_back(this->_path_cgi.c_str());
 	vec_arg.push_back(this->_path.c_str());
 	vec_arg.push_back(NULL);
 
-	// std::cout << "this->_path "<<this->_path<<std::endl;
+	std::cout << "this->_path "<<this->_path<<std::endl;
 
 	this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data());
 	
@@ -930,8 +932,9 @@ void				Response::exec_cgi(void) {
 
 }
 
-#define MAX_BUFFER			1044
+#define MAX_BUFFER			10
 
+#define YELLOW "\033[33m"
 #include <sys/wait.h>
 #include <cstring>
 void				Response::cgi(const char *path, const char **script, const char **envp) {
@@ -947,6 +950,7 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 		close(pipe_out[0]);
 		close(pipe_out[1]);
 		// return (-1);
+		return ;
 	}
 	if (secound_pipe) {
 
@@ -957,6 +961,7 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 			close(pipe_in[0]);
 			close(pipe_in[1]);
 			// return (-1);
+			return ;
 		}
 	}
 	pid = fork();
@@ -970,9 +975,10 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 			close(pipe_in[1]);
 		}
 		// return (-1);
+		return ;
 
 	} else if (pid == 0) {
-
+		std::cerr << "child enter" << std::endl;
 		dup2(pipe_out[1], 1);
 		close(pipe_out[0]);
 		close(pipe_out[1]);
@@ -983,37 +989,44 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 			close(pipe_in[1]);
 		}
 		execve(path, const_cast<char *const *>(script), const_cast<char *const *>(envp));
+
 		exit(0);
 
 	} else {
 		// close(pipe_out[0]);
-		close(pipe_out[1]);
+		// close(pipe_out[1]);
 		if (secound_pipe) {
 
-			dup2(pipe_in[1], 1);
-			close(pipe_in[0]);
-			close(pipe_in[1]);
+			// dup2(pipe_in[1], 1);
+			// close(pipe_in[0]);
+			// close(pipe_in[1]);
 		}
 
 		do
 		{
 			pid_t tmp = waitpid(pid, &status, WNOHANG);
+			// std::cout << YELLOW << "waitpid: "<< tmp << RESET << std::endl;
 			if (tmp == pid) {
-				break;
-			}
-			char				buff[MAX_BUFFER + 1];
-			std::memset(&tmp, 0, sizeof(tmp));
-			
-			ssize_t bytes = recv(pipe_out[0], &buff, MAX_BUFFER , 0);
-			if (bytes > 0){
-				std::cout <<RED<< "READ PIPEOUT ERROR"<< RESET<<std::endl;
-				break;
-			}
-			this->_body+= tmp;
-			if (bytes == 0 || bytes < MAX_BUFFER) {
+				std::cout <<RED<< "equal pid"<< RESET<<std::endl;
 				break;
 			}
 		} while (1);
 		
+		
+			char				buff[MAX_BUFFER + 1];
+			std::memset(&buff, 0, sizeof(buff));
+			
+			ssize_t bytes = read(pipe_out[0], &buff, MAX_BUFFER);
+			std::cout <<YELLOW<< "bytes readed: "<< bytes<< RESET<<std::endl;
+			if (bytes == -1){
+				std::cout << RED << "READ PIPEOUT ERROR" << RESET << std::endl;
+				return;
+			}
+			this->_body+= buff;
+
+			if (bytes == 0 || bytes < MAX_BUFFER) {
+				std::cout <<RED<< "read finish: "<< bytes<< RESET<<std::endl;
+				return;
+			}
 	}
 }

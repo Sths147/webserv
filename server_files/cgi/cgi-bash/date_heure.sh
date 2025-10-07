@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # En-tête HTTP obligatoire, suivi d'une ligne vide
-echo "Content-type: text/html"
-echo ""
+# echo "Content-type: text/html"
+# echo ""
 
 # Contenu HTML dynamique
 echo "<html><head><title>CGI Bash</title></head><body>"
