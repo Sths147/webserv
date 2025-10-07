@@ -912,27 +912,11 @@ void				Response::exec_cgi(void) {
 	vec_arg.push_back(this->_path.c_str());
 	vec_arg.push_back(NULL);
 
-	std::cout << "this->_path "<<this->_path<<std::endl;
-
 	this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data());
-	
-	
-	
-	
-
-
-
-
-
-	
-	// std::cout << "path "<<this->_path<<std::endl;
-	// (void)path;
-
-
 
 }
 
-#define MAX_BUFFER			10
+#define MAX_BUFFER			1048
 
 #define YELLOW "\033[33m"
 #include <sys/wait.h>
@@ -978,7 +962,6 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 		return ;
 
 	} else if (pid == 0) {
-		std::cerr << "child enter" << std::endl;
 		dup2(pipe_out[1], 1);
 		close(pipe_out[0]);
 		close(pipe_out[1]);
@@ -988,13 +971,18 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 			close(pipe_in[0]);
 			close(pipe_in[1]);
 		}
+
 		execve(path, const_cast<char *const *>(script), const_cast<char *const *>(envp));
 
 		exit(0);
 
 	} else {
+
+
+
+		
 		// close(pipe_out[0]);
-		// close(pipe_out[1]);
+		close(pipe_out[1]);
 		if (secound_pipe) {
 
 			// dup2(pipe_in[1], 1);

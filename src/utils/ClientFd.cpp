@@ -8,7 +8,7 @@
 
 ClientFd::ClientFd( void ) :_request(NULL) {}
 
-ClientFd::ClientFd(const Listen &listen ) : _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _body_check(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
+ClientFd::ClientFd(const Listen &listen ) : _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
 }
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
@@ -18,7 +18,7 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 		this->_time_to_reset = other._time_to_reset;
 		this->_host_port = other._host_port;
 
-		this->_body_check = other._body_check;
+		this->_body_saved = other._body_saved;
 		this->_buffer = other._buffer;
 		this->_header_saved = other._header_saved;
 		this->_header = other._header;
@@ -54,7 +54,7 @@ bool	ClientFd::check_timeout( void ) {
 /*----timeout----*/
 
 const std::string		ClientFd::get_type() const { return(this->_request->get_type()); }
-bool					ClientFd::get_body_check( void ) { return(this->_body_check); }
+bool					ClientFd::get_body_check( void ) { return(this->_body_saved); }
 bool					ClientFd::get_header_saved( void ) { return(this->_header_saved); }
 
 void					ClientFd::print_vec(std::vector<char> &vec) {
@@ -142,6 +142,7 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 	if (this->_header_saved && this->_request->get_type() == "POST" && max_size_reached(this->_buffer, this->_server)){
 		if(check_body(*this->_request, this->_server, this->_buffer)) {
 			this->_request->add_body(this->_buffer);
+
 		}
 	}
 	// this->print_vec(this->_header);

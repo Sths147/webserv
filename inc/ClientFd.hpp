@@ -18,7 +18,7 @@ class ClientFd
 		time_t				_time_to_reset; //sec
 		Listen				_host_port;
 
-		bool				_body_check;
+		bool				_body_saved;
 		std::vector<char>	_buffer; // buffer when read and body if its was a POST
 		bool				_header_saved;
 		std::vector<char>	_header;

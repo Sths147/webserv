@@ -133,7 +133,7 @@ int main(int ac, char **av)
 								fd_to_info[client_fd].creat_response();
 
 							}
-							else if (fd_to_info[client_fd].get_header_saved() && (fd_to_info[client_fd].get_type() == "POST")) {
+							else if (fd_to_info[client_fd].get_header_saved() && (fd_to_info[client_fd].get_type() == "POST") && fd_to_info[client_fd].get_body_check()) {
 
 								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
 									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
