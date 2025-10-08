@@ -66,7 +66,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (true);
 				}
 
-				fd_to_info[client_fd] = new ClientFd(vec_listen[j]); // save the client with the listen struct
+				fd_to_info[client_fd] = new ClientFd(vec_listen[j], client_fd); // save the client with the listen struct
 
 				std::cout << GREEN << "add new connection " << RESET << client_fd << std::endl;
 
@@ -84,7 +84,7 @@ void clean_exit(std::map<int, Client *> &fd_to_info, int &epoll_fd, std::vector<
 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end();) {
 
 		if (dynamic_cast<ClientFd *>(it->second) != NULL) {
-			dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd, it->first);
+			dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
 			delete it->second;
 
 		} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
@@ -105,7 +105,7 @@ void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd){
 
 		if (!it->second->check_timeout()) {
 			if (dynamic_cast<ClientFd *>(it->second) != NULL) {
-				dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd, it->first);
+				dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
 				delete it->second;
 			} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
 				;

@@ -13,13 +13,13 @@
 class ClientCgi : protected Client
 {
 	private:
+		void			_abstrait(void);
 
 		int					_fd_in; // pipe_in[1]
 		std::string			_body_request;
 		int					_fd_out; // pipe_out[0]
 		std::string			_output_cgi;
 
-		void			_abstrait(void);
 
 
 	public:

@@ -8,7 +8,9 @@
 
 ClientFd::ClientFd( void ) : _request(NULL) {}
 
-ClientFd::ClientFd(const Listen &listen ) : _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
+// ClientFd::ClientFd(const Listen &listen ) : _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
+// }
+ClientFd::ClientFd(const Listen &listen , int fd) : _fd(fd), _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
 }
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
@@ -202,8 +204,6 @@ bool		ClientFd::send_response( int client_fd ) {
 
 
 
-void			ClientFd::_abstrait(void) {;}
-
 
 
 
@@ -217,9 +217,9 @@ void			ClientFd::_abstrait(void) {;}
 
 #include <unistd.h>
 #include <sys/epoll.h>
-void		ClientFd::del_epoll_and_close( int epoll_fd, int client_fd ) {
-	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-	close(client_fd);
+void		ClientFd::del_epoll_and_close( int epoll_fd) {
+	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, this->_fd, NULL);
+	close(this->_fd);
 }
 
 

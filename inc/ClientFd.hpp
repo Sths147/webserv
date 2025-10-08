@@ -17,6 +17,7 @@ class ClientFd : public Client
 {
 	private:
 
+		int					_fd;
 		Listen				_host_port;
 
 		bool				_body_saved;
@@ -31,12 +32,13 @@ class ClientFd : public Client
 
 
 
-		void			_abstrait(void);
 		void			find_server_from_map(std::vector<Server *> &vec_server);
 
 	public:
 		ClientFd( void );
-		ClientFd(const Listen &listen);
+		// ClientFd(const Listen &listen);
+
+		ClientFd(const Listen &listen, int fd);
 		ClientFd &operator=( const ClientFd &other );
 		~ClientFd( void );
 
@@ -56,7 +58,7 @@ class ClientFd : public Client
 		bool				send_response( int client_fd );
 
 
-		void				del_epoll_and_close( int epoll_fd, int client_fd );
+		void				del_epoll_and_close( int epoll_fd );
 
 };
 

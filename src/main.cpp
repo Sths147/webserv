@@ -127,7 +127,7 @@ int main(int ac, char **av)
 								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
 								if (bytes < 0){
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										ptr->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 										close(client_fd);
@@ -140,7 +140,7 @@ int main(int ac, char **av)
 
 									std::cout << YELLOW << "creat_response GET" << RESET << std::endl;
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										ptr->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 										close(client_fd);
@@ -153,7 +153,7 @@ int main(int ac, char **av)
 
 									std::cout << YELLOW << "creat_response POST" << RESET << std::endl;
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										ptr->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 										close(client_fd);
@@ -181,14 +181,14 @@ int main(int ac, char **av)
 
 									if (!ptr->check_alive()) {
 										if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
-											ptr->del_epoll_and_close(epoll_fd, client_fd);
+											ptr->del_epoll_and_close(epoll_fd);
 											delete fd_to_info[client_fd];
 											fd_to_info.erase(client_fd);
 											close(client_fd);
 											continue;
 										}
 									} else {
-										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										ptr->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 									}
@@ -197,7 +197,7 @@ int main(int ac, char **av)
 							}
 							catch(const int &e)
 							{
-								ptr->del_epoll_and_close(epoll_fd, client_fd);
+								ptr->del_epoll_and_close(epoll_fd);
 								delete fd_to_info[client_fd];
 								fd_to_info.erase(client_fd);
 							}
@@ -210,7 +210,7 @@ int main(int ac, char **av)
 						if (typeclient == CLIENTFD) {
 							ClientFd* ptr = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 
-							ptr->del_epoll_and_close(epoll_fd, client_fd);
+							ptr->del_epoll_and_close(epoll_fd);
 							delete fd_to_info[client_fd];
 							fd_to_info.erase(client_fd);
 						} else if (typeclient == CLIENTCGI) {

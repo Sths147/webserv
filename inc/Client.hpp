@@ -21,12 +21,14 @@ class   Client
 		private:
 
 		time_t				_time_to_reset; //sec
-		virtual void				_abstrait(void) = 0;
+
 		public:
 		/*----timeout----*/
 		virtual ~Client( void );
 		void				refresh( void );
 		bool				check_timeout( void );
-};
+
+		virtual void				del_epoll_and_close( int epoll_fd ) = 0;
+	};
 
 #endif
