@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <ctime>
+#include "main_utils.hpp"
 
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
@@ -30,43 +31,9 @@ Response::~Response()
 #define RESET "\033[0m"
 #define RED "\033[31m"
 
-bool Response::_is_cgi(Request& request, Server& server) {
 
-	std::string path = request.get_target().substr(0, request.get_target().find_first_of('?'));
-	if (path.empty() || path.find('.') == std::string::npos) {
-		return false;
-	}
-	if (!server.check_location(path)) {
-		return false;
-	}
-	std::string extension = path.substr(path.find('.'), path.length());
-	std::size_t cgi_extension_pos = server.get_inlocation_cgi_extension().find(extension);
-	if (cgi_extension_pos == std::string::npos) {
-		return false;
-	}
-	if (server.get_inlocation_cgi_extension()[cgi_extension_pos + extension.length()] != '\0') {
-		return false;
-	}
-	std::size_t cgi_path_pos = server.get_inlocation_cgi_path().find(extension);
-	if	(cgi_path_pos == std::string::npos) {
-		return false;
-	}
-	if	(server.get_inlocation_cgi_path()[cgi_path_pos + extension.length()] != ':') {
-		return false;
-	}
-	if (extension != server.get_inlocation_cgi_path().substr(0, server.get_inlocation_cgi_path().find(':'))) {
-		return false;
-	}
-	this->_path_cgi = server.get_inlocation_cgi_path().substr(server.get_inlocation_cgi_path().find(':') + 1 , server.get_inlocation_cgi_path().size());
-	if (this->_path_cgi.empty()) {
-		return false;
-	}
-	return true;
-}
-
-
-Response::Response(Request& request, Server& server)
-: _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type())
+Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, int &epoll_fd)
+: _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
 {
 
 	this->_header["Server"] = "42WEBSERV";
@@ -76,10 +43,15 @@ Response::Response(Request& request, Server& server)
 	if (this->_is_cgi(request, server))
 	{
 		this->_creat_envp(request);
-		this->exec_cgi();
-		this->set_cgi_headers();
+		if (this->exec_cgi(fd_to_info, epoll_fd)) {
+			;
+			//error lunch cgi
+		}
+		this->_cgi_started = true;
 		return;
-		// set_headers();
+
+
+		// this->set_cgi_headers();
 	}
 	//check if client max body size and implement return code accordingly
 	// std::cout << "Path :" << this->_path << std::endl;
@@ -104,6 +76,7 @@ Response::Response(Request& request, Server& server)
 	// this->print_headers();
 	// std::cout << "-------------------------" << std::endl;
 }
+
 
 Response&	Response::operator=(const Response& other)
 {
@@ -161,6 +134,13 @@ const bool&									Response::get_autoindex() const
 {
 	return (this->_autoindex);
 }
+
+
+const bool&									Response::get_cgi_status() const
+{
+	return (this->_cgi_started);
+}
+
 
 static std::string	set_full_path(Server& server, std::string& path)
 {
@@ -413,7 +393,7 @@ std::string	Response::construct_response(void)
 			ss << it->first << ": " << it->second << "\r\n";
 	}
 	ss << "\r\n";
-	if (!(this->_body.empty())){
+	if (!(this->_body.empty())) {
 		ss << this->_body;
 		// std::cout << RED << this->_body.c_str() <<RESET<< std::endl; //comm--flo
 	}
@@ -888,19 +868,57 @@ std::vector<const char *> Response::_extrac_envp( void ) {
 	return vec_char;
 }
 
-void				Response::exec_cgi(void) {
+
+/*--------- CGI ---------*/
+
+bool Response::_is_cgi(Request& request, Server& server) {
+
+	std::string path = request.get_target().substr(0, request.get_target().find_first_of('?'));
+	if (path.empty() || path.find('.') == std::string::npos) {
+		return false;
+	}
+	if (!server.check_location(path)) {
+		return false;
+	}
+	std::string extension = path.substr(path.find('.'), path.length());
+	std::size_t cgi_extension_pos = server.get_inlocation_cgi_extension().find(extension);
+	if (cgi_extension_pos == std::string::npos) {
+		return false;
+	}
+	if (server.get_inlocation_cgi_extension()[cgi_extension_pos + extension.length()] != '\0') {
+		return false;
+	}
+	std::size_t cgi_path_pos = server.get_inlocation_cgi_path().find(extension);
+	if	(cgi_path_pos == std::string::npos) {
+		return false;
+	}
+	if	(server.get_inlocation_cgi_path()[cgi_path_pos + extension.length()] != ':') {
+		return false;
+	}
+	if (extension != server.get_inlocation_cgi_path().substr(0, server.get_inlocation_cgi_path().find(':'))) {
+		return false;
+	}
+	this->_path_cgi = server.get_inlocation_cgi_path().substr(server.get_inlocation_cgi_path().find(':') + 1 , server.get_inlocation_cgi_path().size());
+	if (this->_path_cgi.empty()) {
+		return false;
+	}
+	return true;
+}
+
+int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, int &epoll_fd) {
 
 	std::vector<const char *> vec_char = this->_extrac_envp();
 	vec_char.push_back(NULL);
-
 
 	std::vector<const char *> vec_arg;
 	vec_arg.push_back(this->_path_cgi.c_str());
 	vec_arg.push_back(this->_path.c_str());
 	vec_arg.push_back(NULL);
 
-	this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data());
-
+	if (this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data(), fd_to_info, epoll_fd)) {
+		return (-1);
+	}
+	return (0);
 }
 
 #define MAX_BUFFER			1048
@@ -908,22 +926,22 @@ void				Response::exec_cgi(void) {
 #define YELLOW "\033[33m"
 #include <sys/wait.h>
 #include <cstring>
+#include <sys/epoll.h>
+// maybe cookie...
 // set-cookie="qwerq=qwe"
 // Cookie=qwe
-void				Response::cgi(const char *path, const char **script, const char **envp) {
+int				Response::cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, int &epoll_fd) {
 
 	pid_t	pid;
-	int		status;
 	int		pipe_in[2];
 	int		pipe_out[2];
 	const bool	secound_pipe = this->_type == "POST";
 
-	if (pipe(pipe_out) == -1){
+	if (pipe(pipe_out) == -1) {
 
 		close(pipe_out[0]);
 		close(pipe_out[1]);
-		// return (-1);
-		return ;
+		return (-1);
 	}
 	if (secound_pipe) {
 
@@ -933,12 +951,11 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 			close(pipe_out[1]);
 			close(pipe_in[0]);
 			close(pipe_in[1]);
-			// return (-1);
-			return ;
+			return (-1);
 		}
 	}
 	pid = fork();
-	if (pid == -1){
+	if (pid == -1) {
 
 		close(pipe_out[0]);
 		close(pipe_out[1]);
@@ -947,10 +964,10 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 			close(pipe_in[0]);
 			close(pipe_in[1]);
 		}
-		// return (-1);
-		return ;
+		return (-1);
 
 	} else if (pid == 0) {
+
 		dup2(pipe_out[1], 1);
 		close(pipe_out[0]);
 		close(pipe_out[1]);
@@ -962,43 +979,61 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 		}
 
 		execve(path, const_cast<char *const *>(script), const_cast<char *const *>(envp));
-
-		exit(0);
+		exit(0); // TODO PROTECTION NEEDED BB
 
 	} else {
-		// close(pipe_out[0]);
+
 		close(pipe_out[1]);
 		if (secound_pipe) {
-
-			// dup2(pipe_in[1], 1);
-			// close(pipe_in[0]);
-			// close(pipe_in[1]);
+			close(pipe_in[0]);
 		}
-		do
-		{
-			pid_t tmp = waitpid(pid, &status, WNOHANG);
-			// std::cout << YELLOW << "waitpid: "<< tmp << RESET << std::endl;
-			if (tmp == pid) {
-				// std::cout <<RED<< "equal pid" <<RESET<<std::endl;
-				break;
+
+		Client * ptr1 = new ClientCgi(pipe_out[0], -1);
+
+		if (!epollctl(epoll_fd, pipe_out[0], EPOLLIN, EPOLL_CTL_ADD)) {
+			close(pipe_out[0]);
+			delete ptr1;
+			return (-1);
+		}
+		dynamic_cast<ClientCgi *>(ptr1)->set_pid(pid);
+		fd_to_info[pipe_out[0]] = ptr1;
+		if (secound_pipe) {
+			Client * ptr2 = new ClientCgi(-1, pipe_in[1]);
+			if (!epollctl(epoll_fd, pipe_in[1], EPOLLOUT, EPOLL_CTL_ADD)) {
+				close(pipe_out[0]);
+				delete ptr2;
+				return (-1);
 			}
-		} while (1);
+			fd_to_info[pipe_in[1]] = ptr2;
+			dynamic_cast<ClientCgi *>(ptr2)->add_body_request(this->_req->get_body());
+		}
+
+		// do
+		// {
+		// 	pid_t tmp = waitpid(pid, &status, WNOHANG);
+		// 	// std::cout << YELLOW << "waitpid: "<< tmp << RESET << std::endl;
+		// 	if (tmp == pid) {
+		// 		// std::cout <<RED<< "equal pid" <<RESET<<std::endl;
+		// 		break;
+		// 	}
+		// } while (1);
 
 
-			char				buff[MAX_BUFFER + 1];
-			std::memset(&buff, 0, sizeof(buff));
+		// 	char				buff[MAX_BUFFER + 1];
+		// 	std::memset(&buff, 0, sizeof(buff));
 
-			ssize_t bytes = read(pipe_out[0], &buff, MAX_BUFFER);
-			// std::cout <<YELLOW<< "bytes readed: "<< bytes<< RESET<<std::endl;
-			if (bytes == -1){
-				// std::cout << RED << "READ PIPEOUT ERROR" << RESET << std::endl;
-				return;
-			}
-			this->_body+= buff;
+		// 	ssize_t bytes = read(pipe_out[0], &buff, MAX_BUFFER);
+		// 	// std::cout <<YELLOW<< "bytes readed: "<< bytes<< RESET<<std::endl;
+		// 	if (bytes == -1) {
+		// 		// std::cout << RED << "READ PIPEOUT ERROR" << RESET << std::endl;
+		// 		return;
+		// 	}
+		// 	this->_body+= buff;
 
-			if (bytes == 0 || bytes < MAX_BUFFER) {
-				// std::cout <<RED<< "read finish: "<< bytes<< RESET<<std::endl;
-				return;
-			}
+		// 	if (bytes == 0 || bytes < MAX_BUFFER) {
+		// 		// std::cout <<RED<< "read finish: "<< bytes<< RESET<<std::endl;
+		// 		return;
+		// 	}
 	}
+	return (0);
 }

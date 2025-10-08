@@ -15,11 +15,13 @@
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
+#include "ClientCgi.hpp"
 
 
 class Response
 {
 	private:
+		Request												*_req;
 		unsigned short int									_status_code;
 		std::string											_path;
 		std::string											_http_type;
@@ -33,19 +35,19 @@ class Response
 		std::vector<std::string>							_envp;
 		std::string											_path_cgi;
 		std::string											_script_name;
+		bool												_cgi_started;
 
 		void						_creat_envp(Request &req);
 		std::vector<const char *>	_extrac_envp( void );
 		bool						_is_cgi(Request& request, Server& server);
 	public:
 		Response();
-		Response(Request &request, Server &server);
+		Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, int &epoll_fd);
 		~Response();
 		Response&	operator=(const Response&);
 		const std::string	determine_final_path(Request& request, Server& server);
 		void				set_error_response(Server& server);
 		void				set_status(const unsigned short int& code);
-		// void				write_response(int&	client_fd);
 		std::string			construct_response(void);
 		void				set_get_response();
 		void				set_get_headers();
@@ -66,13 +68,14 @@ class Response
 		const std::string&							get_http_type() const;
 		const std::map<std::string, std::string>&	get_headers() const;
 		const bool&									get_autoindex() const;
+		const bool&									get_cgi_status() const;
 		void				set_post_headers();
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		void				set_redirect(Server& server);
 		void				open_file(std::ofstream& file, std::vector<char>& buff);
 		void 				print_headers() const ;
-		void					exec_cgi(void);
-		void					cgi(const char *path, const char **script, const char **envp);
+		int					exec_cgi(std::map<int, Client *> &fd_to_info, int &epoll_fd);
+		int					cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, int &epoll_fd);
 };
 
 #endif

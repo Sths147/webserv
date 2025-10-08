@@ -46,7 +46,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 
 		for (size_t j = 0; j < vec_socket_fd.size(); j++)
 		{
-			if (event_fd == vec_socket_fd[j]){
+			if (event_fd == vec_socket_fd[j]) {
 
 				const std::vector<Listen> &vec_listen = vec_server[i]->get_listen();
 
@@ -66,7 +66,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (true);
 				}
 
-				fd_to_info[client_fd] = new ClientFd(vec_listen[j], client_fd); // save the client with the listen struct
+				fd_to_info[client_fd] = new ClientFd(vec_listen[j], client_fd, epoll_fd); // save the client with the listen struct
 
 				std::cout << GREEN << "add new connection " << RESET << client_fd << std::endl;
 
@@ -79,7 +79,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 
 
 
-void clean_exit(std::map<int, Client *> &fd_to_info, int &epoll_fd, std::vector<Server *> &vec_server){
+void clean_exit(std::map<int, Client *> &fd_to_info, int &epoll_fd, std::vector<Server *> &vec_server) {
 
 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end();) {
 
@@ -98,7 +98,7 @@ void clean_exit(std::map<int, Client *> &fd_to_info, int &epoll_fd, std::vector<
 }
 
 
-void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd){
+void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd) {
 
 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ) {
 

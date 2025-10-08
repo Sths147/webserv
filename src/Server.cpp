@@ -22,7 +22,7 @@ static void set_address(struct sockaddr_in	&address, Listen &listen)
 {
 	std::cout << "set_address ip : " << listen.ip << " port : " << listen.port << std::endl;
 	address.sin_family = AF_INET;
-	if (listen.ip == 0){
+	if (listen.ip == 0) {
 		address.sin_addr.s_addr =  INADDR_ANY;
 	} else {
 		address.sin_addr.s_addr =  htonl(listen.ip);
@@ -41,7 +41,7 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 	{
 		if (vec_listen[i].to_lunch) {
 			int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-			if (socket_fd < 0){
+			if (socket_fd < 0) {
 				throw (MyException("Error : opening socket failed"));
 			}
 			this->vector_socket_fd.push_back(socket_fd);
@@ -52,11 +52,11 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
 			set_address(address, vec_listen[i]);
 
-			if ( bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0 ){
+			if ( bind(socket_fd, (struct sockaddr *)&address, sizeof(address)) < 0 ) {
 				throw (MyException("Error : Bind failed ", strerror(errno)));
 			}
 
-			if (listen(socket_fd, 1024) < 0){
+			if (listen(socket_fd, 1024) < 0) {
 				throw (MyException("Error : Listen failed"));
 			}
 

@@ -26,7 +26,7 @@ ConfigServer::~ConfigServer() {}
 
 /* ------   _listen   ------ */
 
-void	ConfigServer::print_listen( void ){
+void	ConfigServer::print_listen( void ) {
 	std::cout << "\nlisten :"<< std::endl;
 	for (size_t i = 0; i < this->_listen.size(); i++)
 	{
@@ -44,21 +44,21 @@ void	ConfigServer::set_listen( const std::string &str)
 {
 	this->_listen.push_back(ConfigUtils::ip_host_parseur(str));
 }
-void	ConfigServer::set_listen_lunch_false( size_t index){
+void	ConfigServer::set_listen_lunch_false( size_t index) {
 	this->_listen[index].to_lunch = false;
 }
 
 
 /* ------   _index   ------ */
 
-void	ConfigServer::print_index( void ){
+void	ConfigServer::print_index( void ) {
 	std::cout << "\nindex :"<< std::endl;
 	for (size_t i = 0; i < this->_index.size(); i++)
 	{
 		std::cout << "'" << this->_index[i] << "'" << std::endl;
 	}
 }
-void	ConfigServer::set_index( const std::vector<std::string> vec ){
+void	ConfigServer::set_index( const std::vector<std::string> vec ) {
 	if (this->_index.size() == 0)
 		this->_index = vec;
 	else	{
@@ -73,14 +73,14 @@ void	ConfigServer::set_index( const std::vector<std::string> vec ){
 /* ------   _error_page   ------ */
 
 
-void	ConfigServer::print_error_page( void ){
+void	ConfigServer::print_error_page( void ) {
 	std::cout << "\nerror_page :"<< std::endl;
 	for (size_t i = 0; i < this->_error_page.size(); i++)
 	{
 		std::cout << "'" << this->_error_page[i] << "'" << std::endl;
 	}
 }
-void	ConfigServer::set_error_page( const std::vector<std::string> vec ){
+void	ConfigServer::set_error_page( const std::vector<std::string> vec ) {
 
 	if (vec.size() != 2)
 		throw (std::string("Error : 'error code | the page error' bad format on this line... "));
@@ -98,7 +98,7 @@ void	ConfigServer::set_error_page( const std::vector<std::string> vec ){
 /* ------   _server_name   ------ */
 
 
-void	ConfigServer::print_server_name( void ){
+void	ConfigServer::print_server_name( void ) {
 	std::cout << "\nserver_name :"<< std::endl;
 	for (size_t i = 0; i < this->_server_name.size(); i++)
 	{
@@ -119,14 +119,14 @@ void	ConfigServer::set_server_name( const std::vector<std::string> vec ) {
 
 /* ------   _allow_methods   ------ */
 
-void	ConfigServer::print_allow_methods( void ){
+void	ConfigServer::print_allow_methods( void ) {
 	std::cout << "\nallow_methods :"<< std::endl;
 	for (size_t i = 0; i < this->_allow_methods.size(); i++)
 	{
 		std::cout << "'" << this->_allow_methods[i] << "'" << std::endl;
 	}
 }
-void	ConfigServer::set_allow_methods( const std::vector<std::string> vec ){
+void	ConfigServer::set_allow_methods( const std::vector<std::string> vec ) {
 		if (this->_allow_methods.size() == 0)
 		this->_allow_methods = vec;
 	else {
@@ -140,11 +140,11 @@ void	ConfigServer::set_allow_methods( const std::vector<std::string> vec ){
 
 /* ------   _client_max_body_size   ------ */
 #include <sstream>
-void	ConfigServer::print_client_max_body_size( void ){
+void	ConfigServer::print_client_max_body_size( void ) {
 	std::cout << "\nclient_max_body_size :"<< std::endl;
 		std::cout << "'" << this->_client_max_body_size << "'" << std::endl;
 }
-void	ConfigServer::set_client_max_body_size( const std::string &str){
+void	ConfigServer::set_client_max_body_size( const std::string &str) {
 
 	std::stringstream ss(str.c_str());
 	ss >> 	this->_client_max_body_size;
@@ -155,13 +155,13 @@ void	ConfigServer::set_client_max_body_size( const std::string &str){
 
 /* ------   _root   ------ */
 
-void	ConfigServer::print_root( void ){
+void	ConfigServer::print_root( void ) {
 	std::cout << "\nroot :"<< std::endl;
-	if (this->_root != "\0"){
+	if (this->_root != "\0") {
 		std::cout << "'" << this->_root << "'" << std::endl;
 	}
 }
-void	ConfigServer::set_root( const std::string &str){ this->_root = str;}
+void	ConfigServer::set_root( const std::string &str) { this->_root = str;}
 
 
 /* ------   _autoindex   ------ */
@@ -175,7 +175,7 @@ void	ConfigServer::set_return( const std::string &str ) { this->_return = str; }
 
 /* ------   location   ------ */
 
-void	ConfigServer::print_location( void ){
+void	ConfigServer::print_location( void ) {
 	for (size_t i = 0; i < this->_vConfLocal.size(); i++)
 	{
 		std::cout << YELLOW << "\tlocation n" << i << RESET << std::endl;
@@ -186,10 +186,10 @@ void	ConfigServer::set_new_location( const std::string &perm, const bool &b) {
 	this->_vConfLocal.push_back(ConfigLocation(perm , b));
 }
 /* --- set in vector location index--- */
-void	ConfigServer::set_inlocation_index(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_index(arg);}
-void	ConfigServer::set_inlocation_allow_methods(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_allow_methods(arg);}
-void	ConfigServer::set_inlocation_error_page(const int &i, const std::vector<std::string> &arg){this->_vConfLocal[i].set_error_page(arg);}
-void	ConfigServer::set_inlocation_root(const int &i, const std::string &str){this->_vConfLocal[i].set_root(str);}
+void	ConfigServer::set_inlocation_index(const int &i, const std::vector<std::string> &arg) {this->_vConfLocal[i].set_index(arg);}
+void	ConfigServer::set_inlocation_allow_methods(const int &i, const std::vector<std::string> &arg) {this->_vConfLocal[i].set_allow_methods(arg);}
+void	ConfigServer::set_inlocation_error_page(const int &i, const std::vector<std::string> &arg) {this->_vConfLocal[i].set_error_page(arg);}
+void	ConfigServer::set_inlocation_root(const int &i, const std::string &str) {this->_vConfLocal[i].set_root(str);}
 void	ConfigServer::set_inlocation_autoindex(const int &i, const autoindexvalue b ) {this->_vConfLocal[i].set_autoindex(b);}
 void	ConfigServer::set_inlocation_return(const int &i, const std::string &str ) {this->_vConfLocal[i].set_return(str) ;}
 void	ConfigServer::set_inlocation_cgi_path(const int &i, const std::string &str ) { this->_vConfLocal[i].set_cgi_path(str); }
@@ -217,7 +217,7 @@ bool						ConfigServer::check_location( std::string key )
 	this->_last_i_location = -1;
 	for (size_t i = 0; i < this->_vConfLocal.size(); i++)
 	{
-		if (this->_vConfLocal[i].check_location(key) && this->_vConfLocal[i].get_absolut()){
+		if (this->_vConfLocal[i].check_location(key) && this->_vConfLocal[i].get_absolut()) {
 			this->_last_i_location = i;
 			return (true);
 		}

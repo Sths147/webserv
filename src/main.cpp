@@ -37,7 +37,7 @@ int main(int ac, char **av)
 
 
 	std::vector<Server *> vec_server;
-	if (ac == 2){
+	if (ac == 2) {
 
 		epoll_fd = epoll_create(1);
 		if (epoll_fd < 0) {
@@ -119,15 +119,15 @@ int main(int ac, char **av)
 
 							if (typeclient == CLIENTFD) {
 
-								ClientFd* ptr = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
+								ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 
 								char				tmp[MAX_BUFFER + 1];
 								std::memset(&tmp, 0, sizeof(tmp));
 
 								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
-								if (bytes < 0){
+								if (bytes < 0) {
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-										ptr->del_epoll_and_close(epoll_fd);
+										ptrClient->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 										close(client_fd);
@@ -135,35 +135,50 @@ int main(int ac, char **av)
 									}
 								}
 
-								ptr->add_buffer(tmp, vec_server);
-								if (ptr->get_header_saved() && !(ptr->get_type() == "POST")) {
+								ptrClient->add_buffer(tmp, vec_server);
+								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
 
-									std::cout << YELLOW << "creat_response GET" << RESET << std::endl;
+									// std::cout << YELLOW << "creat_response GET" << RESET << std::endl;
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-										ptr->del_epoll_and_close(epoll_fd);
+										ptrClient->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 										close(client_fd);
 										continue;
 									}
-									ptr->creat_response();
+									ptrClient->creat_response(fd_to_info);
 
 								}
-								else if (ptr->get_header_saved() && (ptr->get_type() == "POST") && ptr->get_body_check()) {
+								else if (ptrClient->get_header_saved() && (ptrClient->get_type() == "POST") && ptrClient->get_body_check()) {
 
-									std::cout << YELLOW << "creat_response POST" << RESET << std::endl;
+									// std::cout << YELLOW << "creat_response POST" << RESET << std::endl;
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-										ptr->del_epoll_and_close(epoll_fd);
+										ptrClient->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 										close(client_fd);
 										continue;
 									}
-									ptr->creat_response();
+									ptrClient->creat_response(fd_to_info);
 
 								}
 							} else if (typeclient == CLIENTCGI) {
-								// to something
+
+								ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
+
+								int rv = ptrClient->read_cgi_output();
+								if (rv == 0) {
+									continue;
+								}
+								if (rv == 1) {
+
+
+								}
+								ptrClient->del_epoll_and_close(epoll_fd);
+								delete fd_to_info[client_fd];
+								fd_to_info.erase(client_fd);
+								close(client_fd);
+								continue;
 							}
 						}
 
@@ -173,22 +188,22 @@ int main(int ac, char **av)
 
 						if (typeclient == CLIENTFD) {
 
-							ClientFd* ptr = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
+							ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 
 							try
 							{
-								if (ptr->send_response(client_fd) == true) {
+								if (ptrClient->send_response(client_fd) == true) {
 
-									if (!ptr->check_alive()) {
+									if (!ptrClient->check_alive()) {
 										if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
-											ptr->del_epoll_and_close(epoll_fd);
+											ptrClient->del_epoll_and_close(epoll_fd);
 											delete fd_to_info[client_fd];
 											fd_to_info.erase(client_fd);
 											close(client_fd);
 											continue;
 										}
 									} else {
-										ptr->del_epoll_and_close(epoll_fd);
+										ptrClient->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 									}
@@ -197,20 +212,23 @@ int main(int ac, char **av)
 							}
 							catch(const int &e)
 							{
-								ptr->del_epoll_and_close(epoll_fd);
+								ptrClient->del_epoll_and_close(epoll_fd);
 								delete fd_to_info[client_fd];
 								fd_to_info.erase(client_fd);
 							}
 						} else if (typeclient == CLIENTCGI) {
-							// to something
+
+								ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
+
+								ptrClient->write_cgi_input();
 						}
 
 					} else if ( events[i].events & EPOLLRDHUP ) {
 
 						if (typeclient == CLIENTFD) {
-							ClientFd* ptr = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
+							ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 
-							ptr->del_epoll_and_close(epoll_fd);
+							ptrClient->del_epoll_and_close(epoll_fd);
 							delete fd_to_info[client_fd];
 							fd_to_info.erase(client_fd);
 						} else if (typeclient == CLIENTCGI) {
@@ -229,7 +247,7 @@ int main(int ac, char **av)
 		std::cout << e.what() << std::endl;
 	}
 	clean_exit(fd_to_info, epoll_fd, vec_server);
-	if (!interrupted){
+	if (!interrupted) {
 		std::cout << "\nSIGINT detected." << std::endl;
 		return (1);
 	}

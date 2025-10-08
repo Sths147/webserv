@@ -14,7 +14,7 @@
 
 class Request
 {
-    private:
+	private:
 		unsigned short int							_return_code;
 		std::string									_type;
 		std::string									_target;
@@ -35,7 +35,6 @@ class Request
 		const std::string							parse_request_target(std::vector<char>& buff);
 		const std::string							parse_http_type(std::vector<char>& buff);
 		const std::map<std::string, std::string>	get_headers() const;
-		// Listen									set_listen();
 		bool										check_hosts(const std::vector<std::string>&) const;
 		std::map<std::string, std::string>			parse_header(std::vector<char>& buff);
 		const std::string							get_crlf_line(std::vector<char>& buff);

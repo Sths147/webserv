@@ -8,15 +8,13 @@
 
 ClientFd::ClientFd( void ) : _request(NULL) {}
 
-// ClientFd::ClientFd(const Listen &listen ) : _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
-// }
-ClientFd::ClientFd(const Listen &listen , int fd) : _fd(fd), _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
+ClientFd::ClientFd(const Listen &listen , int fd, int epoll_fd) : _fd(fd), _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response(""), _epoll_fd(epoll_fd) {
 }
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
 {
 	// std::cout << BLUE << "Operator '=' is Called" << RESET << std::endl;
-	if (this != &other){
+	if (this != &other) {
 		this->_host_port = other._host_port;
 
 		this->_body_saved = other._body_saved;
@@ -59,7 +57,7 @@ void					ClientFd::print_vec(std::vector<char> &vec) {
 
 static bool find_end_of_headers(std::vector<char>& buffer)
 {
-	if (buffer.size() < 4){
+	if (buffer.size() < 4) {
 		return (0);
 	} else {
 
@@ -127,7 +125,7 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 			this->_request->add_header(this->_header);
 		}
 	}
-	if (this->_header_saved && this->_request->get_type() == "POST" && max_size_reached(this->_buffer, this->_server)){
+	if (this->_header_saved && this->_request->get_type() == "POST" && max_size_reached(this->_buffer, this->_server)) {
 		if(check_body(*this->_request, this->_server, this->_buffer)) {
 			this->_request->add_body(this->_buffer);
 
@@ -138,9 +136,9 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 }
 
 
-void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server){
+void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server) {
 
-	if (!this->_header_saved){
+	if (!this->_header_saved) {
 		return;
 	}
 
@@ -165,23 +163,32 @@ bool				ClientFd::check_alive( void ) {
 	return (this->_alive);
 }
 
-void				ClientFd::creat_response( void ) {
+void				ClientFd::creat_response( std::map<int, Client *> &fd_to_info ) {
 
 	if (this->_request == NULL) {
 		return ;
 	}
-	Response rep(*this->_request, *this->_server);
+	Response rep(*this->_request, *this->_server, fd_to_info, this->_epoll_fd);
 
-	if (!this->_request->get_header("Connection").compare("Keep-alive") || this->_request->get_header("Connection").compare("Unexisting header")){
-		std::cout << "ALIVE" << std::endl;
+	if (!this->_request->get_header("Connection").compare("Keep-alive") || this->_request->get_header("Connection").compare("Unexisting header")) {
 		this->_alive = true;
 	} else {
 		this->_alive = false;
 	}
 	delete this->_request;
 	this->_request = NULL;
+
+
+	if (rep.get_cgi_status()) {
+
+		// when all the output cgi was read
+		return;
+	}
+
+
 	this->_response = rep.construct_response();
 }
+
 
 bool		ClientFd::send_response( int client_fd ) {
 

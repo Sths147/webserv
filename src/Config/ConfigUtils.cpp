@@ -18,7 +18,7 @@ void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t p
 }
 
 void ConfigUtils::check_bracket(const std::string &str) {
-	if (ConfigUtils::find_first_not_of_space(str) != std::string::npos && str[ConfigUtils::get_pos()] == '}'){
+	if (ConfigUtils::find_first_not_of_space(str) != std::string::npos && str[ConfigUtils::get_pos()] == '}') {
 		ConfigUtils::check_after_bracket_semicolon(str, ConfigUtils::get_pos() + 1);
 	} else {
 		throw (MyException("Error : unknown directive...", str));
@@ -86,7 +86,7 @@ std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input
 			_pos++;
 		}
 		ConfigUtils::find_first_not_of_space(input, _pos);
-		if (token != "\0"){
+		if (token != "\0") {
 			vec.push_back(token);
 			token.clear();
 		}
@@ -99,7 +99,7 @@ std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input
 std::string	ConfigUtils::get_one_token(const std::string &str) { //----------------------------------------
 
 	std::string arg = ConfigUtils::parse_token(str, _pos);
-	if (_pos == str.find_first_of(';')){
+	if (_pos == str.find_first_of(';')) {
 
 		if (_pos != std::string::npos)
 			ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
@@ -114,7 +114,7 @@ std::string	ConfigUtils::get_one_token(const std::string &str) { //-------------
 
 std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
 	std::vector<std::string> vec = ConfigUtils::parse_multi_token(str, _pos);
-	if (_pos == str.find_first_of(';')){
+	if (_pos == str.find_first_of(';')) {
 
 		if (_pos != std::string::npos)
 			ConfigUtils::check_after_bracket_semicolon(str, _pos + 1);
@@ -177,14 +177,14 @@ Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 
 
 
-	if (vecstring[0] != "\0"){
+	if (vecstring[0] != "\0") {
 		// std::cout << "\tip = " << vecstring[0];
 		if (vecstring[0] == "localhost")
 			ip = 2130706433;
 		else
 			ip = ipconvert(vecstring[0]);
 	}
-	if (vecstring.size() == 2 &&vecstring[1] != "\0"){
+	if (vecstring.size() == 2 &&vecstring[1] != "\0") {
 		// std::cout << "\tport = " << vecstring[1];
 		for (size_t i = 0; i < vecstring[1].size(); i++)
 			if (!std::isdigit(vecstring[1][i]))

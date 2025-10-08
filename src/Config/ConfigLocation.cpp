@@ -8,7 +8,7 @@ ConfigLocation::~ConfigLocation() {}
 ConfigLocation::ConfigLocation( const std::string &perm , const bool &b) : _location(perm), _absolut(b), _autoindex(ON) {}
 
 
-void	ConfigLocation::print_all( void ){
+void	ConfigLocation::print_all( void ) {
 	std::cout << "location : " <<this->_location << std::endl;
 	std::cout << "\nabsolut : " <<this->_absolut << std::endl;
 	this->print_index();
@@ -22,7 +22,7 @@ void	ConfigLocation::set_absolut( const bool &b) { this->_absolut = b; }
 
 /* ------   _index   ------ */
 
-void	ConfigLocation::print_index( void ){
+void	ConfigLocation::print_index( void ) {
 	std::cout << "\nindex :"<< std::endl;
 	for (size_t i = 0; i < this->_index.size(); i++)
 	{
@@ -87,7 +87,7 @@ void	ConfigLocation::set_allow_methods(const std::vector<std::string> &arg) {
 
 void	ConfigLocation::print_root( void ) {
 	std::cout << "\nroot :"<< std::endl;
-	if (this->_root != "\0"){
+	if (this->_root != "\0") {
 		std::cout << "'" << this->_root << "'" << std::endl;
 	}
 }
@@ -106,7 +106,7 @@ void	ConfigLocation::set_cgi_path( const std::string &str ) {
 		throw (std::string("Error : something wrong it should be: 'extension:path'"));
 	}
 	std::size_t pos = str.find(":");
-	
+
 	if ( pos < 2 || str[pos + 1 ] == '\0' ) {
 		throw (std::string("Error : something wrong it should be: 'extension:path'"));
 	}
