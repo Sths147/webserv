@@ -1,30 +1,32 @@
 
-#ifndef CLIENTFD_HPP
-#define CLIENTFD_HPP
+#ifndef CLIENTCGI_HPP
+#define CLIENTCGI_HPP
 
 
 #define TIMEOUT 5 //
 
 #include <ctime>
 #include <iostream>
+#include "Client.hpp"
 
-class ClientFd
+
+class ClientCgi : protected Client
 {
 	private:
 
-
-        int                 _fd_in; // pipe_in[1]
+		int					_fd_in; // pipe_in[1]
 		std::string			_body_request;
-        int                 _fd_out; // pipe_out[0]
+		int					_fd_out; // pipe_out[0]
 		std::string			_output_cgi;
-        
+
+		void			_abstrait(void);
 
 
 	public:
-		ClientFd( void );
-		// ClientFd(const &listen);
-		ClientFd &operator=( const ClientFd &other );
-		~ClientFd( void );
+		ClientCgi( void );
+		ClientCgi(const int in, const int out, std::string _body_request);
+		ClientCgi &operator=( const ClientCgi &other );
+		~ClientCgi( void );
 
 
 

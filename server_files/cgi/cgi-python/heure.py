@@ -6,7 +6,7 @@ import datetime
 
 # Étape 2: Générer le contenu HTML
 now = datetime.datetime.now()
-print("<html>")
+print("e<html>")
 print("<head><title>CGI Python</title></head>")
 print("<body>")
 print("<h1>Heure Actuelle du Serveur (CGI Python)</h1>")

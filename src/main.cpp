@@ -16,6 +16,7 @@
 #include "Server.hpp"
 #include "Response.hpp"
 #include "ClientFd.hpp"
+#include "ClientCgi.hpp"
 #include "main_utils.hpp"
 #include "MyException.hpp"
 
@@ -80,7 +81,7 @@ int main(int ac, char **av)
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];
 
-	std::map<int, ClientFd> fd_to_info;
+	std::map<int, Client *> fd_to_info;
 
 	std::signal(SIGINT, signalHandler);
 	try {
@@ -101,92 +102,126 @@ int main(int ac, char **av)
 				for (int i = 0; i < nfds; i++) {
 
 					int client_fd = events[i].data.fd;
-					if (!check_add_new_connection(vec_server, client_fd, epoll_fd, fd_to_info)) {
+					TypeClient typeclient = UNKNOWCLIENT;
+					if (fd_to_info.find(client_fd) != fd_to_info.end()) {
+						if (dynamic_cast<ClientFd *>(fd_to_info[client_fd]) != NULL) {
+							typeclient = CLIENTFD;
+						} else if (dynamic_cast<ClientCgi *>(fd_to_info[client_fd]) != NULL) {
+							typeclient = CLIENTCGI;
+						}
+					}
 
-						if (events[i].events & EPOLLIN) {
+					if (events[i].events & EPOLLIN) {
 
-							fd_to_info[client_fd].refresh();
+						if (typeclient != UNKNOWCLIENT || !check_add_new_connection(vec_server, client_fd, epoll_fd, fd_to_info)) {
 
-							char				tmp[MAX_BUFFER + 1];
-							std::memset(&tmp, 0, sizeof(tmp));
+							fd_to_info[client_fd]->refresh();
 
-							ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
-							if (bytes < 0){
-								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-									fd_to_info.erase(client_fd);
-									close(client_fd);
-									continue;
+							if (typeclient == CLIENTFD) {
+
+								ClientFd* ptr = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
+
+								char				tmp[MAX_BUFFER + 1];
+								std::memset(&tmp, 0, sizeof(tmp));
+
+								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
+								if (bytes < 0){
+									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
+										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										delete fd_to_info[client_fd];
+										fd_to_info.erase(client_fd);
+										close(client_fd);
+										continue;
+									}
 								}
-							}
 
-							fd_to_info[client_fd].add_buffer(tmp, vec_server);
-							std::cout << YELLOW << "creat_response" << RESET << std::endl;
-							if (fd_to_info[client_fd].get_header_saved() && !(fd_to_info[client_fd].get_type() == "POST")) {
+								ptr->add_buffer(tmp, vec_server);
+								if (ptr->get_header_saved() && !(ptr->get_type() == "POST")) {
 
-								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-									fd_to_info.erase(client_fd);
-									close(client_fd);
-									continue;
+									std::cout << YELLOW << "creat_response GET" << RESET << std::endl;
+									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
+										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										delete fd_to_info[client_fd];
+										fd_to_info.erase(client_fd);
+										close(client_fd);
+										continue;
+									}
+									ptr->creat_response();
+
 								}
-								fd_to_info[client_fd].creat_response();
+								else if (ptr->get_header_saved() && (ptr->get_type() == "POST") && ptr->get_body_check()) {
 
-							}
-							else if (fd_to_info[client_fd].get_header_saved() && (fd_to_info[client_fd].get_type() == "POST") && fd_to_info[client_fd].get_body_check()) {
+									std::cout << YELLOW << "creat_response POST" << RESET << std::endl;
+									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
+										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										delete fd_to_info[client_fd];
+										fd_to_info.erase(client_fd);
+										close(client_fd);
+										continue;
+									}
+									ptr->creat_response();
 
-								if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
-									fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-									fd_to_info.erase(client_fd);
-									close(client_fd);
-									continue;
 								}
-								fd_to_info[client_fd].creat_response();
-
+							} else if (typeclient == CLIENTCGI) {
+								// to something
 							}
+						}
 
-						} else if (events[i].events & EPOLLOUT ) {
+					} else if (events[i].events & EPOLLOUT ) {
+
+						fd_to_info[client_fd]->refresh();
+
+						if (typeclient == CLIENTFD) {
+
+							ClientFd* ptr = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 
 							try
 							{
-								fd_to_info[client_fd].refresh();
+								if (ptr->send_response(client_fd) == true) {
 
-								if (fd_to_info[client_fd].send_response(client_fd) == true){
-									if (!fd_to_info[client_fd].check_alive()) {
+									if (!ptr->check_alive()) {
 										if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD)) {
-											fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+											ptr->del_epoll_and_close(epoll_fd, client_fd);
+											delete fd_to_info[client_fd];
 											fd_to_info.erase(client_fd);
 											close(client_fd);
 											continue;
 										}
 									} else {
-										fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+										ptr->del_epoll_and_close(epoll_fd, client_fd);
+										delete fd_to_info[client_fd];
 										fd_to_info.erase(client_fd);
 									}
+
 								}
 							}
 							catch(const int &e)
 							{
-								fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
+								ptr->del_epoll_and_close(epoll_fd, client_fd);
+								delete fd_to_info[client_fd];
 								fd_to_info.erase(client_fd);
 							}
-						} else if ( events[i].events & EPOLLRDHUP ) {
+						} else if (typeclient == CLIENTCGI) {
+							// to something
+						}
 
-								fd_to_info[client_fd].del_epoll_and_close(epoll_fd, client_fd);
-								fd_to_info.erase(client_fd);
+					} else if ( events[i].events & EPOLLRDHUP ) {
+
+						if (typeclient == CLIENTFD) {
+							ClientFd* ptr = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
+
+							ptr->del_epoll_and_close(epoll_fd, client_fd);
+							delete fd_to_info[client_fd];
+							fd_to_info.erase(client_fd);
+						} else if (typeclient == CLIENTCGI) {
+							// to something
 						}
 					}
 				}
+				check_all_timeout(fd_to_info, epoll_fd);
 			} else {
 
-				for (std::map<int, ClientFd>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ){
-					if (!it->second.check_timeout()) {
-						fd_to_info[it->first].del_epoll_and_close(epoll_fd, it->first);
-						fd_to_info.erase(it++);
-					} else {
-						it++;
-					}
-				}
+				check_all_timeout(fd_to_info, epoll_fd);
 			}
 		}
 
@@ -201,44 +236,3 @@ int main(int ac, char **av)
 	return (0);
 }
 
-
-							// std::vector<char>	buffer;
-							// ssize_t bytes = 1;
-							// do {
-							// 	char				tmp;
-							// 	bytes = recv(client_fd, &tmp, sizeof(char), 0);
-							// 	buffer.push_back(tmp);
-							// }
-							// while (bytes > 0 && !find_end_of_headers(buffer));
-							// if (buffer.empty())
-							// 	continue ;
- 							// continue;
-
-							// Request	req1(buffer);
-
-							// Server *serv = find_server_from_map(fd_to_info[client_fd].get_listen(), vec_server,req1);
-
-							// std::vector<char>	body;
-							// do {
-							// 	char				tmp;
-							// 	bytes = recv(client_fd, &tmp, sizeof(char), 0);
-							// 	if (bytes > 0)
-							// 		body.push_back(tmp);
-							// } while (bytes > 0 && !max_size_reached(body, *serv));
-
-							// if (check_body(req1, *serv, body))
-								// req1.add_body(body);
-
-							// Response rep(req1, *serv);
-							// rep.write_response(client_fd);
-
-							// if (!rep.get_connection_header().compare("Keep-alive")) {
-
-							// 	fd_to_info[client_fd].refresh();
-
-							// } else {
-
-							// 	fd_to_info[client_fd].del_epoll_and_close(epoll_fd);
-							// 	fd_to_info.erase(client_fd);
-
-							// }

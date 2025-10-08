@@ -30,7 +30,9 @@ UTILS_DIR			:=		utils/
 HEADERS_D			:=		./incs/
 
 
-HEADERS				:=		ClientFd.hpp		\
+HEADERS				:=		Client.hpp			\
+							ClientCgi.hpp		\
+							ClientFd.hpp		\
 							Config.hpp			\
 							ConfigLocation.hpp	\
 							ConfigServer.hpp	\
@@ -55,7 +57,9 @@ SRC_CONFIG			:=		Config.cpp			\
 							ConfigUtils.cpp
 
 
-SRC_UTILS			:=		ClientFd.cpp		\
+SRC_UTILS			:=		Client.cpp			\
+							ClientCgi.cpp		\
+							ClientFd.cpp		\
 							MyException.cpp		\
 							main_utils.cpp
 

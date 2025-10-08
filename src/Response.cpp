@@ -33,48 +33,34 @@ Response::~Response()
 bool Response::_is_cgi(Request& request, Server& server) {
 
 	std::string path = request.get_target().substr(0, request.get_target().find_first_of('?'));
-	// std::cout << "path: '" << path << "'"<< std::endl;
 	if (path.empty() || path.find('.') == std::string::npos) {
-		// std::cout << "FALSE1"<< std::endl;
 		return false;
 	}
 	if (!server.check_location(path)) {
-		// std::cout << "FALSE2: check_location not found"<< std::endl;
 		return false;
 	}
 	std::string extension = path.substr(path.find('.'), path.length());
-	// std::cout << "extension: '" << extension << "'"<< std::endl;
-	// std::cout << "server.get_inlocation_location(): '" << server.get_inlocation_location() << "'"<< std::endl;
-	// std::cout << "server.get_inlocation_cgi_extension(): '" << server.get_inlocation_cgi_extension() << "'"<< std::endl;
 	std::size_t cgi_extension_pos = server.get_inlocation_cgi_extension().find(extension);
 	if (cgi_extension_pos == std::string::npos) {
-		// std::cout << "FALSE3"<< std::endl;
 		return false;
 	}
 	if (server.get_inlocation_cgi_extension()[cgi_extension_pos + extension.length()] != '\0') {
-		// std::cout << "FALSE4"<< std::endl;
 		return false;
 	}
 	std::size_t cgi_path_pos = server.get_inlocation_cgi_path().find(extension);
 	if	(cgi_path_pos == std::string::npos) {
-		// std::cout << "FALSE5"<< std::endl;
 		return false;
 	}
 	if	(server.get_inlocation_cgi_path()[cgi_path_pos + extension.length()] != ':') {
-		// std::cout << "FALSE6"<< std::endl;
 		return false;
 	}
 	if (extension != server.get_inlocation_cgi_path().substr(0, server.get_inlocation_cgi_path().find(':'))) {
-		// std::cout << "FALSE7"<< std::endl;
 		return false;
 	}
 	this->_path_cgi = server.get_inlocation_cgi_path().substr(server.get_inlocation_cgi_path().find(':') + 1 , server.get_inlocation_cgi_path().size());
-	// std::cout <<this->_path_cgi<< std::endl;
 	if (this->_path_cgi.empty()) {
-		// std::cout << "FALSE8"<< std::endl;
 		return false;
 	}
-	std::cout << RED<< "TRUE"<<RESET<< std::endl;
 	return true;
 }
 
@@ -82,7 +68,7 @@ bool Response::_is_cgi(Request& request, Server& server) {
 Response::Response(Request& request, Server& server)
 : _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type())
 {
-	
+
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	if (this->_status_code == 0)
@@ -115,8 +101,8 @@ Response::Response(Request& request, Server& server)
 		this->set_redirect(server);
 	else
 		this->set_error_response(server);
-	this->print_headers();
-	std::cout << "-------------------------" << std::endl;
+	// this->print_headers();
+	// std::cout << "-------------------------" << std::endl;
 }
 
 Response&	Response::operator=(const Response& other)
@@ -431,6 +417,7 @@ std::string	Response::construct_response(void)
 		ss << this->_body;
 		// std::cout << RED << this->_body.c_str() <<RESET<< std::endl; //comm--flo
 	}
+	std::cout << "reponse" << ss.str() << std::endl;
 	return (ss.str());
 }
 
@@ -921,6 +908,8 @@ void				Response::exec_cgi(void) {
 #define YELLOW "\033[33m"
 #include <sys/wait.h>
 #include <cstring>
+// set-cookie="qwerq=qwe"
+// Cookie=qwe
 void				Response::cgi(const char *path, const char **script, const char **envp) {
 
 	pid_t	pid;
@@ -977,10 +966,6 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 		exit(0);
 
 	} else {
-
-
-
-		
 		// close(pipe_out[0]);
 		close(pipe_out[1]);
 		if (secound_pipe) {
@@ -989,31 +974,30 @@ void				Response::cgi(const char *path, const char **script, const char **envp) 
 			// close(pipe_in[0]);
 			// close(pipe_in[1]);
 		}
-
 		do
 		{
 			pid_t tmp = waitpid(pid, &status, WNOHANG);
 			// std::cout << YELLOW << "waitpid: "<< tmp << RESET << std::endl;
 			if (tmp == pid) {
-				std::cout <<RED<< "equal pid"<< RESET<<std::endl;
+				// std::cout <<RED<< "equal pid" <<RESET<<std::endl;
 				break;
 			}
 		} while (1);
-		
-		
+
+
 			char				buff[MAX_BUFFER + 1];
 			std::memset(&buff, 0, sizeof(buff));
-			
+
 			ssize_t bytes = read(pipe_out[0], &buff, MAX_BUFFER);
-			std::cout <<YELLOW<< "bytes readed: "<< bytes<< RESET<<std::endl;
+			// std::cout <<YELLOW<< "bytes readed: "<< bytes<< RESET<<std::endl;
 			if (bytes == -1){
-				std::cout << RED << "READ PIPEOUT ERROR" << RESET << std::endl;
+				// std::cout << RED << "READ PIPEOUT ERROR" << RESET << std::endl;
 				return;
 			}
 			this->_body+= buff;
 
 			if (bytes == 0 || bytes < MAX_BUFFER) {
-				std::cout <<RED<< "read finish: "<< bytes<< RESET<<std::endl;
+				// std::cout <<RED<< "read finish: "<< bytes<< RESET<<std::endl;
 				return;
 			}
 	}

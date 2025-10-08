@@ -10,12 +10,13 @@
 
 #include "Response.hpp"
 #include "ConfigUtils.hpp"
+#include "Client.hpp"
 
-class ClientFd
+
+class ClientFd : public Client
 {
 	private:
 
-		time_t				_time_to_reset; //sec
 		Listen				_host_port;
 
 		bool				_body_saved;
@@ -30,6 +31,7 @@ class ClientFd
 
 
 
+		void			_abstrait(void);
 		void			find_server_from_map(std::vector<Server *> &vec_server);
 
 	public:
@@ -39,11 +41,6 @@ class ClientFd
 		~ClientFd( void );
 
 		Listen				get_listen( void );
-
-		/*----timeout----*/
-		void				refresh( void );
-		bool				check_timeout( void );
-		/*----timeout----*/
 
 
 

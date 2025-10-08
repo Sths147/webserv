@@ -6,16 +6,15 @@
 #define RESET "\033[0m"
 #define RED "\033[31m"
 
-ClientFd::ClientFd( void ) :_request(NULL) {}
+ClientFd::ClientFd( void ) : _request(NULL) {}
 
-ClientFd::ClientFd(const Listen &listen ) : _time_to_reset(std::time(NULL) + TIMEOUT), _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
+ClientFd::ClientFd(const Listen &listen ) : _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response("") {
 }
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
 {
 	// std::cout << BLUE << "Operator '=' is Called" << RESET << std::endl;
 	if (this != &other){
-		this->_time_to_reset = other._time_to_reset;
 		this->_host_port = other._host_port;
 
 		this->_body_saved = other._body_saved;
@@ -39,19 +38,6 @@ ClientFd::~ClientFd( void ) {
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
 
-/*----timeout----*/
-
-void	ClientFd::refresh( void ) { this->_time_to_reset = std::time(NULL) + TIMEOUT; }
-
-bool	ClientFd::check_timeout( void ) {
-	if (this->_time_to_reset < std::time(NULL)){
-		std::cout << RED << "Timeout" << RESET<<std::endl;
-		return (false);
-	}
-	return (true);
-}
-
-/*----timeout----*/
 
 const std::string		ClientFd::get_type() const { return(this->_request->get_type()); }
 bool					ClientFd::get_body_check( void ) { return(this->_body_saved); }
@@ -183,13 +169,15 @@ void				ClientFd::creat_response( void ) {
 		return ;
 	}
 	Response rep(*this->_request, *this->_server);
-	delete this->_request;
-	this->_request = NULL;
-	if (!rep.get_connection_header().compare("Keep-alive")) {
+
+	if (!this->_request->get_header("Connection").compare("Keep-alive") || this->_request->get_header("Connection").compare("Unexisting header")){
+		std::cout << "ALIVE" << std::endl;
 		this->_alive = true;
 	} else {
 		this->_alive = false;
 	}
+	delete this->_request;
+	this->_request = NULL;
 	this->_response = rep.construct_response();
 }
 
@@ -214,6 +202,7 @@ bool		ClientFd::send_response( int client_fd ) {
 
 
 
+void			ClientFd::_abstrait(void) {;}
 
 
 

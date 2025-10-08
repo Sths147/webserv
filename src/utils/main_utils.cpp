@@ -10,18 +10,11 @@
 #include "Server.hpp"
 #include "MyException.hpp"
 #include "ClientFd.hpp"
+#include "ClientCgi.hpp"
 
 
 
-void clean_exit(std::map<int , ClientFd> &fd_client_fd, int &epoll_fd, std::vector<Server *> &vec_server){
 
-	for (std::map<int , ClientFd>::iterator it = fd_client_fd.begin(); it != fd_client_fd.end();) {
-		it->second.del_epoll_and_close(epoll_fd, it->first);
-		fd_client_fd.erase(it++);
-	}
-	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
-	close(epoll_fd);
-}
 
 bool epollctl(int epoll_fd, int client_fd, const int events, int op) {
 
@@ -44,7 +37,7 @@ void set_nonblocking(int socket_fd) {
 	fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-bool check_add_new_connection(const std::vector<Server *> &vec_server, int &event_fd, int &epoll_fd, std::map<int, ClientFd> &fd_client_fd)
+bool check_add_new_connection(const std::vector<Server *> &vec_server, int &event_fd, int &epoll_fd, std::map<int, Client *> &fd_to_info)
 {
 	// std::cout << "Debug check_add_new_connection" << std::endl;
 	for (size_t i = 0; i < vec_server.size(); i++)
@@ -62,7 +55,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 				client_fd = accept(vec_socket_fd[j], NULL, NULL);
 				if (client_fd < 0) {
 					std::cerr << "accept failed :" << strerror(errno) << std::endl;
-					return (false);
+					return (true);
 				}
 
 				// Set client socket to non-blocking
@@ -73,7 +66,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (true);
 				}
 
-				fd_client_fd[client_fd] = ClientFd(vec_listen[j]); // save the client with the listen struct
+				fd_to_info[client_fd] = new ClientFd(vec_listen[j]); // save the client with the listen struct
 
 				std::cout << GREEN << "add new connection " << RESET << client_fd << std::endl;
 
@@ -86,8 +79,40 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 
 
 
+void clean_exit(std::map<int, Client *> &fd_to_info, int &epoll_fd, std::vector<Server *> &vec_server){
+
+	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end();) {
+
+		if (dynamic_cast<ClientFd *>(it->second) != NULL) {
+			dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd, it->first);
+			delete it->second;
+
+		} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
+			;
+		}
+		fd_to_info.erase(it++);
+	}
+
+	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
+	close(epoll_fd);
+}
 
 
+void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd){
+
+	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ) {
 
 
-
+		if (!it->second->check_timeout()) {
+			if (dynamic_cast<ClientFd *>(it->second) != NULL) {
+				dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd, it->first);
+				delete it->second;
+			} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
+				;
+			}
+			fd_to_info.erase(it++);
+		} else {
+			it++;
+		}
+	}
+}
