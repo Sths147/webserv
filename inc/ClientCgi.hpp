@@ -13,7 +13,6 @@
 class ClientCgi : protected Client
 {
 	private:
-		void			_abstrait(void);
 
 		int					_fd_in; // pipe_in[1]
 		std::string			_body_request;
@@ -26,9 +25,8 @@ class ClientCgi : protected Client
 		ClientCgi( void );
 		ClientCgi(const int in, const int out, std::string _body_request);
 		ClientCgi &operator=( const ClientCgi &other );
-		~ClientCgi( void );
-
-
+		virtual ~ClientCgi( void );
+		virtual void				del_epoll_and_close( int epoll_fd );
 
 };
 

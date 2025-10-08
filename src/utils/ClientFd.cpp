@@ -218,8 +218,10 @@ bool		ClientFd::send_response( int client_fd ) {
 #include <unistd.h>
 #include <sys/epoll.h>
 void		ClientFd::del_epoll_and_close( int epoll_fd) {
-	epoll_ctl(epoll_fd, EPOLL_CTL_DEL, this->_fd, NULL);
-	close(this->_fd);
+	if (this->_fd != -1) {
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, this->_fd, NULL);
+		close(this->_fd);
+	}
 }
 
 
