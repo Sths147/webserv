@@ -409,7 +409,6 @@ std::string	Response::construct_response(void)
 		ss << this->_body;
 		// std::cout << RED << this->_body.c_str() <<RESET<< std::endl; //comm--flo
 	}
-	std::cout << "reponse" << ss.str() << std::endl;
 	return (ss.str());
 }
 

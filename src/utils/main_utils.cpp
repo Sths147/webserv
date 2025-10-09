@@ -12,10 +12,6 @@
 #include "ClientFd.hpp"
 #include "ClientCgi.hpp"
 
-
-
-
-
 bool epollctl(int epoll_fd, int client_fd, const int events, int op) {
 
 	struct epoll_event ev;
@@ -31,6 +27,38 @@ bool epollctl(int epoll_fd, int client_fd, const int events, int op) {
 	}
 	return true;
 }
+
+void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
+		ptrClient->del_epoll_and_close(epoll_fd);
+		delete fd_to_info[client_fd];
+		fd_to_info.erase(client_fd);
+		close(client_fd);
+}
+void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientFd* ptrClient) {
+		ptrClient->del_epoll_and_close(epoll_fd);
+		delete fd_to_info[client_fd];
+		fd_to_info.erase(client_fd);
+		close(client_fd);
+}
+
+bool	epollctl_error_gestion(int epoll_fd, int client_fd, const int events, int op, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
+
+	if (!epollctl(epoll_fd, client_fd, events, op)) {
+		delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+		return false;
+	}
+	return true;
+}
+bool	epollctl_error_gestion(int epoll_fd, int client_fd, const int events, int op, std::map<int, Client *> &fd_to_info, ClientFd* ptrClient) {
+
+	if (!epollctl(epoll_fd, client_fd, events, op)) {
+		delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+		return false;
+	}
+	return true;
+}
+
+
 
 void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
