@@ -15,10 +15,10 @@
 #include "Config.hpp"
 #include "Server.hpp"
 #include "Response.hpp"
-#include "ClientFd.hpp"
-#include "ClientCgi.hpp"
 #include "main_utils.hpp"
 #include "MyException.hpp"
+#include "ClientFd.hpp"
+#include "ClientCgi.hpp"
 
 
 
@@ -102,6 +102,8 @@ int main(int ac, char **av)
 				for (int i = 0; i < nfds; i++) {
 
 					int client_fd = events[i].data.fd;
+
+
 					TypeClient typeclient = UNKNOWCLIENT;
 					if (fd_to_info.find(client_fd) != fd_to_info.end()) {
 						if (dynamic_cast<ClientFd *>(fd_to_info[client_fd]) != NULL) {
@@ -138,7 +140,11 @@ int main(int ac, char **av)
 								ptrClient->add_buffer(tmp, vec_server);
 								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
 
-									// std::cout << YELLOW << "creat_response GET" << RESET << std::endl;
+
+									if (ptrClient->creat_response(fd_to_info)){
+										continue;
+									}
+
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
 										ptrClient->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
@@ -146,12 +152,14 @@ int main(int ac, char **av)
 										close(client_fd);
 										continue;
 									}
-									ptrClient->creat_response(fd_to_info);
-
 								}
 								else if (ptrClient->get_header_saved() && (ptrClient->get_type() == "POST") && ptrClient->get_body_check()) {
 
 									// std::cout << YELLOW << "creat_response POST" << RESET << std::endl;
+
+									if (ptrClient->creat_response(fd_to_info)) {
+										continue;
+									}
 									if (!epollctl(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD)) {
 										ptrClient->del_epoll_and_close(epoll_fd);
 										delete fd_to_info[client_fd];
@@ -159,8 +167,6 @@ int main(int ac, char **av)
 										close(client_fd);
 										continue;
 									}
-									ptrClient->creat_response(fd_to_info);
-
 								}
 							} else if (typeclient == CLIENTCGI) {
 
@@ -170,14 +176,15 @@ int main(int ac, char **av)
 								if (rv == 0) {
 									continue;
 								}
-								if (rv == 1) {
-
-
+								if (rv == 1 || rv < 0) {
+									ptrClient->construct_response(epoll_fd, fd_to_info);
+									// std::cerr << "read cgi finish." << std::endl;
+									ptrClient->del_epoll_and_close(epoll_fd);
+									delete fd_to_info[client_fd];
+									fd_to_info.erase(client_fd);
+									close(client_fd);
 								}
-								ptrClient->del_epoll_and_close(epoll_fd);
-								delete fd_to_info[client_fd];
-								fd_to_info.erase(client_fd);
-								close(client_fd);
+
 								continue;
 							}
 						}
@@ -218,9 +225,15 @@ int main(int ac, char **av)
 							}
 						} else if (typeclient == CLIENTCGI) {
 
-								ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
+							ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
 
-								ptrClient->write_cgi_input();
+							int rv = ptrClient->write_cgi_input();
+							if (rv == 1 || rv < 0) {
+								ptrClient->del_epoll_and_close(epoll_fd);
+								delete fd_to_info[client_fd];
+								fd_to_info.erase(client_fd);
+								close(client_fd);
+							}
 						}
 
 					} else if ( events[i].events & EPOLLRDHUP ) {

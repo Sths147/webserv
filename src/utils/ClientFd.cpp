@@ -8,7 +8,7 @@
 
 ClientFd::ClientFd( void ) : _request(NULL) {}
 
-ClientFd::ClientFd(const Listen &listen , int fd, int epoll_fd) : _fd(fd), _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _server(NULL), _alive(true), _response(""), _epoll_fd(epoll_fd) {
+ClientFd::ClientFd(const Listen &listen , int fd, int epoll_fd) : _fd(fd), _host_port(listen.ip, listen.port), _body_saved(false) ,_header_saved(false), _request(NULL), _res(NULL), _server(NULL), _alive(true), _response(""), _epoll_fd(epoll_fd) {
 }
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
@@ -34,6 +34,8 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 ClientFd::~ClientFd( void ) {
 	if (this->_request != NULL)
 		delete this->_request;
+	if (this->_res != NULL)
+		delete this->_res;
 }
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
@@ -163,12 +165,12 @@ bool				ClientFd::check_alive( void ) {
 	return (this->_alive);
 }
 
-void				ClientFd::creat_response( std::map<int, Client *> &fd_to_info ) {
+int				ClientFd::creat_response( std::map<int, Client *> &fd_to_info ) {
 
 	if (this->_request == NULL) {
-		return ;
+		return 0;
 	}
-	Response rep(*this->_request, *this->_server, fd_to_info, this->_epoll_fd);
+	this->_res = new Response(*this->_request, *this->_server, fd_to_info, this->_epoll_fd, this->_fd);
 
 	if (!this->_request->get_header("Connection").compare("Keep-alive") || this->_request->get_header("Connection").compare("Unexisting header")) {
 		this->_alive = true;
@@ -179,17 +181,20 @@ void				ClientFd::creat_response( std::map<int, Client *> &fd_to_info ) {
 	this->_request = NULL;
 
 
-	if (rep.get_cgi_status()) {
+	if (this->_res->get_cgi_status()) {
 
 		// when all the output cgi was read
-		return;
+		return (1);
 	}
 
 
-	this->_response = rep.construct_response();
+	this->_response = this->_res->construct_response();
+	return (0);
 }
 
-
+void		ClientFd::set_response( const std::string &str){
+	this->_response = str;
+}
 bool		ClientFd::send_response( int client_fd ) {
 
 	ssize_t bytes = send(client_fd, this->_response.c_str(), std::min(this->_response.length(), static_cast<size_t>(SSIZE_MAX)), 0);

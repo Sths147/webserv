@@ -10,7 +10,7 @@
 
 #include "MyException.hpp"
 
-class   Client
+class	Client
 {
 	protected:
 
@@ -25,6 +25,7 @@ class   Client
 		public:
 		/*----timeout----*/
 		virtual ~Client( void );
+
 		void				refresh( void );
 		bool				check_timeout( void );
 

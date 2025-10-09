@@ -15,8 +15,8 @@
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
-#include "ClientCgi.hpp"
 
+class Client;
 
 class Response
 {
@@ -32,6 +32,7 @@ class Response
 		std::string											_body;
 		std::string											_type;
 		bool												_autoindex;
+
 		std::vector<std::string>							_envp;
 		std::string											_path_cgi;
 		std::string											_script_name;
@@ -42,13 +43,15 @@ class Response
 		bool						_is_cgi(Request& request, Server& server);
 	public:
 		Response();
-		Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, int &epoll_fd);
+		Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd);
 		~Response();
 		Response&	operator=(const Response&);
 		const std::string	determine_final_path(Request& request, Server& server);
 		void				set_error_response(Server& server);
 		void				set_status(const unsigned short int& code);
 		std::string			construct_response(void);
+		std::string			construct_response_cgi(void);
+		void				set_body(const std::string &str);
 		void				set_get_response();
 		void				set_get_headers();
 		void				set_error_headers();
@@ -74,8 +77,8 @@ class Response
 		void				set_redirect(Server& server);
 		void				open_file(std::ofstream& file, std::vector<char>& buff);
 		void 				print_headers() const ;
-		int					exec_cgi(std::map<int, Client *> &fd_to_info, int &epoll_fd);
-		int					cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, int &epoll_fd);
+		int					exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd);
+		int					cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd);
 };
 
 #endif

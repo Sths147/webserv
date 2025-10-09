@@ -23,7 +23,7 @@
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
 
-Response::Response() {}
+Response::Response(): _status_code(0) {}
 Response::~Response()
 {
 }
@@ -32,7 +32,7 @@ Response::~Response()
 #define RED "\033[31m"
 
 
-Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, int &epoll_fd)
+Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd)
 : _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
 {
 
@@ -40,19 +40,25 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
+
+
 	if (this->_is_cgi(request, server))
 	{
 		this->_creat_envp(request);
-		if (this->exec_cgi(fd_to_info, epoll_fd)) {
+		if (this->exec_cgi(fd_to_info, epoll_fd, client_fd)) {
 			;
 			//error lunch cgi
 		}
 		this->_cgi_started = true;
 		return;
-
-
 		// this->set_cgi_headers();
 	}
+
+
+
+
+
+
 	//check if client max body size and implement return code accordingly
 	// std::cout << "Path :" << this->_path << std::endl;
 	if (this->_status_code == 0 && !server.get_inlocation_return().empty())
@@ -81,12 +87,15 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 Response&	Response::operator=(const Response& other)
 {
 	this->_status_code = other.get_status_code();
+	this->_path = other.get_path();
+	this->_http_type = other.get_http_type();
 	this->_arguments = other.get_arguments();
 	this->_reason_phrase = other.get_reason_phrase();
 	this->_content_type = other.get_content_type();
 	this->_header = other.get_headers();
 	this->_body = other.get_body();
 	this->_autoindex = other.get_autoindex();
+	this->_cgi_started = other._cgi_started;
 	return (*this);
 }
 
@@ -385,7 +394,10 @@ std::string	Response::construct_response(void)
 {
 	std::stringstream ss;
 
-	ss << this->_http_type << " " << this->_status_code << " " << this->_reason_phrase;
+	// ss << this->get_http_type() << " " << this->get_status_code() << " " << this->get_reason_phrase();
+	ss << this->get_http_type() << " ";
+	ss << this->get_status_code() << " ";
+	ss << this->get_reason_phrase();
 	if (!(this->_header["Server"].empty()))
 	{
 		ss << "\r\n";
@@ -397,7 +409,7 @@ std::string	Response::construct_response(void)
 		ss << this->_body;
 		// std::cout << RED << this->_body.c_str() <<RESET<< std::endl; //comm--flo
 	}
-	// std::cout << "reponse" << ss.str() << std::endl;
+	std::cout << "reponse" << ss.str() << std::endl;
 	return (ss.str());
 }
 
@@ -870,8 +882,16 @@ std::vector<const char *> Response::_extrac_envp( void ) {
 
 
 /*--------- CGI ---------*/
+#include "ClientCgi.hpp"
+std::string		Response::construct_response_cgi(void) {
+	this->set_cgi_headers();
+	return (this->construct_response());
+}
+void				Response::set_body(const std::string &str) {
+	this->_body = str;
+}
 
-bool Response::_is_cgi(Request& request, Server& server) {
+bool				Response::_is_cgi(Request& request, Server& server) {
 
 	std::string path = request.get_target().substr(0, request.get_target().find_first_of('?'));
 	if (path.empty() || path.find('.') == std::string::npos) {
@@ -905,7 +925,7 @@ bool Response::_is_cgi(Request& request, Server& server) {
 	return true;
 }
 
-int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, int &epoll_fd) {
+int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd) {
 
 	std::vector<const char *> vec_char = this->_extrac_envp();
 	vec_char.push_back(NULL);
@@ -915,7 +935,7 @@ int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, int &epoll_fd) {
 	vec_arg.push_back(this->_path.c_str());
 	vec_arg.push_back(NULL);
 
-	if (this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data(), fd_to_info, epoll_fd)) {
+	if (this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data(), fd_to_info, epoll_fd, client_fd)) {
 		return (-1);
 	}
 	return (0);
@@ -927,15 +947,16 @@ int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, int &epoll_fd) {
 #include <sys/wait.h>
 #include <cstring>
 #include <sys/epoll.h>
+#include "ClientCgi.hpp"
 // maybe cookie...
 // set-cookie="qwerq=qwe"
 // Cookie=qwe
-int				Response::cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, int &epoll_fd) {
+int				Response::cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd) {
 
 	pid_t	pid;
 	int		pipe_in[2];
 	int		pipe_out[2];
-	const bool	secound_pipe = this->_type == "POST";
+	const bool	second_pipe = this->_type == "POST";
 
 	if (pipe(pipe_out) == -1) {
 
@@ -943,8 +964,8 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 		close(pipe_out[1]);
 		return (-1);
 	}
-	if (secound_pipe) {
-
+	if (second_pipe) {
+		//only post
 		if (pipe(pipe_in) == -1) {
 
 			close(pipe_out[0]);
@@ -959,19 +980,19 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 
 		close(pipe_out[0]);
 		close(pipe_out[1]);
-		if (secound_pipe) {
+		if (second_pipe) {
 
 			close(pipe_in[0]);
 			close(pipe_in[1]);
 		}
 		return (-1);
 
-	} else if (pid == 0) {
+	} else if (pid == 0) { //child
 
 		dup2(pipe_out[1], 1);
 		close(pipe_out[0]);
 		close(pipe_out[1]);
-		if (secound_pipe) {
+		if (second_pipe) {
 
 			dup2(pipe_in[0], 0);
 			close(pipe_in[0]);
@@ -984,21 +1005,35 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 	} else {
 
 		close(pipe_out[1]);
-		if (secound_pipe) {
+		if (second_pipe) {
 			close(pipe_in[0]);
 		}
 
-		Client * ptr1 = new ClientCgi(pipe_out[0], -1);
 
+
+
+
+		Client * ptr1 = new ClientCgi(-1, pipe_out[0], client_fd);
 		if (!epollctl(epoll_fd, pipe_out[0], EPOLLIN, EPOLL_CTL_ADD)) {
 			close(pipe_out[0]);
 			delete ptr1;
 			return (-1);
 		}
+		dynamic_cast<ClientCgi *>(ptr1)->set_response(this);
 		dynamic_cast<ClientCgi *>(ptr1)->set_pid(pid);
 		fd_to_info[pipe_out[0]] = ptr1;
-		if (secound_pipe) {
-			Client * ptr2 = new ClientCgi(-1, pipe_in[1]);
+
+
+
+
+		// std::cerr << RED << "lunched" << RESET << std::endl;
+
+
+
+
+		if (second_pipe) {
+
+			Client * ptr2 = new ClientCgi(pipe_in[1], -1, client_fd);// client fd pas besoin
 			if (!epollctl(epoll_fd, pipe_in[1], EPOLLOUT, EPOLL_CTL_ADD)) {
 				close(pipe_out[0]);
 				delete ptr2;
@@ -1008,32 +1043,6 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 			dynamic_cast<ClientCgi *>(ptr2)->add_body_request(this->_req->get_body());
 		}
 
-		// do
-		// {
-		// 	pid_t tmp = waitpid(pid, &status, WNOHANG);
-		// 	// std::cout << YELLOW << "waitpid: "<< tmp << RESET << std::endl;
-		// 	if (tmp == pid) {
-		// 		// std::cout <<RED<< "equal pid" <<RESET<<std::endl;
-		// 		break;
-		// 	}
-		// } while (1);
-
-
-		// 	char				buff[MAX_BUFFER + 1];
-		// 	std::memset(&buff, 0, sizeof(buff));
-
-		// 	ssize_t bytes = read(pipe_out[0], &buff, MAX_BUFFER);
-		// 	// std::cout <<YELLOW<< "bytes readed: "<< bytes<< RESET<<std::endl;
-		// 	if (bytes == -1) {
-		// 		// std::cout << RED << "READ PIPEOUT ERROR" << RESET << std::endl;
-		// 		return;
-		// 	}
-		// 	this->_body+= buff;
-
-		// 	if (bytes == 0 || bytes < MAX_BUFFER) {
-		// 		// std::cout <<RED<< "read finish: "<< bytes<< RESET<<std::endl;
-		// 		return;
-		// 	}
 	}
 	return (0);
 }
