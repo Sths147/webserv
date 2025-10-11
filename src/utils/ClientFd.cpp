@@ -21,8 +21,6 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 		this->_buffer = other._buffer;
 		this->_header_saved = other._header_saved;
 		this->_header = other._header;
-
-		// this->_request = other._request; // never copie or its will be "double free"
 		this->_server = other._server;
 		this->_alive = other._alive;
 		this->_response = other._response;
@@ -34,6 +32,7 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 ClientFd::~ClientFd( void ) {
 	if (this->_request != NULL)
 		delete this->_request;
+
 	if (this->_res != NULL)
 		delete this->_res;
 }
@@ -180,13 +179,9 @@ int				ClientFd::creat_response( std::map<int, Client *> &fd_to_info ) {
 	delete this->_request;
 	this->_request = NULL;
 
-
 	if (this->_res->get_cgi_status()) {
-
-		// when all the output cgi was read
 		return (1);
 	}
-
 
 	this->_response = this->_res->construct_response();
 	return (0);
@@ -230,6 +225,7 @@ bool		ClientFd::send_response( int client_fd ) {
 #include <unistd.h>
 #include <sys/epoll.h>
 void		ClientFd::del_epoll_and_close( int epoll_fd) {
+	std::cout << "fd deleted"<<this->_fd << std::endl;
 	if (this->_fd != -1) {
 		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, this->_fd, NULL);
 		close(this->_fd);

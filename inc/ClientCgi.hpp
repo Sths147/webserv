@@ -42,13 +42,15 @@ class ClientCgi : public Client
 		virtual ~ClientCgi( void );
 
 		int							read_cgi_output( void );
-		int							write_cgi_input( void );
+		bool						write_cgi_input( void );
 		void						set_pid( pid_t &pid );
 		void						add_body_request(const std::vector<char> & tmp);
 
 		void						set_response(Response *res);
 		void						construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info );
 		virtual void				del_epoll_and_close( int epoll_fd );
+		// bool						check_timeout( void );
+
 
 };
 

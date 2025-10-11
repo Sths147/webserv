@@ -7,11 +7,13 @@ Client::Client( void ) : _time_to_reset(std::time(NULL) + TIMEOUT) {
 
 }
 Client::Client( const Client &other) : _time_to_reset(std::time(NULL) + TIMEOUT) {
-	(void)other;
+	this->_time_to_reset = other._time_to_reset;
 }
 
 Client &Client::operator=( const Client &other ) {
-	(void)other;
+	if (this != &other)	{
+		this->_time_to_reset = other._time_to_reset;
+	}
 	return (*this);
 }
 Client::~Client( void ) {

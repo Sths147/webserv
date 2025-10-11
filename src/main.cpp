@@ -126,14 +126,12 @@ int main(int ac, char **av)
 
 								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
 								if (bytes < 0) {
-									if (!epollctl_error_gestion(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
-										continue;
-									}
+									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+									continue;
 								}
 
 								ptrClient->add_buffer(tmp, vec_server);
 								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
-
 
 									if (ptrClient->creat_response(fd_to_info)){
 										continue;
@@ -153,17 +151,27 @@ int main(int ac, char **av)
 								}
 							} else if (typeclient == CLIENTCGI) {
 
-								ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
 
-								int rv = ptrClient->read_cgi_output();
-								if (rv == 0) {
+								ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
+								try
+								{
+
+
+									int rv = ptrClient->read_cgi_output();
+									if (rv == 0) {
+										continue;
+									}
+									if (rv == 1 || rv < 0) {
+										// std::cout << "rv = "<< rv << std::endl;
+										ptrClient->construct_response(epoll_fd, fd_to_info);
+										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+									}
 									continue;
 								}
-								if (rv == 1 || rv < 0) {
-									ptrClient->construct_response(epoll_fd, fd_to_info);
-									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+								catch(const std::exception& e)
+								{
+									std::cerr << e.what() << '\n';
 								}
-								continue;
 							}
 						}
 
@@ -196,10 +204,21 @@ int main(int ac, char **av)
 
 							ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
 
-							int rv = ptrClient->write_cgi_input();
-							if (rv == 1 || rv < 0) {
-								delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+							try
+							{
+								if (ptrClient->write_cgi_input()) {
+									//input cgi ended so no more use
+									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+								}
 							}
+							catch(const std::exception& e)
+							{
+								std::cerr << e.what() << std::endl;
+								delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+								continue;
+							}
+
+
 						}
 
 					} else if ( events[i].events & EPOLLRDHUP ) {
@@ -208,7 +227,8 @@ int main(int ac, char **av)
 							ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 							delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 						} else if (typeclient == CLIENTCGI) {
-							// to something
+							ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
+							delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 						}
 					}
 				}

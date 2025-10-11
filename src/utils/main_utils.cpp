@@ -38,7 +38,6 @@ void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_i
 		ptrClient->del_epoll_and_close(epoll_fd);
 		delete fd_to_info[client_fd];
 		fd_to_info.erase(client_fd);
-		close(client_fd);
 }
 
 bool	epollctl_error_gestion(int epoll_fd, int client_fd, const int events, int op, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
@@ -94,7 +93,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 					return (true);
 				}
 
-				fd_to_info[client_fd] = new ClientFd(vec_listen[j], client_fd, epoll_fd); // save the client with the listen struct
+				fd_to_info[client_fd] = new ClientFd(vec_listen[j], client_fd, epoll_fd); // save the ClientFd with the listen struct and some other param
 
 				std::cout << GREEN << "add new connection " << RESET << client_fd << std::endl;
 
@@ -132,6 +131,8 @@ void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd) {
 
 
 		if (!it->second->check_timeout()) {
+
+
 			if (dynamic_cast<ClientFd *>(it->second) != NULL) {
 				dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
 				delete it->second;

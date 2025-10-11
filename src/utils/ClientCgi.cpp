@@ -56,7 +56,6 @@ int					ClientCgi::read_cgi_output( void ) {
 		return (1);
 	}
 
-
 	int	status;
 	pid_t rpid = waitpid(this->_pid, &status, WNOHANG);
 	if (rpid != 0) {
@@ -67,35 +66,41 @@ int					ClientCgi::read_cgi_output( void ) {
 
 
 #include <climits>
-int					ClientCgi::write_cgi_input( void ) {
+bool					ClientCgi::write_cgi_input( void ) {
 
 	ssize_t bytes = write(this->_fd_in, this->_body_request.c_str(), std::min(this->_body_request.length(), static_cast<size_t>(SSIZE_MAX)));
 
 	if (bytes < 0) {
-		return (-1);
+		throw (MyException("Error : write in cgi failed."));
 	}
 	if (static_cast<size_t>(bytes) == this->_body_request.length()){
-		return (1);
+		return (true);
 	}
 	this->_body_request.erase(0, bytes);
 
-	return (0);
+	return (false);
 }
+
 #include "ClientFd.hpp"
 #include "main_utils.hpp"
 void		ClientCgi::construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {
 
-	this->_response->set_body(this->_output_cgi);
-	std::string str = this->_response->construct_response_cgi();
-
 	ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[this->_from_clientfd]);
-	ptrClient->set_response(str);
+	this->_response->set_body(this->_output_cgi);
+	ptrClient->set_response(this->_response->construct_response_cgi());
 
-	if (!epollctl(epoll_fd, this->_from_clientfd, EPOLLOUT, EPOLL_CTL_MOD)) {
-		ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[this->_from_clientfd]);
-		ptrClient->del_epoll_and_close(epoll_fd);
-		delete fd_to_info[this->_from_clientfd];
-		fd_to_info.erase(this->_from_clientfd);
-		close(this->_from_clientfd);
+	if (!epollctl_error_gestion(epoll_fd, this->_from_clientfd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
+		;
 	}
 }
+
+// bool	ClientCgi::check_timeout( void ){
+
+// 	int	status;
+// 	pid_t rpid = waitpid(this->_pid, &status, WNOHANG);
+// 	if (rpid != 0) {
+// 		std::cout << "cgi_finish" << std::endl;
+// 		return (true);
+// 	}
+// 	return (Client::check_timeout());
+// }
