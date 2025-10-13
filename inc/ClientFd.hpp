@@ -3,7 +3,7 @@
 #define CLIENTFD_HPP
 
 
-#define TIMEOUT 5 //
+// #define TIMEOUT 5 //
 
 #include <ctime>
 #include <iostream>
@@ -52,7 +52,7 @@ class ClientFd : public Client
 		bool				check_alive( void );
 
 		void				print_vec(std::vector<char> &vec);
-		void				add_buffer( char *str, std::vector<Server *> &vec_server );
+		void				add_buffer( char *str, std::vector<Server *> &vec_server, size_t bytes_read );
 
 		int					creat_response( std::map<int, Client *> &fd_to_info, std::vector<Server *> &vec_server);
 		void				set_response( const std::string &str);

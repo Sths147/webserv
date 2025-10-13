@@ -3,7 +3,7 @@
 #define CLIENTCGI_HPP
 
 
-#define TIMEOUT 5 //
+// #define TIMEOUT 5 //
 
 #include <ctime>
 #include <iostream>

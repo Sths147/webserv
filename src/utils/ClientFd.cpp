@@ -110,11 +110,23 @@ static bool	check_body(Request& request, Server *server, std::vector<char>& body
 	return (1);
 }
 
-void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
+static bool	body_size_reached(size_t buffer_size, std::string content_length)
+{
+	std::stringstream ss;
+	size_t				len;
+	ss << content_length;
+	ss >> len;
+	// std::cout << "LEN :|" << len << "|  && buffer_size :|" << buffer_size << "|" << std::endl; 
+	if (buffer_size >= len)
+		return (true);
+	return (false);
+}
+
+void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server, size_t bytes_read ) {
 
 	if (this->_request == NULL)
 		this->_request = new Request;
-	for (size_t i = 0; str[i]; i++) {
+	for (size_t i = 0; i < bytes_read ; i++) {
 
 		this->_buffer.push_back(str[i]);
 		if (!this->_header_saved && find_end_of_headers(this->_buffer)) {
@@ -126,8 +138,10 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server ) {
 			this->_request->add_header(this->_header);
 		}
 	}
-	if (this->_header_saved && this->_request->get_type() == "POST" && max_size_reached(this->_buffer, this->_server)) {
+	
+	if (this->_header_saved && this->_request->get_type() == "POST" && (max_size_reached(this->_buffer, this->_server) || body_size_reached(this->_buffer.size(), this->_request->get_header("Content-Length")))) {
 		if(check_body(*this->_request, this->_server, this->_buffer)) {
+			this->_body_saved = true;
 			this->_request->add_body(this->_buffer);
 
 		}

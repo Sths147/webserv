@@ -5,7 +5,7 @@
 #include <sys/wait.h>
 #include <climits>
 #include <vector>
-#define MAX_BUFFER			100
+#define MAX_BUFFER			1048
 
 ClientCgi::ClientCgi(const int &in, const int &out, const int &client_fd) : _fd_in(in), _write_finish(false), _fd_out(out), _read_finish(false), _response(NULL), _from_clientfd(client_fd) {
 

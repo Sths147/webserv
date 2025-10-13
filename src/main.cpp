@@ -1,7 +1,5 @@
 #define MAX_EVENTS			10
-#define	MAX_REQUESTS_LINE	20
-#define MAX_EVENTS			10
-#define MAX_BUFFER			1048
+#define MAX_BUFFER			100
 
 #include <map>
 #include <csignal>
@@ -125,13 +123,12 @@ int main(int ac, char **av)
 								char				tmp[MAX_BUFFER + 1];
 								std::memset(&tmp, 0, sizeof(tmp));
 
-								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , 0);
+								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , MSG_DONTWAIT);
 								if (bytes < 0) {
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									continue;
 								}
-
-								ptrClient->add_buffer(tmp, vec_server);
+								ptrClient->add_buffer(tmp, vec_server, bytes);
 								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
 
 									if (ptrClient->creat_response(fd_to_info, vec_server)){
@@ -142,7 +139,7 @@ int main(int ac, char **av)
 									}
 								}
 								else if (ptrClient->get_header_saved() && (ptrClient->get_type() == "POST") && ptrClient->get_body_check()) {
-
+									
 									if (ptrClient->creat_response(fd_to_info, vec_server)) {
 										continue;
 									}
