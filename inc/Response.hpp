@@ -21,6 +21,7 @@ class Client;
 class Response
 {
 	private:
+		Server												*_server;
 		Request												*_req;
 		unsigned short int									_status_code;
 		std::string											_path;
@@ -43,7 +44,7 @@ class Response
 		bool						_is_cgi(Request& request, Server& server);
 	public:
 		Response();
-		Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd);
+		Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
 		~Response();
 		Response&	operator=(const Response&);
 		const std::string	determine_final_path(Request& request, Server& server);
@@ -77,8 +78,8 @@ class Response
 		void				set_redirect(Server& server);
 		void				open_file(std::ofstream& file, std::vector<char>& buff);
 		void 				print_headers() const ;
-		int					exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd);
-		int					cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd);
+		int					exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
+		int					cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
 };
 
 #endif

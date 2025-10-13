@@ -18,7 +18,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <ctime>
-#include "main_utils.hpp"
+#include "utils.hpp"
 
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
@@ -32,8 +32,8 @@ Response::~Response()
 #define RED "\033[31m"
 
 
-Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd)
-: _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
+Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
+: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
 {
 
 	this->_header["Server"] = "42WEBSERV";
@@ -45,7 +45,7 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 	if (this->_is_cgi(request, server))
 	{
 		this->_creat_envp(request);
-		if (this->exec_cgi(fd_to_info, epoll_fd, client_fd)) {
+		if (this->exec_cgi(fd_to_info, epoll_fd, client_fd, vec_server)) {
 			;
 			//error lunch cgi
 		}
@@ -801,13 +801,7 @@ void				Response::check_allowed_method(const std::string& _method_requested, Ser
 }
 
 
-
-
-
-
-
-
-
+/*--------- CGI ---------*/
 
 void 		Response::print_headers() const {
 
@@ -880,10 +874,19 @@ std::vector<const char *> Response::_extrac_envp( void ) {
 }
 
 
-/*--------- CGI ---------*/
 #include "ClientCgi.hpp"
 std::string		Response::construct_response_cgi(void) {
 	this->set_cgi_headers();
+	if (this->_status_code == 0)
+	{
+		this->_status_code = 200;
+		this->_reason_phrase = "OK";
+	}
+	else if (this->_status_code > 299 &&  this->_status_code < 399)
+		this->set_redirect(*this->_server);
+	else
+		this->set_error_response(*this->_server);
+
 	return (this->construct_response());
 }
 void				Response::set_body(const std::string &str) {
@@ -924,7 +927,7 @@ bool				Response::_is_cgi(Request& request, Server& server) {
 	return true;
 }
 
-int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd) {
+int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server) {
 
 	std::vector<const char *> vec_char = this->_extrac_envp();
 	vec_char.push_back(NULL);
@@ -934,7 +937,7 @@ int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_
 	vec_arg.push_back(this->_path.c_str());
 	vec_arg.push_back(NULL);
 
-	if (this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data(), fd_to_info, epoll_fd, client_fd)) {
+	if (this->cgi(this->_path_cgi.c_str(), vec_arg.data(), vec_char.data(), fd_to_info, epoll_fd, client_fd, vec_server)) {
 		return (-1);
 	}
 	return (0);
@@ -950,7 +953,7 @@ int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_
 // maybe cookie...
 // set-cookie="qwerq=qwe"
 // Cookie=qwe
-int				Response::cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd) {
+int				Response::cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server) {
 
 	pid_t	pid;
 	int		pipe_in[2];
@@ -998,8 +1001,12 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 			close(pipe_in[1]);
 		}
 
+		clean_fd(fd_to_info, epoll_fd, vec_server);
 		execve(path, const_cast<char *const *>(script), const_cast<char *const *>(envp));
-		exit(0); // TODO PROTECTION NEEDED BB
+		clean_for_cgi(fd_to_info, vec_server);
+		std::cerr << "exit from execve" << std::endl;
+
+		throw (-42);
 
 	} else {
 

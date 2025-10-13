@@ -20,7 +20,7 @@ static void set_nonblocking(int socket_fd) {
 
 static void set_address(struct sockaddr_in	&address, Listen &listen)
 {
-	std::cout << "set_address ip : " << listen.ip << " port : " << listen.port << std::endl;
+	std::cout << YELLOW"set_address ip : " << listen.ip << " port : " << listen.port << RESET<< std::endl;
 	address.sin_family = AF_INET;
 	if (listen.ip == 0) {
 		address.sin_addr.s_addr =  INADDR_ANY;
@@ -74,12 +74,19 @@ Server::Server(ConfigServer &config, int epoll_fd) : _ConfServer(config) {
 
 Server::~Server()
 {
-	for (size_t i = 0; i < this->vector_socket_fd.size(); i++)
-	{
-		close(this->vector_socket_fd[i]);
-	}
+	this->close_fd();
 }
 
+void												Server::close_fd( void ) {
+	int fd;
+	for (size_t i = 0; i < this->vector_socket_fd.size(); i++)
+	{
+		if ((fd = this->vector_socket_fd[i]) != -1){
+			close(fd);
+		}
+		this->vector_socket_fd[i] = -1;
+	}
+}
 
 bool												Server::check_listen( Listen &tmp ) const {
 	std::vector<Listen> vec_listen = this->get_listen();

@@ -41,7 +41,7 @@ class ClientCgi : public Client
 		ClientCgi &operator=( const ClientCgi &other );
 		virtual ~ClientCgi( void );
 
-		int							read_cgi_output( void );
+		bool							read_cgi_output( void );
 		bool						write_cgi_input( void );
 		void						set_pid( pid_t &pid );
 		void						add_body_request(const std::vector<char> & tmp);
@@ -49,7 +49,8 @@ class ClientCgi : public Client
 		void						set_response(Response *res);
 		void						construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info );
 		virtual void				del_epoll_and_close( int epoll_fd );
-		// bool						check_timeout( void );
+		bool						check_waitpid( pid_t &_pid );
+		bool						check_timeout(const int &epoll_fd, std::map<int, Client *> &fd_to_info );
 
 
 };

@@ -54,7 +54,7 @@ class ClientFd : public Client
 		void				print_vec(std::vector<char> &vec);
 		void				add_buffer( char *str, std::vector<Server *> &vec_server );
 
-		int					creat_response( std::map<int, Client *> &fd_to_info );
+		int					creat_response( std::map<int, Client *> &fd_to_info, std::vector<Server *> &vec_server);
 		void				set_response( const std::string &str);
 		bool				send_response( int client_fd );
 

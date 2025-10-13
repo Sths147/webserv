@@ -104,18 +104,40 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 	return (false);
 }
 
+void	clean_fd(std::map<int, Client *> &fd_to_info, const int &epoll_fd, std::vector<Server *> &vec_server) {
 
+	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); it++) {
+		if (it->first != -1){
+			close(it->first);
+		}
+	}
+	for (size_t i = 0; i < vec_server.size(); i++) {vec_server[i]->close_fd();}
+	close(epoll_fd);
+}
 
-void clean_exit(std::map<int, Client *> &fd_to_info, int &epoll_fd, std::vector<Server *> &vec_server) {
+void clean_for_cgi(std::map<int, Client *> &fd_to_info, std::vector<Server *> &vec_server) {
 
 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end();) {
+			delete it->second;
+		fd_to_info.erase(it++);
+	}
 
+	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
+}
+
+void clean_exit(std::map<int, Client *> &fd_to_info, const int &epoll_fd, std::vector<Server *> &vec_server) {
+
+	// std::cerr << "cgi child call clean_exit" << std::endl;
+	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end();) {
+
+		// std::cerr << RED"for IN clean_exit"RESET- << std::endl;
 		if (dynamic_cast<ClientFd *>(it->second) != NULL) {
 			dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
 			delete it->second;
 
 		} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
-			;
+			dynamic_cast<ClientCgi *>(it->second)->del_epoll_and_close(epoll_fd);
+			delete it->second;
 		}
 		fd_to_info.erase(it++);
 	}
@@ -125,23 +147,44 @@ void clean_exit(std::map<int, Client *> &fd_to_info, int &epoll_fd, std::vector<
 }
 
 
-void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd) {
+// void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd) {
+
+// 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ) {
+
+// 		if (!it->second->check_timeout()) {
+
+// 			if (dynamic_cast<ClientFd *>(it->second) != NULL) {
+// 				dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
+// 				delete it->second;
+// 			} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
+// 				;
+// 			}
+// 			fd_to_info.erase(it++);
+// 		} else {
+// 			it++;
+// 		}
+// 	}
+// }
+
+void check_all_timeout( const int epoll_fd, std::map<int, Client *> &fd_to_info) {
 
 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ) {
 
+		ClientFd* ptrClientFd = dynamic_cast<ClientFd *>(it->second);
+		ClientCgi* ptrClientCgi = dynamic_cast<ClientCgi *>(it->second);
 
-		if (!it->second->check_timeout()) {
-
-
-			if (dynamic_cast<ClientFd *>(it->second) != NULL) {
-				dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
-				delete it->second;
-			} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
-				;
-			}
+		if (ptrClientFd && !ptrClientFd->check_timeout()) {
+			ptrClientFd->del_epoll_and_close(epoll_fd);
+			delete it->second;
 			fd_to_info.erase(it++);
-		} else {
-			it++;
+		}
+		else if (ptrClientCgi && !ptrClientCgi->check_timeout(epoll_fd, fd_to_info)) {
+			ptrClientCgi->del_epoll_and_close(epoll_fd);
+			delete it->second;
+			fd_to_info.erase(it++);
+		}
+		else {
+			++it;
 		}
 	}
 }

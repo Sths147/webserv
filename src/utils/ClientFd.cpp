@@ -164,12 +164,12 @@ bool				ClientFd::check_alive( void ) {
 	return (this->_alive);
 }
 
-int				ClientFd::creat_response( std::map<int, Client *> &fd_to_info ) {
+int				ClientFd::creat_response( std::map<int, Client *> &fd_to_info, std::vector<Server *> &vec_server) {
 
 	if (this->_request == NULL) {
 		return 0;
 	}
-	this->_res = new Response(*this->_request, *this->_server, fd_to_info, this->_epoll_fd, this->_fd);
+	this->_res = new Response(*this->_request, *this->_server, fd_to_info, this->_epoll_fd, this->_fd, vec_server);
 
 	if (!this->_request->get_header("Connection").compare("Keep-alive") || this->_request->get_header("Connection").compare("Unexisting header")) {
 		this->_alive = true;
@@ -225,10 +225,11 @@ bool		ClientFd::send_response( int client_fd ) {
 #include <unistd.h>
 #include <sys/epoll.h>
 void		ClientFd::del_epoll_and_close( int epoll_fd) {
-	std::cout << "fd deleted"<<this->_fd << std::endl;
 	if (this->_fd != -1) {
+		std::cout << YELLOW << "fd deleted "<<this->_fd << RESET << std::endl;
 		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, this->_fd, NULL);
 		close(this->_fd);
+		this->_fd = -1;
 	}
 }
 

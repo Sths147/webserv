@@ -15,6 +15,7 @@ class Server
 	public:
 		Server(ConfigServer &config, int epoll_fd);
 
+		void												close_fd( void );
 		const	std::vector<int>							&get_socket_fd( void ) const ;
 		bool												check_listen( Listen &tmp ) const;
 		const	std::vector<Listen>							&get_listen( void ) const ;

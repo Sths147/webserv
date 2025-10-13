@@ -101,7 +101,6 @@ void	ConfigLocation::set_return( const std::string &str ) { this->_return = str;
 
 void	ConfigLocation::set_cgi_path( const std::string &str ) {
 
-	std::cout << str << std::endl;
 	if (str.find(":") == std::string::npos) {
 		throw (std::string("Error : something wrong it should be: 'extension:path'"));
 	}

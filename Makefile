@@ -38,7 +38,7 @@ HEADERS				:=		Client.hpp			\
 							ConfigServer.hpp	\
 							ConfigUtils.hpp		\
 							ErrorException.hpp	\
-							main_utils.hpp		\
+							utils.hpp		\
 							MyException.hpp		\
 							Response.hpp		\
 							Server.hpp
@@ -61,7 +61,7 @@ SRC_UTILS			:=		Client.cpp			\
 							ClientCgi.cpp		\
 							ClientFd.cpp		\
 							MyException.cpp		\
-							main_utils.cpp
+							utils.cpp
 
 
 

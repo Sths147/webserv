@@ -15,7 +15,7 @@
 #include "Config.hpp"
 #include "Server.hpp"
 #include "Response.hpp"
-#include "main_utils.hpp"
+#include "utils.hpp"
 #include "MyException.hpp"
 #include "ClientFd.hpp"
 #include "ClientCgi.hpp"
@@ -91,7 +91,7 @@ int main(int ac, char **av)
 			nfds = epoll_wait(epoll_fd, events, MAX_EVENTS, 1000);
 			if (nfds < 0) {
 
-				if (!interrupted) std::cout << "\nSIGINT detected." << std::endl;
+				if (!interrupted) std::cout << RED"\nSIGINT detected."RESET << std::endl;
 				else std::cerr << "Epoll wait failed" << std::endl;
 				clean_exit(fd_to_info, epoll_fd, vec_server);
 				return (1);
@@ -99,6 +99,7 @@ int main(int ac, char **av)
 			} else if ( nfds > 0 ) {
 
 				for (int i = 0; i < nfds; i++) {
+
 
 					int client_fd = events[i].data.fd;
 
@@ -133,7 +134,7 @@ int main(int ac, char **av)
 								ptrClient->add_buffer(tmp, vec_server);
 								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
 
-									if (ptrClient->creat_response(fd_to_info)){
+									if (ptrClient->creat_response(fd_to_info, vec_server)){
 										continue;
 									}
 									if (!epollctl_error_gestion(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
@@ -142,7 +143,7 @@ int main(int ac, char **av)
 								}
 								else if (ptrClient->get_header_saved() && (ptrClient->get_type() == "POST") && ptrClient->get_body_check()) {
 
-									if (ptrClient->creat_response(fd_to_info)) {
+									if (ptrClient->creat_response(fd_to_info, vec_server)) {
 										continue;
 									}
 									if (!epollctl_error_gestion(epoll_fd, client_fd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
@@ -151,26 +152,21 @@ int main(int ac, char **av)
 								}
 							} else if (typeclient == CLIENTCGI) {
 
-
 								ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
+
 								try
 								{
-
-
 									int rv = ptrClient->read_cgi_output();
-									if (rv == 0) {
-										continue;
-									}
-									if (rv == 1 || rv < 0) {
-										// std::cout << "rv = "<< rv << std::endl;
+									std::cout << "rv = ptrClient->read_cgi_output(): "<< rv << "\n"<<std::endl;
+									if (rv == true) {
 										ptrClient->construct_response(epoll_fd, fd_to_info);
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									}
-									continue;
 								}
 								catch(const std::exception& e)
 								{
-									std::cerr << e.what() << '\n';
+									std::cerr << e.what() << std::endl;
+									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 								}
 							}
 						}
@@ -191,6 +187,7 @@ int main(int ac, char **av)
 										if (!epollctl_error_gestion(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
 											continue;
 										}
+
 									} else {
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									}
@@ -207,7 +204,6 @@ int main(int ac, char **av)
 							try
 							{
 								if (ptrClient->write_cgi_input()) {
-									//input cgi ended so no more use
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 								}
 							}
@@ -217,8 +213,6 @@ int main(int ac, char **av)
 								delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 								continue;
 							}
-
-
 						}
 
 					} else if ( events[i].events & EPOLLRDHUP ) {
@@ -232,19 +226,25 @@ int main(int ac, char **av)
 						}
 					}
 				}
-				check_all_timeout(fd_to_info, epoll_fd);
-			} else {
 
-				check_all_timeout(fd_to_info, epoll_fd);
+
+
+				check_all_timeout( epoll_fd, fd_to_info);
+
+			} else {
+				check_all_timeout( epoll_fd, fd_to_info);
 			}
 		}
 
 	} catch (std::exception& e) {
-		std::cout << e.what() << std::endl;
+		std::cerr << e.what() << std::endl;
+	} catch (const int &e) {
+		if (e == -42)
+			return (0);
 	}
 	clean_exit(fd_to_info, epoll_fd, vec_server);
 	if (!interrupted) {
-		std::cout << "\nSIGINT detected." << std::endl;
+		std::cout << RED << "\nSIGINT detected." << RESET << std::endl;
 		return (1);
 	}
 	return (0);
