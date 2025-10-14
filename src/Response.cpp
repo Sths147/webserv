@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/14 15:39:08 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/14 16:13:24 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Response::~Response()
 
 
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
-: _server(&server), _req(&request), _status_code(request.get_return_code()), _autoindex(true), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
+: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
 {
 	std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << "final path : " << this->_path << std::endl;
 	this->_header["Server"] = "42WEBSERV";
@@ -186,6 +186,15 @@ static bool			check_path_permissions(std::string path, Request& request, Server&
 	return (0);
 }
 
+static void			add_index(std::string& full_path, std::string index)
+{
+	if ((full_path.find_last_of('/') != full_path.length() - 1) && (index[0] != '/'))
+		full_path += "/";
+	else if ((full_path.find_last_of('/') == full_path.length() - 1) && (index[0] == '/'))
+		full_path.erase(full_path.end() - 1);
+	full_path += index;
+}
+
 const std::string	Response::determine_final_path(Request& request, Server& server)
 {
 	std::string		path;
@@ -211,13 +220,15 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 				if (!server.get_inlocation_index().empty())
 				{
 					// std::cout << "1" << std::endl;
-					full_path += server.get_inlocation_index()[0];
+					add_index(full_path, server.get_inlocation_index()[0]);
+					// full_path += server.get_inlocation_index()[0];
 				}
 				else if (!server.get_index().empty())
 				{
 
 					// std::cout << "2" << std::endl;
-					full_path += server.get_index()[0];
+					add_index(full_path, server.get_index()[0]);
+					// full_path += server.get_index()[0];
 				}
 				else if (server.get_autoindex() == ON)
 				{
