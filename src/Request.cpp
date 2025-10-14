@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/14 14:13:32 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/14 17:11:21 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,12 +148,18 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 		set_return_code(400);
 	if (k != buff.end())
 		buff.erase(k);
+	// std::cout << "SIZE: " << buff.size() << std::endl;
+	// std::cout << "now" << std::endl;
 	while (k != buff.end())
 	{
+		// std::cout << *k << std::endl;
 		if (*k == SP)
 			break;
 		else if (*k < 33 || *k > 126)
+		{
 			set_return_code(400);
+			break ;
+		}
 		else
 		{
 			result += *k;
@@ -163,6 +169,7 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 	}
 	if (result.empty() || k == buff.end())
 		set_return_code(400);
+	// std::cout << std::endl << "end" << std::endl;
 	return (result);
 }
 
