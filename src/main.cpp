@@ -237,7 +237,7 @@ int main(int ac, char **av)
 		std::cerr << e.what() << std::endl;
 	} catch (const int &e) {
 		if (e == -42)
-			return (0);
+			return (-42);
 	}
 	clean_exit(fd_to_info, epoll_fd, vec_server);
 	if (!interrupted) {

@@ -55,7 +55,13 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 		return (true);
 	} else if (rpid == _pid) {
 		if (WIFEXITED(status)) {
-			// std::cout << "Cgi finish good"<< std::endl;
+			int code = WEXITSTATUS(status);
+			if (code == 0) {
+				// std::cout << "Cgi finish good" << std::endl;
+			} else {
+				this->_response->set_status(500);
+				std::cout << "Cgi exited with code: " << code << std::endl;
+			}
 		} else if (WIFSIGNALED(status)) {
 			this->_response->set_status(500);
 			// std::cout << "Cgi finish by signal: " << WTERMSIG(status) << std::endl;
