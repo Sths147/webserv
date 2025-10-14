@@ -121,13 +121,14 @@ int main(int ac, char **av)
 								ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 
 								char				tmp[MAX_BUFFER];
-								// std::memset(&tmp, 0, sizeof(tmp));
 
 								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , MSG_DONTWAIT);
 								if (bytes < 0) {
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									continue;
 								}
+								else if (bytes == 0)
+									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 								ptrClient->add_buffer(tmp, vec_server, bytes);
 								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
 
@@ -170,7 +171,7 @@ int main(int ac, char **av)
 					} else if (events[i].events & EPOLLOUT ) {
 
 						fd_to_info[client_fd]->refresh();
-
+						std::cout << "here" << std::endl;
 						if (typeclient == CLIENTFD) {
 
 							ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
