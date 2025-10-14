@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/14 14:45:49 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/14 15:39:08 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ Response::~Response()
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
 : _server(&server), _req(&request), _status_code(request.get_return_code()), _autoindex(true), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
 {
-
+	std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << "final path : " << this->_path << std::endl;
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	if (this->_status_code == 0)
@@ -53,12 +53,6 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		return;
 		// this->set_cgi_headers();
 	}
-
-
-
-
-
-
 	//check if client max body size and implement return code accordingly
 	// std::cout << "Path :" << this->_path << std::endl;
 	if (this->_status_code == 0 && !server.get_inlocation_return().empty())
@@ -79,9 +73,9 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		this->set_redirect(server);
 	else
 		this->set_error_response(server);
-	// std::cout << "-------response header ------------" << std::endl;
-	// this->print_headers();
-	// std::cout << "-------------------------" << std::endl;
+	std::cout << "-------response header ------------" << std::endl;
+	this->print_headers();
+	std::cout << "-------------------------" << std::endl;
 }
 
 
@@ -279,7 +273,10 @@ void				Response::set_error_response(Server& server)
 		ss << "<html><body><h1>" << this->_status_code << " " << this->_reason_phrase << "</h1></body></html>";
 		ss >> this->_body;
 		this->_body += " " + this->_reason_phrase + "</h1></body></html>";
+		this->_content_type = "text/html";
 	}
+	else
+		this->_content_type = set_content_type(this->_path);
 	this->set_error_headers();
 }
 
