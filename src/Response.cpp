@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/07 11:45:45 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/13 18:54:06 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,9 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		this->set_redirect(server);
 	else
 		this->set_error_response(server);
-	// this->print_headers();
-	// std::cout << "-------------------------" << std::endl;
+	std::cout << "-------response header ------------" << std::endl;
+	this->print_headers();
+	std::cout << "-------------------------" << std::endl;
 }
 
 
@@ -164,12 +165,13 @@ static std::string	set_full_path(Server& server, std::string& path)
 	return (full_path);
 }
 
-static bool			check_path_permissions(std::string path, Request& request)
+static bool			check_path_permissions(std::string path, Request& request, Server& server)
 {
 	struct stat sfile;
-
+// path.find_last_of('/') != std::string::npos || 
 	// std::cout << "Original" << path << std::endl;
-	while (path.find_last_of('/') != std::string::npos || !path.compare("/"))
+	// std::cout << "ROOT : " << server.get_root() << std::endl;
+	while (path.compare(server.get_root()))
 	{
 		// std::cout << "Path :" << path << std::endl;
 		size_t n = path.find_last_of('/');
@@ -179,7 +181,10 @@ static bool			check_path_permissions(std::string path, Request& request)
 		if (!stat(path.c_str(), &sfile))
 		{
 			if (!request.get_type().compare("GET") && !(sfile.st_mode & S_IROTH))
+			{
+				std::cout << "path : " << path << std::endl;
 				return (1);
+			}
 			else if ((!request.get_type().compare("POST") || !request.get_type().compare("DELETE")) && !(sfile.st_mode & S_IWOTH))
 				return (1);
 		}
@@ -233,8 +238,11 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 				return (path);
 			if (!server.get_inlocation_return().empty())
 				set_status(301);
-			if (check_path_permissions(full_path, request))
+			if (check_path_permissions(full_path, request, server))
+			{
+				std::cout << "OUPS" << std::endl;
 				set_status(403);
+			}
 			//CHECK IF FOLDER IS FORBIDDEN OR IF PATH DOES NOT EXIST
 
 			set_status(404);
@@ -416,7 +424,7 @@ void	Response::set_get_response()
 {
 	struct stat					sfile;
 	// std::cout << "PATH|" << this->get_path() << "|" << std::endl;
-	if (this->_autoindex == true)
+	if (this->_autoindex == true && !stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 	{
 		std::cout << "here " << std::endl;
 		std::time_t result = std::time(NULL);
@@ -467,7 +475,7 @@ void	Response::set_get_response()
 		}
 	}
 	else
-		set_status(403);
+		set_status(404);
 }
 
 // static void	delete_cr(std::string& line)

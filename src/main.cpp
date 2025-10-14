@@ -120,8 +120,8 @@ int main(int ac, char **av)
 
 								ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
 
-								char				tmp[MAX_BUFFER + 1];
-								std::memset(&tmp, 0, sizeof(tmp));
+								char				tmp[MAX_BUFFER];
+								// std::memset(&tmp, 0, sizeof(tmp));
 
 								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , MSG_DONTWAIT);
 								if (bytes < 0) {
