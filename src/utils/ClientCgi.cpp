@@ -51,18 +51,18 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 	int	status;
 	pid_t rpid = waitpid(_pid, &status, WNOHANG);
 	if (rpid == 0) {
-		std::cout << "Toujours en cours" << std::endl;
+		// std::cout << "Toujours en cours" << std::endl;
 		return (true);
 	} else if (rpid == _pid) {
 		if (WIFEXITED(status)) {
-			std::cout << "Cgi finish good"<< std::endl;
+			// std::cout << "Cgi finish good"<< std::endl;
 		} else if (WIFSIGNALED(status)) {
 			this->_response->set_status(500);
-			std::cout << "Cgi finish by signal: " << WTERMSIG(status) << std::endl;
+			// std::cout << "Cgi finish by signal: " << WTERMSIG(status) << std::endl;
 		}
 		else if (WIFSTOPPED(status)) {
 			this->_response->set_status(500);
-			std::cout << "Cgi stop by signal: " << WSTOPSIG(status) << std::endl;
+			// std::cout << "Cgi stop by signal: " << WSTOPSIG(status) << std::endl;
 		}
 		return (false);
 	} else {
@@ -82,12 +82,7 @@ bool					ClientCgi::read_cgi_output( void ) {
 	if (bytes < 0) {
 		throw (MyException("Error : read output cgi failed."));
 	}
-	// if (bytes == 0) {
-	// 	std::cout << "read_cgi_output: bytes == 0"<< std::endl;
-	// 	return (true);
-	// }
 	this->_output_cgi += tmp;
-	std::cout << "this->_output_cgi += tmp; bytes: "<<bytes<< std::endl;
 	if (bytes <= MAX_BUFFER) {
 		return (!check_waitpid(this->_pid));
 	}

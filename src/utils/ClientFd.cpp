@@ -28,13 +28,22 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 	return	*this;
 }
 
+void	ClientFd::clean_new_request( void ){
+
+	if (this->_request != NULL){
+		delete this->_request;
+		this->_request = NULL;
+	}
+	if (this->_res != NULL){
+		delete this->_res;
+		this->_res = NULL;
+	}
+	this->_header_saved = false;
+	this->_body_saved = false;
+}
 
 ClientFd::~ClientFd( void ) {
-	if (this->_request != NULL)
-		delete this->_request;
-
-	if (this->_res != NULL)
-		delete this->_res;
+	this->clean_new_request();
 }
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
@@ -116,7 +125,7 @@ static bool	body_size_reached(size_t buffer_size, std::string content_length)
 	size_t				len;
 	ss << content_length;
 	ss >> len;
-	// std::cout << "LEN :|" << len << "|  && buffer_size :|" << buffer_size << "|" << std::endl; 
+	// std::cout << "LEN :|" << len << "|  && buffer_size :|" << buffer_size << "|" << std::endl;
 	if (buffer_size >= len)
 		return (true);
 	return (false);
@@ -138,7 +147,7 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server, size_t
 			this->_request->add_header(this->_header);
 		}
 	}
-	
+
 	if (this->_header_saved && this->_request->get_type() == "POST" && (max_size_reached(this->_buffer, this->_server) || body_size_reached(this->_buffer.size(), this->_request->get_header("Content-Length")))) {
 		if(check_body(*this->_request, this->_server, this->_buffer)) {
 			this->_body_saved = true;
@@ -204,7 +213,12 @@ int				ClientFd::creat_response( std::map<int, Client *> &fd_to_info, std::vecto
 void		ClientFd::set_response( const std::string &str){
 	this->_response = str;
 }
+
 bool		ClientFd::send_response( int client_fd ) {
+
+
+	std::cout << "send_response: '" << this->_response << "'\n\n\n"<< std::endl;
+
 
 	ssize_t bytes = send(client_fd, this->_response.c_str(), std::min(this->_response.length(), static_cast<size_t>(SSIZE_MAX)), 0);
 
