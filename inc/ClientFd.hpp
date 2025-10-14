@@ -41,6 +41,7 @@ class ClientFd : public Client
 		ClientFd(const Listen &listen, int fd, int epoll_fd);
 		ClientFd &operator=( const ClientFd &other );
 		~ClientFd( void );
+		void				clean_new_request( void );
 
 		Listen				get_listen( void );
 

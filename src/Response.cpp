@@ -1011,8 +1011,8 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 
 		clean_fd(fd_to_info, epoll_fd, vec_server);
 		execve(path, const_cast<char *const *>(script), const_cast<char *const *>(envp));
+		std::cerr << "Error: Execve failed." << std::endl;
 		clean_for_cgi(fd_to_info, vec_server);
-		std::cerr << "exit from execve" << std::endl;
 
 		throw (-42);
 

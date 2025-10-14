@@ -34,6 +34,8 @@ void 		Request::add_header(std::vector<char>&buff)
 	this->_http_type = parse_http_type(buff);
 	this->_header = parse_header(buff);
 	this->parse_headers();
+
+
 	std::cout << "--------START PRINT HEADERS---------" << std::endl;
 	this->print_headers();
 	std::cout << "--------END PRINT HEADERS---------" << std::endl;
@@ -95,11 +97,11 @@ void	Request::add_body(std::vector<char> to_add)
 {
 	this->_body = to_add;
 	std::cout << "---------------- PRINTING BODY ------------ SIZE" <<  std::endl;
-	// for (size_t i = 0; i < to_add.size(); i++)
-	// {
-	// 	std::cout << to_add[i];
-	// }
-	// std::cout << std::endl << "---------------- END BODY ------------ " << std::endl;
+	for (size_t i = 0; i < to_add.size(); i++)
+	{
+		std::cout << to_add[i];
+	}
+	std::cout << std::endl << "---------------- END BODY ------------ " << std::endl;
 }
 
 void	Request::set_return_code(const unsigned short int& code)

@@ -139,7 +139,7 @@ int main(int ac, char **av)
 									}
 								}
 								else if (ptrClient->get_header_saved() && (ptrClient->get_type() == "POST") && ptrClient->get_body_check()) {
-									
+
 									if (ptrClient->creat_response(fd_to_info, vec_server)) {
 										continue;
 									}
@@ -154,7 +154,6 @@ int main(int ac, char **av)
 								try
 								{
 									int rv = ptrClient->read_cgi_output();
-									std::cout << "rv = ptrClient->read_cgi_output(): "<< rv << "\n"<<std::endl;
 									if (rv == true) {
 										ptrClient->construct_response(epoll_fd, fd_to_info);
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
@@ -180,12 +179,13 @@ int main(int ac, char **av)
 							{
 								if (ptrClient->send_response(client_fd) == true) {
 
-									if (!ptrClient->check_alive()) {
+									if (ptrClient->check_alive()) {
 										if (!epollctl_error_gestion(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
 											continue;
 										}
-
+										ptrClient->clean_new_request();
 									} else {
+										std::cout << "DELETE HERE" << std::endl;
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									}
 								}
@@ -237,7 +237,7 @@ int main(int ac, char **av)
 		std::cerr << e.what() << std::endl;
 	} catch (const int &e) {
 		if (e == -42)
-			return (0);
+			return (-42);
 	}
 	clean_exit(fd_to_info, epoll_fd, vec_server);
 	if (!interrupted) {
