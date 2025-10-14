@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/13 18:54:06 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/14 14:45:49 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Response::~Response()
 
 
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
-: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
+: _server(&server), _req(&request), _status_code(request.get_return_code()), _autoindex(true), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
 {
 
 	this->_header["Server"] = "42WEBSERV";
@@ -79,9 +79,9 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		this->set_redirect(server);
 	else
 		this->set_error_response(server);
-	std::cout << "-------response header ------------" << std::endl;
-	this->print_headers();
-	std::cout << "-------------------------" << std::endl;
+	// std::cout << "-------response header ------------" << std::endl;
+	// this->print_headers();
+	// std::cout << "-------------------------" << std::endl;
 }
 
 
@@ -208,9 +208,9 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	{
 		full_path = set_full_path(server, path);
 		// std::cout << "STATCODE|" << this->get_status_code() << std::endl;
-		// std::cout << "FULL PATH" << full_path << std::endl;
 		if (!stat(full_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 		{
+			std::cout << "FULL PATH" << full_path << std::endl;
 			if (!request.get_type().compare("GET"))
 			{
 				// std::cout << "L" << std::endl;
@@ -227,7 +227,13 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 				}
 				else if (server.get_autoindex() == ON)
 				{
+					std::cout << "here" << std::endl;
 					this->_autoindex = true;
+					return (full_path);
+				}
+				else if (this->_autoindex == false)
+				{
+					this->set_status(403);
 					return (full_path);
 				}
 			}
@@ -240,7 +246,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 				set_status(301);
 			if (check_path_permissions(full_path, request, server))
 			{
-				std::cout << "OUPS" << std::endl;
+				// std::cout << "OUPS" << std::endl;
 				set_status(403);
 			}
 			//CHECK IF FOLDER IS FORBIDDEN OR IF PATH DOES NOT EXIST
@@ -426,7 +432,7 @@ void	Response::set_get_response()
 	// std::cout << "PATH|" << this->get_path() << "|" << std::endl;
 	if (this->_autoindex == true && !stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 	{
-		std::cout << "here " << std::endl;
+		// std::cout << "here " << std::endl;
 		std::time_t result = std::time(NULL);
 		std::stringstream buffer;
 		std::string time_str;

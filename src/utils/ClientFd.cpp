@@ -217,8 +217,8 @@ void		ClientFd::set_response( const std::string &str){
 bool		ClientFd::send_response( int client_fd ) {
 
 
-	std::cout	<< "----------------------------------------send_response: \n'"
-				<< this->_response << "'\n"<< std::endl;
+	// std::cout	<< "----------------------------------------send_response: \n'"
+	// 			<< this->_response << "'\n"<< std::endl;
 
 
 	ssize_t bytes = send(client_fd, this->_response.c_str(), std::min(this->_response.length(), static_cast<size_t>(SSIZE_MAX)), 0);

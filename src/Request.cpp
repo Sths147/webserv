@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/13 17:58:07 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/14 14:13:32 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,12 +96,12 @@ unsigned short int	Request::get_return_code() const
 void	Request::add_body(std::vector<char> to_add)
 {
 	this->_body = to_add;
-	std::cout << "---------------- PRINTING BODY ------------ SIZE" <<  std::endl;
-	for (size_t i = 0; i < to_add.size(); i++)
-	{
-		std::cout << to_add[i];
-	}
-	std::cout << std::endl << "---------------- END BODY ------------ " << std::endl;
+	// std::cout << "---------------- PRINTING BODY ------------ SIZE" <<  std::endl;
+	// for (size_t i = 0; i < to_add.size(); i++)
+	// {
+	// 	std::cout << to_add[i];
+	// }
+	// std::cout << std::endl << "---------------- END BODY ------------ " << std::endl;
 }
 
 void	Request::set_return_code(const unsigned short int& code)

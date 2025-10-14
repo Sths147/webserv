@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:45:52 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/07 11:45:56 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/14 14:33:07 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class Response
 		Server												*_server;
 		Request												*_req;
 		unsigned short int									_status_code;
+		bool												_autoindex;
 		std::string											_path;
 		std::string											_http_type;
 		std::string											_arguments;
@@ -32,7 +33,6 @@ class Response
 		std::map<std::string, std::string>					_header;
 		std::string											_body;
 		std::string											_type;
-		bool												_autoindex;
 
 		std::vector<std::string>							_envp;
 		std::string											_path_cgi;
