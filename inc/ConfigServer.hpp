@@ -29,16 +29,6 @@ class ConfigServer
 
 		public:
 
-			void	print_listen( void );
-			void	print_index( void );
-			void	print_error_page( void );
-			void	print_server_name( void );
-			void	print_allow_methods( void );
-			void	print_client_max_body_size( void );
-			void	print_root( void );
-			void	print_location( void );
-
-
 			/* --- set this server --- */
 			void	set_listen( const std::string &str);
 			void	set_raw_listen(Listen lis);

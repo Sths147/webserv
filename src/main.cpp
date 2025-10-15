@@ -9,7 +9,6 @@
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
 #include "Config.hpp"
 #include "Server.hpp"
 #include "Response.hpp"
@@ -18,15 +17,11 @@
 #include "ClientFd.hpp"
 #include "ClientCgi.hpp"
 
-
-
 //SIGNAL SIGINT
 bool interrupted = true;
 void signalHandler(int) {
 	interrupted = false;
 }
-
-
 
 int main(int ac, char **av)
 {
@@ -127,8 +122,10 @@ int main(int ac, char **av)
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									continue;
 								}
-								else if (bytes == 0)
+								else if (bytes == 0) {
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+									continue;
+								}
 								ptrClient->add_buffer(tmp, vec_server, bytes);
 								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
 

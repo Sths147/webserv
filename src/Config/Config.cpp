@@ -1,8 +1,11 @@
 #include "Config.hpp"
 #include "MyException.hpp"
+#include <fstream>
+#include <algorithm>
+#include <sstream> // for stringstream
 #define SPACE " \t\n\r\f\v"
 
-#include <fstream>
+Config::~Config() {}
 
 Config::Config( std::string nameFile )
 {
@@ -46,213 +49,15 @@ Config::Config( std::string nameFile )
 	sfile.close();
 }
 
-static void serverDirectiveParsing(std::string &line) {
-
-	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
-		char c = line[i];
-
-		if (c == ' ' || c == '\t')
-			continue;
-		if (c == '{') {
-			size_t index;
-			for (index = i + 1; index < line.size(); index++)
-			{
-				c = line[index];
-				if (c == ' ' || c == '\t' || c == '\r')
-					continue;
-				if (c == '#')
-					break;
-				else
-					throw (MyException("Error : bad format on this line...", line));
-
-			}
-			if (c == '#' || index >= line.size())
-				break;
-		}
-	}
-
-}
-
-static std::string locationDirectiveParsing(std::string line, bool &b) {
-
-	std::vector<std::string> vec = ConfigUtils::split(line, ' ');
-
-	if (vec.size() < 2 && (vec[1][0] != '{'|| vec[2][0] != '{'))
-		throw (std::string("Error : bad format on this line..."));
-	size_t i = 0;
-	if (vec[0][0] == '=') {
-		if (vec[0].size() > 1)
-			throw (std::string("Error : bad format on this line..."));
-		b = true;
-		i++;
-	}
-	if (vec[i][0] != '/')
-		throw (std::string("Error : bad format on this line..."));
-	if (vec.size() > (i + 2) && vec[i + 2][0] != '#')
-		throw (std::string("Error : bad format on this line..."));
-	return (vec[i]);
-}
-
-void			Config::set_in_location( std::string &directive, std::string &line, int &server, int &location, bool &in_location) {
-
-	if (directive == "index") {
-
-		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-		this->_vConfServer[server].set_inlocation_index(location, arg);
-
-	} else if (directive == "error_page") {
-
-		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-		this->_vConfServer[server].set_inlocation_error_page(location, arg);
-
-	} else if (directive == "allow_methods") {
-
-		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-		this->_vConfServer[server].set_inlocation_allow_methods(location, arg);
-
-	} else if (directive == "root") {
-
-		std::string arg =  ConfigUtils::get_one_token(line);
-		this->_vConfServer[server].set_inlocation_root(location, arg);
-
-	} else if (directive == "autoindex") {
-
-		std::string arg =  ConfigUtils::get_one_token(line);
-		if (arg == "on")
-			this->_vConfServer[server].set_inlocation_autoindex(location, ON);
-		else if (arg == "off")
-			this->_vConfServer[server].set_inlocation_autoindex(location, OFF);
-		else
-			throw (MyException("Error : autoindex unknow value", line));
-
-	} else if (directive == "return") {
-
-		std::vector<std::string> vec_arg =  ConfigUtils::get_multi_token(line);
-		if (vec_arg[0] == "301")
-			this->_vConfServer[server].set_inlocation_return(location, vec_arg[1]);
-		else
-			throw (MyException("Error : directive return not allowed", line));
-
-	} else if (directive == "cgi_path") {
-
-		std::string arg = ConfigUtils::get_one_token(line);
-		// std::cout << "cgi_path : "<< arg << std::endl;
-		try
-		{
-			this->_vConfServer[server].set_inlocation_cgi_path(location, arg);
-		} catch(const std::string& e) {
-
-			throw (MyException(e, line));
-		}
+ConfigServer&	Config::copy_config_server( const int &i ) { return (this->_vConfServer[i]); }
+size_t			Config::nb_of_server() { return (this->_vConfServer.size()); }
 
 
-	} else if (directive == "cgi_extension") {
 
-		std::string arg = ConfigUtils::get_one_token(line);
-		// std::cout << "cgi_extension : "<< arg << std::endl;
-		this->_vConfServer[server].set_inlocation_cgi_extension(location, arg);
+static void			serverDirectiveParsing(std::string &line);
+static std::string		locationDirectiveParsing(std::string line, bool &b);
 
-	} else { // here we got "}" or error
-
-		if (directive != "\0")
-			throw (MyException("Error : unknown directive...", directive));
-		ConfigUtils::check_bracket(line);
-		in_location = false;
-
-	}
-}
-
-void			Config::set_in_server( std::string &directive, std::string &line, int &server, int &location, bool &in_server) {
-
-	if (directive == "listen") {
-
-		std::string arg = ConfigUtils::get_one_token(line);
-		try
-		{
-			this->_vConfServer[server].set_listen(arg);
-		}
-		catch(const std::string& str)
-		{
-			throw (MyException(str, line));
-		}
-
-	} else if (directive == "index") {
-
-		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-		this->_vConfServer[server].set_index(arg);
-
-	} else if (directive == "error_page") {
-
-		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-		try
-		{
-			this->_vConfServer[server].set_error_page(arg);
-		}
-		catch(const std::string& str)
-		{
-			throw (MyException(str, line));
-		}
-
-	} else if (directive == "server_name") {
-
-		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-		this->_vConfServer[server].set_server_name(arg);
-
-	} else if (directive == "allow_methods") {
-
-		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
-		this->_vConfServer[server].set_allow_methods(arg);
-
-	} else if (directive == "client_max_body_size") {
-
-		std::string arg =  ConfigUtils::get_one_token(line);
-		try
-		{
-			this->_vConfServer[server].set_client_max_body_size(arg);
-		}
-		catch(const std::string &e)
-		{
-			throw (MyException(e, line));
-		}
-
-
-	} else if (directive == "root") {
-
-		std::string arg =  ConfigUtils::get_one_token(line);
-		this->_vConfServer[server].set_root(arg);
-
-	} else if (directive == "autoindex") {
-
-		std::string arg =  ConfigUtils::get_one_token(line);
-		if (arg == "on")
-			this->_vConfServer[server].set_autoindex(ON);
-		else if (arg == "off")
-			this->_vConfServer[server].set_autoindex(OFF);
-		else
-			throw (MyException("Error : autoindex unknow value", line));
-
-	} else if (directive == "return") {
-
-		std::vector<std::string> vec_arg =  ConfigUtils::get_multi_token(line);
-
-		if (vec_arg[0] == "301")
-			this->_vConfServer[server].set_return(vec_arg[1]);
-		else
-			throw (MyException("Error : directive return not allowed", line));
-
-	} else { // here we got "}" or error
-
-		if (directive != "\0")
-			throw (MyException("Error : unknown directive...", directive));
-		ConfigUtils::check_bracket(line);
-		in_server = false;
-		location = -1;
-	}
-}
-
-
-#include <sstream> // for stringstream
-void Config::pars( void )
+void	Config::pars( void )
 {
 
 	std::stringstream ss(this->_file);
@@ -299,11 +104,11 @@ void Config::pars( void )
 
 		} else if (in_location) {
 
-			this->set_in_location(directive, line, server, location, in_location);
+			this->_set_in_location(directive, line, server, location, in_location);
 
 		} else if (in_server) {
 
-			this->set_in_server(directive, line, server, location, in_server);
+			this->_set_in_server(directive, line, server, location, in_server);
 
 		} else {
 
@@ -326,7 +131,204 @@ void Config::pars( void )
 	// }
 
 }
-#include <algorithm>
+
+static void	serverDirectiveParsing(std::string &line) {
+
+	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
+		char c = line[i];
+
+		if (c == ' ' || c == '\t')
+			continue;
+		if (c == '{') {
+			size_t index;
+			for (index = i + 1; index < line.size(); index++)
+			{
+				c = line[index];
+				if (c == ' ' || c == '\t' || c == '\r')
+					continue;
+				if (c == '#')
+					break;
+				else
+					throw (MyException("Error : bad format on this line...", line));
+
+			}
+			if (c == '#' || index >= line.size())
+				break;
+		}
+	}
+
+}
+
+static std::string locationDirectiveParsing(std::string line, bool &b) {
+
+	std::vector<std::string> vec = ConfigUtils::split(line, ' ');
+
+	if (vec.size() < 2 && (vec[1][0] != '{'|| vec[2][0] != '{'))
+		throw (std::string("Error : bad format on this line..."));
+	size_t i = 0;
+	if (vec[0][0] == '=') {
+		if (vec[0].size() > 1)
+			throw (std::string("Error : bad format on this line..."));
+		b = true;
+		i++;
+	}
+	if (vec[i][0] != '/')
+		throw (std::string("Error : bad format on this line..."));
+	if (vec.size() > (i + 2) && vec[i + 2][0] != '#')
+		throw (std::string("Error : bad format on this line..."));
+	return (vec[i]);
+}
+
+
+void			Config::_set_in_location( std::string &directive, std::string &line, int &server, int &location, bool &in_location) {
+
+	if (directive == "index") {
+
+		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+		this->_vConfServer[server].set_inlocation_index(location, arg);
+
+	} else if (directive == "error_page") {
+
+		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+		this->_vConfServer[server].set_inlocation_error_page(location, arg);
+
+	} else if (directive == "allow_methods") {
+
+		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+		this->_vConfServer[server].set_inlocation_allow_methods(location, arg);
+
+	} else if (directive == "root") {
+
+		std::string arg =  ConfigUtils::get_one_token(line);
+		this->_vConfServer[server].set_inlocation_root(location, arg);
+
+	} else if (directive == "autoindex") {
+
+		std::string arg =  ConfigUtils::get_one_token(line);
+		if (arg == "on")
+			this->_vConfServer[server].set_inlocation_autoindex(location, ON);
+		else if (arg == "off")
+			this->_vConfServer[server].set_inlocation_autoindex(location, OFF);
+		else
+			throw (MyException("Error : autoindex unknow value", line));
+
+	} else if (directive == "return") {
+
+		std::vector<std::string> vec_arg =  ConfigUtils::get_multi_token(line);
+		if (vec_arg[0] == "301")
+			this->_vConfServer[server].set_inlocation_return(location, vec_arg[1]);
+		else
+			throw (MyException("Error : directive return not allowed", line));
+
+	} else if (directive == "cgi_path") {
+
+		std::string arg = ConfigUtils::get_one_token(line);
+		try
+		{
+			this->_vConfServer[server].set_inlocation_cgi_path(location, arg);
+		} catch(const std::string& e) {
+			throw (MyException(e, line));
+		}
+
+	} else if (directive == "cgi_extension") {
+
+		std::string arg = ConfigUtils::get_one_token(line);
+		// std::cout << "cgi_extension : "<< arg << std::endl;
+		this->_vConfServer[server].set_inlocation_cgi_extension(location, arg);
+
+	} else { // here we got "}" or error
+
+		if (directive != "\0")
+			throw (MyException("Error : unknown directive...", directive));
+		ConfigUtils::check_bracket(line);
+		in_location = false;
+
+	}
+}
+
+void			Config::_set_in_server( std::string &directive, std::string &line, int &server, int &location, bool &in_server) {
+
+	if (directive == "listen") {
+
+		std::string arg = ConfigUtils::get_one_token(line);
+		try
+		{
+			this->_vConfServer[server].set_listen(arg);
+		} catch(const std::string& str) {
+			throw (MyException(str, line));
+		}
+
+	} else if (directive == "index") {
+
+		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+		this->_vConfServer[server].set_index(arg);
+
+	} else if (directive == "error_page") {
+
+		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+		try
+		{
+			this->_vConfServer[server].set_error_page(arg);
+		} catch(const std::string& str) {
+			throw (MyException(str, line));
+		}
+
+	} else if (directive == "server_name") {
+
+		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+		this->_vConfServer[server].set_server_name(arg);
+
+	} else if (directive == "allow_methods") {
+
+		std::vector<std::string> arg =  ConfigUtils::get_multi_token(line);
+		this->_vConfServer[server].set_allow_methods(arg);
+
+	} else if (directive == "client_max_body_size") {
+
+		std::string arg =  ConfigUtils::get_one_token(line);
+		try
+		{
+			this->_vConfServer[server].set_client_max_body_size(arg);
+		} catch(const std::string &e) {
+			throw (MyException(e, line));
+		}
+
+
+	} else if (directive == "root") {
+
+		std::string arg =  ConfigUtils::get_one_token(line);
+		this->_vConfServer[server].set_root(arg);
+
+	} else if (directive == "autoindex") {
+
+		std::string arg =  ConfigUtils::get_one_token(line);
+		if (arg == "on")
+			this->_vConfServer[server].set_autoindex(ON);
+		else if (arg == "off")
+			this->_vConfServer[server].set_autoindex(OFF);
+		else
+			throw (MyException("Error : autoindex unknow value", line));
+
+	} else if (directive == "return") {
+
+		std::vector<std::string> vec_arg =  ConfigUtils::get_multi_token(line);
+
+		if (vec_arg[0] == "301")
+			this->_vConfServer[server].set_return(vec_arg[1]);
+		else
+			throw (MyException("Error : directive return not allowed", line));
+
+	} else { // here we got "}" or error
+
+		if (directive != "\0")
+			throw (MyException("Error : unknown directive...", directive));
+		ConfigUtils::check_bracket(line);
+		in_server = false;
+		location = -1;
+	}
+}
+
+
 
 void	Config::check_lunch( void ) {
 
@@ -374,11 +376,3 @@ void	Config::check_lunch( void ) {
 		}
 	}
 }
-
-
-
-
-ConfigServer	&Config::copy_config_server( const int &i ) { return (this->_vConfServer[i]); }
-size_t	Config::nb_of_server() { return (this->_vConfServer.size()); }
-
-Config::~Config() {}

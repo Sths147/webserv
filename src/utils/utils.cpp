@@ -28,36 +28,6 @@ bool epollctl(int epoll_fd, int client_fd, const int events, int op) {
 	return true;
 }
 
-void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
-		ptrClient->del_epoll_and_close(epoll_fd);
-		delete fd_to_info[client_fd];
-		fd_to_info.erase(client_fd);
-		close(client_fd);
-}
-void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientFd* ptrClient) {
-		ptrClient->del_epoll_and_close(epoll_fd);
-		delete fd_to_info[client_fd];
-		fd_to_info.erase(client_fd);
-}
-
-bool	epollctl_error_gestion(int epoll_fd, int client_fd, const int events, int op, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
-
-	if (!epollctl(epoll_fd, client_fd, events, op)) {
-		delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
-		return false;
-	}
-	return true;
-}
-bool	epollctl_error_gestion(int epoll_fd, int client_fd, const int events, int op, std::map<int, Client *> &fd_to_info, ClientFd* ptrClient) {
-
-	if (!epollctl(epoll_fd, client_fd, events, op)) {
-		delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
-		return false;
-	}
-	return true;
-}
-
-
 
 void set_nonblocking(int socket_fd) {
 	int flags = fcntl(socket_fd, F_GETFL, 0);
@@ -146,26 +116,6 @@ void clean_exit(std::map<int, Client *> &fd_to_info, const int &epoll_fd, std::v
 	close(epoll_fd);
 }
 
-
-// void	check_all_timeout(std::map<int, Client *> &fd_to_info, int epoll_fd) {
-
-// 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ) {
-
-// 		if (!it->second->check_timeout()) {
-
-// 			if (dynamic_cast<ClientFd *>(it->second) != NULL) {
-// 				dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
-// 				delete it->second;
-// 			} else if (dynamic_cast<ClientCgi *>(it->second) != NULL) {
-// 				;
-// 			}
-// 			fd_to_info.erase(it++);
-// 		} else {
-// 			it++;
-// 		}
-// 	}
-// }
-
 void check_all_timeout( const int epoll_fd, std::map<int, Client *> &fd_to_info) {
 
 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end(); ) {
@@ -187,4 +137,35 @@ void check_all_timeout( const int epoll_fd, std::map<int, Client *> &fd_to_info)
 			++it;
 		}
 	}
+}
+
+void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
+		ptrClient->del_epoll_and_close(epoll_fd);
+		delete fd_to_info[client_fd];
+		fd_to_info.erase(client_fd);
+		close(client_fd);
+}
+
+void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientFd* ptrClient) {
+		ptrClient->del_epoll_and_close(epoll_fd);
+		delete fd_to_info[client_fd];
+		fd_to_info.erase(client_fd);
+}
+
+bool	epollctl_error_gestion(int epoll_fd, int client_fd, const int events, int op, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
+
+	if (!epollctl(epoll_fd, client_fd, events, op)) {
+		delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+		return false;
+	}
+	return true;
+}
+
+bool	epollctl_error_gestion(int epoll_fd, int client_fd, const int events, int op, std::map<int, Client *> &fd_to_info, ClientFd* ptrClient) {
+
+	if (!epollctl(epoll_fd, client_fd, events, op)) {
+		delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+		return false;
+	}
+	return true;
 }

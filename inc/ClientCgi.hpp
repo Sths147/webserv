@@ -33,7 +33,6 @@ class ClientCgi : public Client
 
 
 	public:
-		ClientCgi( void );
 
 		ClientCgi(const int &in, const int &out, const int &client_fd);
 

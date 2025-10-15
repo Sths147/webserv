@@ -125,7 +125,6 @@ static bool	body_size_reached(size_t buffer_size, std::string content_length)
 	size_t				len;
 	ss << content_length;
 	ss >> len;
-	// std::cout << "LEN :|" << len << "|  && buffer_size :|" << buffer_size << "|" << std::endl;
 	if (buffer_size >= len)
 		return (true);
 	return (false);
@@ -155,8 +154,6 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server, size_t
 
 		}
 	}
-	// this->print_vec(this->_header);
-	// this->print_vec(this->_buffer);
 }
 
 

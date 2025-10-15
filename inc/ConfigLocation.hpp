@@ -25,15 +25,8 @@ class ConfigLocation
 		std::vector<std::string>					_allow_methods;
 		std::string									_root;
 		std::string									_return;// 301  ..?
-
 		std::string									_cgi_path;
 		std::string									_cgi_extension;
-
-
-		void	print_index( void );
-		void	print_error_page( void );
-		void	print_allow_methods( void );
-		void	print_root( void );
 
 	public:
 
@@ -63,7 +56,6 @@ class ConfigLocation
 		const	std::string											&get_root( void ) const ;
 		const	autoindexvalue										&get_autoindex( void ) const ;
 		const	std::string											&get_return( void ) const ;
-
 		const	std::string											&get_cgi_path( void ) const ;
 		const	std::string											&get_cgi_extension( void ) const ;
 

@@ -7,13 +7,11 @@
 #include <vector>
 #define MAX_BUFFER			1048
 
+ClientCgi::~ClientCgi( void ) {}
 ClientCgi::ClientCgi(const int &in, const int &out, const int &client_fd) : _fd_in(in), _write_finish(false), _fd_out(out), _read_finish(false), _response(NULL), _from_clientfd(client_fd) {
 
 }
 
-ClientCgi::~ClientCgi( void ) {
-
-}
 
 void				ClientCgi::set_response(Response *res) {
 	this->_response = res;

@@ -110,6 +110,7 @@ const	autoindexvalue								&Server::get_autoindex( void )							const { return 
 const	std::string									&Server::get_return( void )								const { return (this->_ConfServer.get_return()); }
 
 
+
 bool												Server::check_location( const std::string key ) { return (this->_ConfServer.check_location(key)); }
 
 const	std::string									&Server::get_inlocation_location( void ) 				const { return (this->_ConfServer.get_inlocation_location()); }

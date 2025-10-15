@@ -3,7 +3,7 @@
 #define CLIENT_HPP
 
 
-#define TIMEOUT 10 //
+#define TIMEOUT 5 //
 
 #include <ctime>
 #include <iostream>
@@ -18,7 +18,7 @@ class	Client
 		Client(const Client &other);
 		Client &operator=( const Client &other );
 
-		private:
+	private:
 
 		time_t				_time_to_reset; //sec
 
@@ -30,6 +30,6 @@ class	Client
 		bool				check_timeout( void );
 
 		virtual void				del_epoll_and_close( int epoll_fd ) = 0;
-	};
+};
 
 #endif

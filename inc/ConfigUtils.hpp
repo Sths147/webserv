@@ -16,8 +16,6 @@ struct Listen
 	Listen(unsigned int cip, unsigned int cport) : ip(cip), port(cport), to_lunch(true) {}
 };
 
-
-
 class ConfigUtils
 {
 	private:

@@ -1,13 +1,15 @@
 
 #include "ConfigUtils.hpp"
 #include "MyException.hpp"
-
+#include <cstdlib> // atoi
+#include <sstream> // stringstream
 
 #define SPACE " \t\n\r\f\v"
 
 size_t ConfigUtils::_pos = 0;
 
 void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t pos) {
+
 	if (ConfigUtils::find_first_not_of_space(str, pos) != std::string::npos) {
 		if (str[_pos] == '#')
 			return ;
@@ -18,6 +20,7 @@ void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t p
 }
 
 void ConfigUtils::check_bracket(const std::string &str) {
+
 	if (ConfigUtils::find_first_not_of_space(str) != std::string::npos && str[ConfigUtils::get_pos()] == '}') {
 		ConfigUtils::check_after_bracket_semicolon(str, ConfigUtils::get_pos() + 1);
 	} else {
@@ -25,37 +28,25 @@ void ConfigUtils::check_bracket(const std::string &str) {
 	}
 }
 
-
 size_t ConfigUtils::find_first_not_of_space(const std::string &str) {
+
 	_pos = str.find_first_not_of(SPACE);
 	return (_pos);
 }
+
 size_t ConfigUtils::find_first_not_of_space(const std::string &str, size_t pos) {
+
 	_pos = str.find_first_not_of(SPACE, pos);
 	return (_pos);
 }
+
 size_t ConfigUtils::get_pos( void ) {
+
 	return (_pos);
 }
 
-// std::string	ConfigUtils::parse_location(const std::string& input, const size_t pos) {
-// 	std::string token;
-
-// 	ConfigUtils::find_first_not_of_space(input, pos);
-// 	while (_pos < input.size()) {
-// 		char c = input[_pos];
-
-// 		if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '{' || c == '}')
-// 			break;
-
-// 		token += c;
-// 		_pos++;
-// 	}
-// 	// ConfigUtils::find_first_not_of_space(input, _pos);
-// 	return (token);
-// }
-
 std::string	ConfigUtils::parse_token(const std::string& input, const size_t pos) {
+
 	std::string token;
 
 	ConfigUtils::find_first_not_of_space(input, pos);
@@ -72,6 +63,7 @@ std::string	ConfigUtils::parse_token(const std::string& input, const size_t pos)
 }
 
 std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input, const size_t pos) {
+
 	std::vector<std::string> vec;
 	std::string token;
 	char c;
@@ -96,7 +88,7 @@ std::vector<std::string>	ConfigUtils::parse_multi_token(const std::string& input
 	return (vec);
 }
 
-std::string	ConfigUtils::get_one_token(const std::string &str) { //----------------------------------------
+std::string	ConfigUtils::get_one_token(const std::string &str) {
 
 	std::string arg = ConfigUtils::parse_token(str, _pos);
 	if (_pos == str.find_first_of(';')) {
@@ -113,6 +105,7 @@ std::string	ConfigUtils::get_one_token(const std::string &str) { //-------------
 }
 
 std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
+
 	std::vector<std::string> vec = ConfigUtils::parse_multi_token(str, _pos);
 	if (_pos == str.find_first_of(';')) {
 
@@ -127,7 +120,6 @@ std::vector<std::string>	ConfigUtils::get_multi_token(const std::string &str) {
 	return (vec);
 }
 
-#include <cstdlib> // atoi
 static unsigned int	ipconvert(std::string& str)
 {
 	for (size_t i = 0; i < str.size(); i++)
@@ -194,7 +186,6 @@ Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 	return (Listen(ip, port));
 }
 
-#include <sstream> // pour stringstream
 std::vector<std::string> ConfigUtils::split(const std::string &topars, char delim)
 {
 	std::vector<std::string> tokens;
