@@ -8,10 +8,10 @@ import sys
 # print()
 # ---------------------------
 
-# Début du HTML
-print("<!DOCTYPE html><html><head><title>Boucle CGI Protégée</title>")
-# Rafraîchit la page chaque seconde. Chaque rafraîchissement relance le script.
-print("<meta http-equiv='refresh' content='1'>")
+# # Début du HTML
+# print("<!DOCTYPE html><html><head><title>Boucle CGI Protégée</title>")
+# # Rafraîchit la page chaque seconde. Chaque rafraîchissement relance le script.
+# print("<meta http-equiv='refresh' content='1'>")
 print("</head><body>")
 
 compteur = 0

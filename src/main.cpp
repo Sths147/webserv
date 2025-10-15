@@ -155,12 +155,14 @@ int main(int ac, char **av)
 									if (rv == true) {
 										ptrClient->construct_response(epoll_fd, fd_to_info);
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+										continue;
 									}
 								}
 								catch(const std::exception& e)
 								{
 									std::cerr << e.what() << std::endl;
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+									continue;
 								}
 							}
 						}
@@ -219,8 +221,6 @@ int main(int ac, char **av)
 						}
 					}
 				}
-
-
 
 				check_all_timeout( epoll_fd, fd_to_info);
 

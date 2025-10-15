@@ -15,8 +15,10 @@
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
-
 class Client;
+#include "ClientCgi.hpp"
+
+class ClientCgi;
 
 class Response
 {
@@ -38,12 +40,16 @@ class Response
 		std::string											_path_cgi;
 		std::string											_script_name;
 		bool												_cgi_started;
+		Client												*_cgi_get;
+		Client												*_cgi_post;
+		std::map<int, Client *> 							&_fd_to_info;
+		const int											&_epoll_fd;
 
+		Response();
 		void						_creat_envp(Request &req);
 		std::vector<const char *>	_extrac_envp( void );
 		bool						_is_cgi(Request& request, Server& server);
 	public:
-		Response();
 		Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
 		~Response();
 		Response&	operator=(const Response&);
@@ -73,6 +79,9 @@ class Response
 		const std::map<std::string, std::string>&	get_headers() const;
 		const bool&									get_autoindex() const;
 		const bool&									get_cgi_status() const;
+		const int&									get_cgi_fd1() const;
+		const int&									get_cgi_fd2() const;
+		const pid_t&								get_cgi_pid() const;
 		void				set_post_headers();
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		void				set_redirect(Server& server);
@@ -80,6 +89,9 @@ class Response
 		void 				print_headers() const ;
 		int					exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
 		int					cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
-};
+		void				null_cgi( void);
+
+
+	};
 
 #endif

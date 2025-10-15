@@ -33,6 +33,9 @@ class ClientFd : public Client
 		std::string			_response;
 		int					_epoll_fd;
 
+		// ClientCgi			*_cgi_fd1;
+		// ClientCgi			*_cgi_fd2;
+
 
 		void			find_server_from_map(std::vector<Server *> &vec_server);
 
@@ -42,6 +45,8 @@ class ClientFd : public Client
 		ClientFd &operator=( const ClientFd &other );
 		~ClientFd( void );
 		void				clean_new_request( void );
+		// void				clean_cgi( const int &epoll_fd, std::map<int, Client *> &fd_to_info );
+		void				del_epoll_and_close( int epoll_fd );
 
 		Listen				get_listen( void );
 
@@ -56,11 +61,9 @@ class ClientFd : public Client
 		void				add_buffer( char *str, std::vector<Server *> &vec_server, size_t bytes_read );
 
 		int					creat_response( std::map<int, Client *> &fd_to_info, std::vector<Server *> &vec_server);
-		void				set_response( const std::string &str);
+		void				set_response_str( const std::string &str);
 		bool				send_response( int client_fd );
 
-
-		void				del_epoll_and_close( int epoll_fd );
 
 };
 

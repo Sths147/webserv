@@ -8,7 +8,7 @@
 #define MAX_BUFFER			1048
 
 ClientCgi::~ClientCgi( void ) {}
-ClientCgi::ClientCgi(const int &in, const int &out, const int &client_fd) : _fd_in(in), _write_finish(false), _fd_out(out), _read_finish(false), _response(NULL), _from_clientfd(client_fd) {
+ClientCgi::ClientCgi(const int &in, const int &out, const int &client_fd) : _fd_in(in),_fd_out(out), _response(NULL), _from_clientfd(client_fd) {
 
 }
 
@@ -19,6 +19,9 @@ void				ClientCgi::set_response(Response *res) {
 
 #include <unistd.h>
 #include <sys/epoll.h>
+
+int					ClientCgi::get_fd() { return ((this->_fd_in == -1) ? (this->_fd_out) : (this->_fd_in));}
+
 
 void				ClientCgi::del_epoll_and_close( int epoll_fd ) {
 	if (this->_fd_in != -1) {
@@ -52,26 +55,35 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 		// std::cout << "Toujours en cours" << std::endl;
 		return (true);
 	} else if (rpid == _pid) {
+
 		if (WIFEXITED(status)) {
+
 			int code = WEXITSTATUS(status);
 			if (code == 0) {
+
 				// std::cout << "Cgi finish good" << std::endl;
 			} else {
+
 				this->_response->set_status(500);
-				std::cout << "Cgi exited with code: " << code << std::endl;
+				// std::cout << "Cgi exited with code: " << code << std::endl;
 			}
 		} else if (WIFSIGNALED(status)) {
+
 			this->_response->set_status(500);
 			// std::cout << "Cgi finish by signal: " << WTERMSIG(status) << std::endl;
-		}
-		else if (WIFSTOPPED(status)) {
+
+		}else if (WIFSTOPPED(status)) {
+
 			this->_response->set_status(500);
 			// std::cout << "Cgi stop by signal: " << WSTOPSIG(status) << std::endl;
+
 		}
 		return (false);
+
 	} else {
+
 		this->_response->set_status(500);
-		// std::cerr <<"waitpid: " << rpid << std::endl;
+		std::cerr <<"waitpid: " << rpid << std::endl;
 		return (false);
 	}
 	return (true);
@@ -110,23 +122,29 @@ bool					ClientCgi::write_cgi_input( void ) {
 		return (true);
 	}
 	this->_body_request.erase(0, bytes);
-
 	return (false);
 }
+
+
+
 
 void		ClientCgi::construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {
 
 	ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[this->_from_clientfd]);
-	this->_response->set_body(this->_output_cgi);
-	ptrClient->set_response(this->_response->construct_response_cgi());
 
+	this->_response->set_body(this->_output_cgi);
+	ptrClient->set_response_str(this->_response->construct_response_cgi());
+
+	this->_response->null_cgi();
 	if (!epollctl_error_gestion(epoll_fd, this->_from_clientfd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
 		;
 	}
 }
 
 bool	ClientCgi::check_timeout( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {
+
 	if (!Client::check_timeout()) {
+		delete_client(epoll_fd, this->_from_clientfd, fd_to_info, dynamic_cast<ClientFd *>(fd_to_info[this->_from_clientfd]));
 		return (false);
 	}
 
@@ -137,25 +155,3 @@ bool	ClientCgi::check_timeout( const int &epoll_fd, std::map<int, Client *> &fd_
 
 	return (true);
 }
-
-// void MyWaitPid( void ) {
-
-// 	pid_t rpid = waitpid(this->_pid, &status, WNOHANG);
-
-// 	if (rpid == 0) {
-// 		std::cout << "Toujours en cours" << std::endl;
-// 	} else if (rpid > 0) {
-
-// 		if (WIFEXITED(status)) {
-// 			std::cout << "Terminé normalement, code = " << WEXITSTATUS(status) << std::endl;
-// 		} else if (WIFSIGNALED(status)) {
-// 			std::cout << "Tué par signal " << WTERMSIG(status) << std::endl;
-// 		}
-// 		else if (WIFSTOPPED(status)) {
-// 			std::cout << "Arrêté par signal " << WSTOPSIG(status) << std::endl;
-// 		}
-
-// 	} else {
-// 		std::cout <<"waitpid" << std::endl;
-// 	}
-// }

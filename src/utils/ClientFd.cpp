@@ -41,9 +41,19 @@ void	ClientFd::clean_new_request( void ){
 	this->_header_saved = false;
 	this->_body_saved = false;
 }
+#include <signal.h>
+#include <sys/wait.h>
+#include "ClientCgi.hpp"
+#include "utils.hpp"
+
+
+// void	ClientFd::clean_cgi( const int &epoll_fd, std::map<int, Client *> &fd_to_info ){
+
+// }
 
 ClientFd::~ClientFd( void ) {
 	this->clean_new_request();
+
 }
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
@@ -207,7 +217,7 @@ int				ClientFd::creat_response( std::map<int, Client *> &fd_to_info, std::vecto
 	return (0);
 }
 
-void		ClientFd::set_response( const std::string &str){
+void		ClientFd::set_response_str( const std::string &str){
 	this->_response = str;
 }
 

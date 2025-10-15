@@ -23,17 +23,33 @@
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
 
-Response::Response(): _status_code(0) {}
+// Response::Response(): _status_code(0) {}
 Response::~Response()
 {
+
+	if (this->_cgi_get != NULL) {
+		ClientCgi *ptr_cgi1 = dynamic_cast<ClientCgi *>(this->_cgi_get);
+		ptr_cgi1->del_epoll_and_close(this->_epoll_fd);
+		delete this->_cgi_get;
+		this->_fd_to_info.erase(ptr_cgi1->get_fd());
+	}
+
+	if (this->_cgi_post != NULL) {
+		ClientCgi *ptr_cgi2 = dynamic_cast<ClientCgi *>(this->_cgi_post);
+		delete_client(this->_epoll_fd, ptr_cgi2->get_fd(), this->_fd_to_info, ptr_cgi2);
+	}
 }
 
 #define RESET "\033[0m"
 #define RED "\033[31m"
 
+void Response::null_cgi( void) {
+	this->_cgi_get = NULL;
+	this->_cgi_post = NULL;
+}
 
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
-: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
+: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd)
 {
 	// std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << "final path : " << this->_path << std::endl;
 	this->_header["Server"] = "42WEBSERV";
@@ -46,12 +62,10 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 	{
 		this->_creat_envp(request);
 		if (this->exec_cgi(fd_to_info, epoll_fd, client_fd, vec_server)) {
-			;
-			//error lunch cgi
+			return ;
 		}
 		this->_cgi_started = true;
 		return;
-		// this->set_cgi_headers();
 	}
 	//check if client max body size and implement return code accordingly
 	// std::cout << "Path :" << this->_path << std::endl;
@@ -94,6 +108,9 @@ Response&	Response::operator=(const Response& other)
 	return (*this);
 }
 
+// const int&									Response::get_cgi_get() const { return (this->_cgi_get); }
+// const int&									Response::get_cgi_post() const { return (this->_cgi_post); }
+// const pid_t&								Response::get_cgi_pid() const { return (this->_cgi_pid); }
 const std::string& 							Response::get_path() const
 {
 	return (this->_path);
@@ -1036,39 +1053,38 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 			close(pipe_in[0]);
 		}
 
-
-
-
-
 		Client * ptr1 = new ClientCgi(-1, pipe_out[0], client_fd);
 		if (!epollctl(epoll_fd, pipe_out[0], EPOLLIN, EPOLL_CTL_ADD)) {
 			close(pipe_out[0]);
 			delete ptr1;
 			return (-1);
 		}
-		dynamic_cast<ClientCgi *>(ptr1)->set_response(this);
-		dynamic_cast<ClientCgi *>(ptr1)->set_pid(pid);
-		fd_to_info[pipe_out[0]] = ptr1;
 
-
-
-
-		// std::cerr << RED << "lunched" << RESET << std::endl;
-
-
+		ClientCgi *ptr_cgi1 = dynamic_cast<ClientCgi *>(ptr1);
+		ptr_cgi1->set_response(this);
+		ptr_cgi1->set_pid(pid);
 
 
 		if (second_pipe) {
 
-			Client * ptr2 = new ClientCgi(pipe_in[1], -1, client_fd);// client fd pas besoin
+			Client *ptr2 = new ClientCgi(pipe_in[1], -1, client_fd);// client fd pas besoin
 			if (!epollctl(epoll_fd, pipe_in[1], EPOLLOUT, EPOLL_CTL_ADD)) {
 				close(pipe_out[0]);
 				delete ptr2;
+				delete ptr1;
 				return (-1);
 			}
+
+
+			ClientCgi *ptr_cgi2 = dynamic_cast<ClientCgi *>(ptr2);
+			ptr_cgi2->add_body_request(this->_req->get_body());
+			this->_cgi_post = ptr2;
 			fd_to_info[pipe_in[1]] = ptr2;
-			dynamic_cast<ClientCgi *>(ptr2)->add_body_request(this->_req->get_body());
 		}
+
+		this->_cgi_get = ptr1;
+		fd_to_info[pipe_out[0]] = ptr1;
+
 
 	}
 	return (0);
