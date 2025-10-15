@@ -27,7 +27,6 @@ Request::Request()
 
 void 		Request::add_header(std::vector<char>&buff)
 {
-	std::cout << "\n\n END PRINT REQ\n";
 	this->_type = parse_request_type(buff);
 	this->_target = parse_request_target(buff);
 	this->_http_type = parse_http_type(buff);

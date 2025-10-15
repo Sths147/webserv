@@ -39,7 +39,6 @@ void				ClientCgi::del_epoll_and_close( int epoll_fd ) {
 }
 
 void					ClientCgi::set_pid( pid_t &pid ) {
-	std::cout << "set_pid: " << pid << "\n";
 	this->_pid = pid;
 }
 
