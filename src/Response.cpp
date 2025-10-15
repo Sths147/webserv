@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/14 16:13:24 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/15 13:54:04 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@ static std::string		reconstruct_path(std::string s1, std::string s2);
 // Response::Response(): _status_code(0) {}
 Response::~Response()
 {
-
 	if (this->_cgi_get != NULL) {
 		ClientCgi *ptr_cgi1 = dynamic_cast<ClientCgi *>(this->_cgi_get);
 		ptr_cgi1->del_epoll_and_close(this->_epoll_fd);
@@ -385,10 +384,23 @@ std::string	Response::set_content_type(const std::string&	path)
 	return ("application/octet-stream");
 }
 
+static std::string	header405(Server& server)
+{
+	std::string result = "Supported methods : ";
+	for (std::vector<std::string>::const_iterator it = server.get_allow_methods().begin(); it != server.get_allow_methods().end(); it++)
+	{
+		result += *it;
+		result += " ";
+	}
+	return (result);
+}
+
 void	Response::set_error_headers()
 {
 	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "close";
+	if (this->get_status_code() == 405)
+		this->_header["Allow"] = header405(*this->_server);
 	std::stringstream	ss;
 	std::string			len;
 	if (!this->_body.empty())
