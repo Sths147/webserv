@@ -35,7 +35,7 @@ Response::~Response()
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
 : _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false)
 {
-	std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << "final path : " << this->_path << std::endl;
+	// std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << "final path : " << this->_path << std::endl;
 	this->_header["Server"] = "42WEBSERV";
 	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	if (this->_status_code == 0)
@@ -73,9 +73,9 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		this->set_redirect(server);
 	else
 		this->set_error_response(server);
-	std::cout << "-------response header ------------" << std::endl;
-	this->print_headers();
-	std::cout << "-------------------------" << std::endl;
+	// std::cout << "-------response header ------------" << std::endl;
+	// this->print_headers();
+	// std::cout << "-------------------------" << std::endl;
 }
 
 
@@ -162,7 +162,7 @@ static std::string	set_full_path(Server& server, std::string& path)
 static bool			check_path_permissions(std::string path, Request& request, Server& server)
 {
 	struct stat sfile;
-// path.find_last_of('/') != std::string::npos || 
+// path.find_last_of('/') != std::string::npos ||
 	// std::cout << "Original" << path << std::endl;
 	// std::cout << "ROOT : " << server.get_root() << std::endl;
 	while (path.compare(server.get_root()))
@@ -213,7 +213,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 		// std::cout << "STATCODE|" << this->get_status_code() << std::endl;
 		if (!stat(full_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 		{
-			std::cout << "FULL PATH" << full_path << std::endl;
+			// std::cout << "FULL PATH" << full_path << std::endl;
 			if (!request.get_type().compare("GET"))
 			{
 				// std::cout << "L" << std::endl;
@@ -232,7 +232,6 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 				}
 				else if (server.get_autoindex() == ON)
 				{
-					std::cout << "here" << std::endl;
 					this->_autoindex = true;
 					return (full_path);
 				}

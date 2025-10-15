@@ -168,7 +168,6 @@ int main(int ac, char **av)
 					} else if (events[i].events & EPOLLOUT ) {
 
 						fd_to_info[client_fd]->refresh();
-						std::cout << "here" << std::endl;
 						if (typeclient == CLIENTFD) {
 
 							ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
@@ -183,7 +182,6 @@ int main(int ac, char **av)
 										}
 										ptrClient->clean_new_request();
 									} else {
-										std::cout << "DELETE HERE" << std::endl;
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									}
 								}
