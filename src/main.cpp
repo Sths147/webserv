@@ -230,9 +230,7 @@ int main(int ac, char **av)
 			}
 		}
 
-	} catch (std::exception& e) {
-		std::cerr << e.what() << std::endl;
-	} catch (const int &e) {
+	}  catch (const int &e) {
 		if (e == -42)
 			return (-42);
 	}

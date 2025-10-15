@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/15 15:36:19 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/15 17:03:30 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,7 +308,7 @@ void	Response::fill_body_with_error_pages(Server& server)
 	std::string					path;
 	std::string					error_line;
 	std::vector<std::string>	error_vector;
-	if (server.check_location(this->_path) && !(server.get_inlocation_error_page().empty()) \
+	if (!(server.get_inlocation_error_page().empty()) \
 		&& server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end())
 	{
 		if (!server.get_inlocation_root().empty())
@@ -383,10 +383,20 @@ std::string	Response::set_content_type(const std::string&	path)
 static std::string	header405(Server& server)
 {
 	std::string result = "Supported methods : ";
-	for (std::vector<std::string>::const_iterator it = server.get_allow_methods().begin(); it != server.get_allow_methods().end(); it++)
+	try {
+		for (std::vector<std::string>::const_iterator it = server.get_inlocation_allow_methods().begin(); it != server.get_inlocation_allow_methods().end(); it++)
+		{
+			result += *it;
+			result += " ";
+		}		
+	}
+	catch (const MyException&e)
 	{
-		result += *it;
-		result += " ";
+		for (std::vector<std::string>::const_iterator it = server.get_allow_methods().begin(); it != server.get_allow_methods().end(); it++)
+		{
+			result += *it;
+			result += " ";
+		}		
 	}
 	return (result);
 }
@@ -653,9 +663,14 @@ void	Response::set_post_response(Request& request)
 		std::string line = get_buff_line(buff);
 		if (line.find_first_not_of('-') != std::string::npos)
 			line = line.substr(line.find_first_not_of('-'));
-		std::string sep2 = separator.substr(separator.find_first_not_of('-'), separator.find_last_not_of('-'));
-		if (line.compare(sep2))
-			this->set_status(400);
+		
+		std::string sep2;
+		if (separator.find_first_not_of('-') != std::string::npos)
+		{
+			sep2 = separator.substr(separator.find_first_not_of('-'), separator.find_last_not_of('-'));
+			if (line.compare(sep2))
+				this->set_status(400);
+		}
 		// request.print_headers();
 		// std::cout << "|";
 		// request.print_body();
