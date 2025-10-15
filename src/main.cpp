@@ -152,6 +152,7 @@ int main(int ac, char **av)
 								try
 								{
 									int rv = ptrClient->read_cgi_output();
+									std::cout << "read_cgi_output" << std::endl;
 									if (rv == true) {
 										ptrClient->construct_response(epoll_fd, fd_to_info);
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
@@ -198,7 +199,6 @@ int main(int ac, char **av)
 
 							try
 							{
-								std::cout << "here" << std::endl;
 								if (ptrClient->write_cgi_input()) {
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 								}

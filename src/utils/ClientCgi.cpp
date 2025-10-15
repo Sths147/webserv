@@ -39,6 +39,7 @@ void				ClientCgi::del_epoll_and_close( int epoll_fd ) {
 }
 
 void					ClientCgi::set_pid( pid_t &pid ) {
+	std::cout << "set_pid: " << pid << "\n";
 	this->_pid = pid;
 }
 
@@ -51,9 +52,9 @@ void					ClientCgi::add_body_request(const std::vector<char> &tmp ) {
 bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 
 	int	status;
-	if (this->_pid == -1)
+	if (_pid == -1)
 	{
-		std::cout << "Youhouuuu" << std::endl;
+		std::cout << "Youhouuuu" << this->_fd_in << "|" << this->_fd_out << std::endl;
 		return (false);
 	}
 	pid_t rpid = waitpid(_pid, &status, WNOHANG);
@@ -66,7 +67,6 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 
 			int code = WEXITSTATUS(status);
 			if (code == 0) {
-
 				// std::cout << "Cgi finish good" << std::endl;
 			} else {
 
@@ -89,7 +89,7 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 	} else {
 
 		this->_response->set_status(500);
-		std::cerr <<"waitpid: " << rpid << std::endl;
+		std::cout <<"waitpid: " << rpid << std::endl;
 		return (false);
 	}
 	return (true);

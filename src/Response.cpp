@@ -1028,12 +1028,14 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 		}
 	}
 	pid = fork();
+	// std::cout << "pid = fork(): " << pid <<" \n";
 	if (pid == -1) {
 
 		close(pipe_out[0]);
 		close(pipe_out[1]);
 		if (second_pipe) {
 
+			std::cout << "error3\n";
 			close(pipe_in[0]);
 			close(pipe_in[1]);
 		}
@@ -1067,6 +1069,7 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 
 		Client * ptr1 = new ClientCgi(-1, pipe_out[0], client_fd);
 		if (!epollctl(epoll_fd, pipe_out[0], EPOLLIN, EPOLL_CTL_ADD)) {
+			// std::cout << "error\n";
 			close(pipe_out[0]);
 			delete ptr1;
 			return (-1);
@@ -1081,6 +1084,7 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 
 			Client *ptr2 = new ClientCgi(pipe_in[1], -1, client_fd);// client fd pas besoin
 			if (!epollctl(epoll_fd, pipe_in[1], EPOLLOUT, EPOLL_CTL_ADD)) {
+				// std::cout << "error2\n";
 				close(pipe_out[0]);
 				delete ptr2;
 				delete ptr1;
@@ -1090,13 +1094,13 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 
 			ClientCgi *ptr_cgi2 = dynamic_cast<ClientCgi *>(ptr2);
 			ptr_cgi2->add_body_request(this->_req->get_body());
+			ptr_cgi2->set_pid(pid);
 			this->_cgi_post = ptr2;
 			fd_to_info[pipe_in[1]] = ptr2;
 		}
 
 		this->_cgi_get = ptr1;
 		fd_to_info[pipe_out[0]] = ptr1;
-
 
 	}
 	return (0);
