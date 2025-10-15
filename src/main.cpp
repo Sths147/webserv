@@ -118,7 +118,7 @@ int main(int ac, char **av)
 								char				tmp[MAX_BUFFER];
 
 								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , MSG_DONTWAIT);
-								std::cout << "bytes: "<<bytes << " clientfd: " << client_fd << "\n";
+
 								if (bytes < 0) {
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									continue;
@@ -153,7 +153,6 @@ int main(int ac, char **av)
 								try
 								{
 									int rv = ptrClient->read_cgi_output();
-									std::cout << "read_cgi_output" << std::endl;
 									if (rv == true) {
 										ptrClient->construct_response(epoll_fd, fd_to_info);
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);

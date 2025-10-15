@@ -50,9 +50,8 @@ void Response::null_cgi( void) {
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
 : _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _body(""), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd)
 {
-	std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << " final path : " << this->_path << " \n_status_code: "<<request.get_return_code()<< std::endl;
+	// std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << " final path : " << this->_path << " \n_status_code: " << request.get_return_code() << std::endl;
 	this->_header["Server"] = "42WEBSERV";
-	// std::cout << "request ret code: " << this->_status_code << std::endl;
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
 
@@ -107,9 +106,6 @@ Response&	Response::operator=(const Response& other)
 	return (*this);
 }
 
-// const int&									Response::get_cgi_get() const { return (this->_cgi_get); }
-// const int&									Response::get_cgi_post() const { return (this->_cgi_post); }
-// const pid_t&								Response::get_cgi_pid() const { return (this->_cgi_pid); }
 const std::string& 							Response::get_path() const
 {
 	return (this->_path);
@@ -768,9 +764,6 @@ void	Response::set_post_headers()
 
 void	Response::set_cgi_headers()
 {
-	//
-	// this->_header["Content-type"] = "text/plain";
-	this->_header["Cache-Control"] = "no-cache";
 	this->_header["Connection"] = "Keep-alive";
 	std::stringstream ss;
 	std::string			len;

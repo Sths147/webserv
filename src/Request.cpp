@@ -27,10 +27,6 @@ Request::Request()
 
 void 		Request::add_header(std::vector<char>&buff)
 {
-	// std::string	mybody(this->_body.begin(), this->_body.end());
-	// std::cout << "\n\n and here is the body" << mybody << std::endl;
-	for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
-		std::cout << *it;
 	std::cout << "\n\n END PRINT REQ\n";
 	this->_type = parse_request_type(buff);
 	this->_target = parse_request_target(buff);
@@ -38,12 +34,10 @@ void 		Request::add_header(std::vector<char>&buff)
 	this->_header = parse_header(buff);
 	this->parse_headers();
 
-
 	// std::cout << "--------START PRINT HEADERS---------" << std::endl;
 	// this->print_headers();
 	// std::cout << "--------END PRINT HEADERS---------" << std::endl;
-	// std::cout << "NOW" << this->get_return_code() << std::endl;
-	// std::cout << "\n\n here we have a return code of" << this->get_return_code() << std::endl;
+
 }
 
 Request&	Request::operator=(const Request& other)
@@ -84,17 +78,6 @@ unsigned short int	Request::get_return_code() const
 {
 	return (this->_return_code);
 }
-
-// const std::string	Request::parse_body(std::vector<char>& buff)
-// {
-// 	std::string result = "";
-
-// 	for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
-// 	{
-// 		result += *it;
-// 	}
-// 	return (result);
-// }
 
 void	Request::add_body(std::vector<char> to_add)
 {

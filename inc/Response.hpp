@@ -79,9 +79,6 @@ class Response
 		const std::map<std::string, std::string>&	get_headers() const;
 		const bool&									get_autoindex() const;
 		const bool&									get_cgi_status() const;
-		const int&									get_cgi_fd1() const;
-		const int&									get_cgi_fd2() const;
-		const pid_t&								get_cgi_pid() const;
 		void				set_post_headers();
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		void				set_redirect(Server& server);
@@ -92,6 +89,6 @@ class Response
 		void				null_cgi( void);
 
 
-	};
+};
 
 #endif

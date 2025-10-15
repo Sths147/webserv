@@ -161,7 +161,7 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server, size_t
 		if(check_body(*this->_request, this->_server, this->_buffer)) {
 			this->_body_saved = true;
 			this->_request->add_body(this->_buffer);
-
+			this->_buffer.clear();
 		}
 	}
 }

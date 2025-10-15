@@ -59,7 +59,6 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 	}
 	pid_t rpid = waitpid(_pid, &status, WNOHANG);
 	if (rpid == 0) {
-		// std::cout << "Toujours en cours" << std::endl;
 		return (true);
 	} else if (rpid == _pid) {
 
@@ -67,22 +66,17 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 
 			int code = WEXITSTATUS(status);
 			if (code == 0) {
-				// std::cout << "Cgi finish good" << std::endl;
 			} else {
 
 				this->_response->set_status(500);
-				// std::cout << "Cgi exited with code: " << code << std::endl;
 			}
 		} else if (WIFSIGNALED(status)) {
 
 			this->_response->set_status(500);
-			// std::cout << "Cgi finish by signal: " << WTERMSIG(status) << std::endl;
 
 		}else if (WIFSTOPPED(status)) {
 
 			this->_response->set_status(500);
-			// std::cout << "Cgi stop by signal: " << WSTOPSIG(status) << std::endl;
-
 		}
 		return (false);
 
@@ -137,8 +131,7 @@ bool					ClientCgi::write_cgi_input( void ) {
 void		ClientCgi::construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {
 
 	ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[this->_from_clientfd]);
-	std::cout << "COUCOU" << _output_cgi << std::endl;
-	// this->_output_cgi.empty()
+
 	this->_response->set_body(this->_output_cgi);
 	ptrClient->set_response_str(this->_response->construct_response_cgi());
 
