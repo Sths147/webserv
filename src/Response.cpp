@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/15 13:54:04 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/15 14:32:17 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void Response::null_cgi( void) {
 }
 
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
-: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd)
+: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _body(""), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd)
 {
 	// std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << "final path : " << this->_path << std::endl;
 	this->_header["Server"] = "42WEBSERV";

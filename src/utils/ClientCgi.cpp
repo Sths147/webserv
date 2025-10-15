@@ -8,7 +8,7 @@
 #define MAX_BUFFER			1048
 
 ClientCgi::~ClientCgi( void ) {}
-ClientCgi::ClientCgi(const int &in, const int &out, const int &client_fd) : _fd_in(in),_fd_out(out), _response(NULL), _from_clientfd(client_fd) {
+ClientCgi::ClientCgi(const int &in, const int &out, const int &client_fd) : _pid(-1), _fd_in(in),_fd_out(out), _response(NULL), _from_clientfd(client_fd) {
 
 }
 
@@ -44,12 +44,18 @@ void					ClientCgi::set_pid( pid_t &pid ) {
 
 
 void					ClientCgi::add_body_request(const std::vector<char> &tmp ) {
-	this->_body_request = tmp.data();
+
+	this->_body_request.append(tmp.begin(), tmp.end());
 }
 
 bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 
 	int	status;
+	if (this->_pid == -1)
+	{
+		std::cout << "Youhouuuu" << std::endl;
+		return (false);
+	}
 	pid_t rpid = waitpid(_pid, &status, WNOHANG);
 	if (rpid == 0) {
 		// std::cout << "Toujours en cours" << std::endl;
@@ -131,7 +137,8 @@ bool					ClientCgi::write_cgi_input( void ) {
 void		ClientCgi::construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {
 
 	ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[this->_from_clientfd]);
-
+	std::cout << "COUCOU" << _output_cgi << std::endl;
+	// this->_output_cgi.empty()
 	this->_response->set_body(this->_output_cgi);
 	ptrClient->set_response_str(this->_response->construct_response_cgi());
 

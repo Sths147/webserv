@@ -198,6 +198,7 @@ int main(int ac, char **av)
 
 							try
 							{
+								std::cout << "here" << std::endl;
 								if (ptrClient->write_cgi_input()) {
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 								}
