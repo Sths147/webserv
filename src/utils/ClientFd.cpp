@@ -94,9 +94,10 @@ static bool find_end_of_headers(std::vector<char>& buffer)
 	return (1);
 }
 
-static bool	max_size_reached(std::vector<char>& body, Server *server)
+static bool	max_size_reached(std::vector<char>& body, Server *server, Request *req)
 {
 	if (server->get_client_max_body_size() && (body.size() > server->get_client_max_body_size())) {
+		req->set_return_code(413);
 		return (1);
 	}
 	return (0);
@@ -157,12 +158,17 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server, size_t
 		}
 	}
 
-	if (this->_header_saved && this->_request->get_type() == "POST" && (max_size_reached(this->_buffer, this->_server) || body_size_reached(this->_buffer.size(), this->_request->get_header("Content-Length")))) {
+	if (this->_header_saved && this->_request->get_type() == "POST" && (max_size_reached(this->_buffer, this->_server, this->_request) || body_size_reached(this->_buffer.size(), this->_request->get_header("Content-Length")))) {
 		if(check_body(*this->_request, this->_server, this->_buffer)) {
 			this->_body_saved = true;
 			this->_request->add_body(this->_buffer);
 			this->_buffer.clear();
 		}
+	}
+	if (this->_header_saved && this->_request->get_type() == "POST" && this->_request->get_return_code() == 413) {
+			this->_body_saved = true;
+			this->_request->add_body(this->_buffer);
+			this->_buffer.clear();
 	}
 }
 
