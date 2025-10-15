@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/15 14:32:17 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/15 15:36:19 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -755,6 +755,7 @@ void	Response::set_post_headers()
 {
 	this->_header["Content-Type"] = "text/plain";
 	this->_header["Connection"] = "Keep-alive";
+	this->_header["Cache-Control"] = "no-cache";
 	std::stringstream ss;
 	std::string			len;
 	if (!this->_body.empty())
@@ -769,6 +770,7 @@ void	Response::set_cgi_headers()
 {
 	//
 	// this->_header["Content-type"] = "text/plain";
+	this->_header["Cache-Control"] = "no-cache";
 	this->_header["Connection"] = "Keep-alive";
 	std::stringstream ss;
 	std::string			len;
@@ -936,7 +938,6 @@ std::string		Response::construct_response_cgi(void) {
 		this->set_redirect(*this->_server);
 	else
 		this->set_error_response(*this->_server);
-
 	return (this->construct_response());
 }
 void				Response::set_body(const std::string &str) {
