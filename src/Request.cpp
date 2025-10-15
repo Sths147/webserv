@@ -29,6 +29,9 @@ void 		Request::add_header(std::vector<char>&buff)
 {
 	// std::string	mybody(this->_body.begin(), this->_body.end());
 	// std::cout << "\n\n and here is the body" << mybody << std::endl;
+	for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
+		std::cout << *it;
+	std::cout << "\n\n END PRINT REQ\n";
 	this->_type = parse_request_type(buff);
 	this->_target = parse_request_target(buff);
 	this->_http_type = parse_http_type(buff);
@@ -96,12 +99,12 @@ unsigned short int	Request::get_return_code() const
 void	Request::add_body(std::vector<char> to_add)
 {
 	this->_body = to_add;
-	// std::cout << "---------------- PRINTING BODY ------------ SIZE" <<  std::endl;
-	// for (size_t i = 0; i < to_add.size(); i++)
-	// {
-	// 	std::cout << to_add[i];
-	// }
-	// std::cout << std::endl << "---------------- END BODY ------------ " << std::endl;
+	std::cout << "---------------- PRINTING BODY ------------ SIZE" <<  std::endl;
+	for (size_t i = 0; i < to_add.size(); i++)
+	{
+		std::cout << to_add[i];
+	}
+	std::cout << std::endl << "---------------- END BODY ------------ " << std::endl;
 }
 
 void	Request::set_return_code(const unsigned short int& code)
