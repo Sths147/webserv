@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/04 13:22:58 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/16 09:51:07 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/16 11:40:28 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,6 @@ void 		Request::add_header(std::vector<char>&buff)
 	this->_http_type = parse_http_type(buff);
 	this->_header = parse_header(buff);
 	this->parse_headers();
-
-	// std::cout << "--------START PRINT HEADERS---------" << std::endl;
-	// this->print_headers();
-	// std::cout << "--------END PRINT HEADERS---------" << std::endl;
-
 }
 
 Request&	Request::operator=(const Request& other)
@@ -100,29 +95,7 @@ void	Request::parse_headers()
 
 	if (this->_header["Host"].empty())
 		this->set_return_code(400);
-	// if (this->_header["Content-Length"].empty() && !this->_body.empty())
-	// {
-	// 	std::cout << "here|" << std::endl;
-	// 	for (std::vector<char>::iterator it = this->_body.begin(); it != this->_body.end(); it++)
-	// 		std::cout << (int)*it << std::ends;
-	// 	std::cout << "|" << this->_body.size() << "|" << std::endl;
-	// 	this->set_return_code(400);
-	// }
-	// else if (!this->_header["Content-Length"].empty())
-	// {
-	// 	std::cout << "there" << std::endl;
-	// 	std::stringstream ss(this->_header["Content-Length"]);
-	// 	size_t	len;
-	// 	ss >> len;
-	// 	// if (len != this->_body.size())
-	// 	// 	this->set_return_code(400);
-	// }
-
 }
-
-/*
-A server that receives a method longer than any that it implements SHOULD respond with a 501 (Not Implemented) status code. A server that receives a request-target longer than any URI it wishes to parse MUST respond with a 414 (URI Too Long) status code (see Section 15.5.15 of [HTTP]).
-*/
 
 const std::string	Request::parse_request_target(std::vector<char>& buff)
 {
@@ -133,11 +106,8 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 		set_return_code(400);
 	if (k != buff.end())
 		buff.erase(k);
-	// std::cout << "SIZE: " << buff.size() << std::endl;
-	// std::cout << "now" << std::endl;
 	while (k != buff.end())
 	{
-		// std::cout << *k << std::endl;
 		if (*k == SP)
 			break;
 		else if (*k < 33 || *k > 126)
@@ -154,7 +124,6 @@ const std::string	Request::parse_request_target(std::vector<char>& buff)
 	}
 	if (result.empty() || k == buff.end())
 		set_return_code(400);
-	// std::cout << std::endl << "end" << std::endl;
 	return (result);
 }
 
@@ -256,17 +225,6 @@ std::map<std::string, std::string>	Request::parse_header(std::vector<char>& buff
 		result[key] = line;
 		line = get_crlf_line(buff);
 	}
-	// if (buff.size() < 1)
-	// 	this->set_return_code(400);
-	// else
-	// {
-	// 	std::vector<char>::iterator it = buff.begin();
-	// 	if (*it == CR)
-	// 		buff.erase(it);
-	// 	if (*it != LF)
-	// 		this->set_return_code(400);
-	// 	buff.erase(it);
-	// }
 	return (result);
 }
 
@@ -315,26 +273,6 @@ const std::string							Request::parse_key(std::string& line)
 	}
 	return (return_value);
 }
-// Listen	Request::set_listen()
-// {
-// 	for (std::map<std::string, std::string>::iterator it = this->_header.begin(); it != this->_header.end(); it++)
-// 	{
-// 		if (it->first == "Host")
-// 		{
-// 			try {
-// 				Listen result = ConfigUtils::ip_host_parseur(it->second);
-// 				return (result);
-// 			}
-// 			catch (std::string &e)
-// 			{
-// 				this->set_return_code(400);
-// 			}
-// 		}
-// 	}
-// 	set_return_code(400);
-// 	Listen result = ConfigUtils::ip_host_parseur("0:0");
-// 	return (result);
-// }
 
 bool	Request::check_hosts(const std::vector<std::string>& server_names) const
 {
@@ -360,13 +298,6 @@ bool	Request::check_hosts(const std::vector<std::string>& server_names) const
 	}
 	return (false);
 }
-
-// bool				Request::has_header(std::string& to_find)
-// {
-// 	if (this->_header.count(to_find))
-// 		return (true);
-// 	return (false);
-// }
 
 const std::string	Request::get_content_type() const
 {
