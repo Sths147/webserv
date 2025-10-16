@@ -41,7 +41,7 @@ class ConfigServer
 			void	set_root( const std::string &str);
 			void	set_autoindex( const autoindexvalue v );
 			void	set_return( const std::string &str );
-			void	set_new_location( const std::string &perm, const bool &b);
+			void	set_new_location( int &location, const std::string &perm, const bool &b);
 
 			/* --- set in vector location index--- */
 			void	set_inlocation_index(const int &i, const std::vector<std::string> &arg);

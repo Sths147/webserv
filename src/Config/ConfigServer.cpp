@@ -118,7 +118,14 @@ void	ConfigServer::set_return( const std::string &str ) { this->_return = str; }
 
 /* ------   location   ------ */
 
-void	ConfigServer::set_new_location( const std::string &perm, const bool &b) {
+void	ConfigServer::set_new_location( int &location, const std::string &perm, const bool &b) {
+	for (std::vector<ConfigLocation>::iterator it = this->_vConfLocal.begin(); it != this->_vConfLocal.end(); it++)
+	{
+		if (it->get_location() == perm && it->get_absolut() == b){
+			location--;
+			return;
+		}
+	}
 	this->_vConfLocal.push_back(ConfigLocation(perm , b));
 }
 

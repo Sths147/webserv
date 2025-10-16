@@ -90,12 +90,13 @@ void	Config::pars( void )
 				throw (MyException("Error : already in a location you can't get a location in a location"));
 			location++;
 			in_location = true;
+			std::cout << location << "\n";
 			if (line[ConfigUtils::get_pos()] != ' ')
 				throw (MyException("Error : bad format on this line...", line));
 			try
 			{
 				std::string perm = locationDirectiveParsing(line.substr(ConfigUtils::get_pos() + 1), b);
-				this->_vConfServer[server].set_new_location(perm, b);
+				this->_vConfServer[server].set_new_location(location, perm, b);
 			}
 			catch(const std::string &str)
 			{
@@ -116,7 +117,7 @@ void	Config::pars( void )
 
 		}
 	}
-
+	// if (ss.eof())
 	// for (int i = 0; i <= server ; i++)
 	// {
 	// 	std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
