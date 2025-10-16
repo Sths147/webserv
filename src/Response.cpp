@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/16 10:00:35 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/16 11:12:39 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,6 +311,7 @@ void	Response::fill_body_with_error_pages(Server& server)
 	if (this->_check_loc && !(server.get_inlocation_error_page().empty()) \
 		&& server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end())
 	{
+		std::cout << "here" << std::endl;
 		if (!server.get_inlocation_root().empty())
 			path = reconstruct_path(server.get_inlocation_root(), server.get_inlocation_error_page().find(this->_status_code)->second);
 		else
@@ -333,6 +334,7 @@ void	Response::fill_body_with_error_pages(Server& server)
 	}
 	else if (!(server.get_error_page().empty()) && (server.get_error_page().find(this->_status_code) != server.get_error_page().end()))
 	{
+		std::cout << "there" << std::endl;
 		path = reconstruct_path(server.get_root(), server.get_error_page().find(this->_status_code)->second);
 		stream.open(path.c_str());
 		// std::cout << path << std::endl;
@@ -403,7 +405,6 @@ static std::string	header405(Server& server, bool check_loc)
 
 void	Response::set_error_headers()
 {
-	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "close";
 	if (this->get_status_code() == 405)
 		this->_header["Allow"] = header405(*this->_server, this->_check_loc);
