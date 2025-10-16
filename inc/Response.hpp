@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:45:52 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/14 14:33:07 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/16 09:53:12 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class Response
 		Server												*_server;
 		Request												*_req;
 		unsigned short int									_status_code;
+		bool												_check_loc;
 		bool												_autoindex;
 		std::string											_path;
 		std::string											_http_type;

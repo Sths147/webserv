@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/15 17:03:30 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/16 10:00:35 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,7 +219,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	this->_autoindex = false;
 	if (path.length() < request.get_target().length())
 		this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
-	if (server.check_location(path))
+	if ((this->_check_loc = server.check_location(path)))
 	{
 		full_path = set_full_path(server, path);
 		// std::cout << "STATCODE|" << this->get_status_code() << std::endl;
@@ -308,7 +308,7 @@ void	Response::fill_body_with_error_pages(Server& server)
 	std::string					path;
 	std::string					error_line;
 	std::vector<std::string>	error_vector;
-	if (!(server.get_inlocation_error_page().empty()) \
+	if (this->_check_loc && !(server.get_inlocation_error_page().empty()) \
 		&& server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end())
 	{
 		if (!server.get_inlocation_root().empty())
@@ -380,18 +380,18 @@ std::string	Response::set_content_type(const std::string&	path)
 	return ("application/octet-stream");
 }
 
-static std::string	header405(Server& server)
+static std::string	header405(Server& server, bool check_loc)
 {
 	std::string result = "Supported methods : ";
-	try {
+	if (check_loc)
+	{
 		for (std::vector<std::string>::const_iterator it = server.get_inlocation_allow_methods().begin(); it != server.get_inlocation_allow_methods().end(); it++)
 		{
 			result += *it;
 			result += " ";
 		}		
 	}
-	catch (const MyException&e)
-	{
+	else {
 		for (std::vector<std::string>::const_iterator it = server.get_allow_methods().begin(); it != server.get_allow_methods().end(); it++)
 		{
 			result += *it;
@@ -406,7 +406,7 @@ void	Response::set_error_headers()
 	this->_header["Content-Type"] = this->_content_type;
 	this->_header["Connection"] = "close";
 	if (this->get_status_code() == 405)
-		this->_header["Allow"] = header405(*this->_server);
+		this->_header["Allow"] = header405(*this->_server, this->_check_loc);
 	std::stringstream	ss;
 	std::string			len;
 	if (!this->_body.empty())
