@@ -3,7 +3,7 @@
 #define CLIENT_HPP
 
 
-#define TIMEOUT 50 //
+#define TIMEOUT 5 //
 
 #include <ctime>
 #include <iostream>
