@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/16 11:25:30 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/16 11:37:34 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
 
-// Response::Response(): _status_code(0) {}
 Response::~Response()
 {
 	if (this->_cgi_get != NULL) {
@@ -172,16 +171,10 @@ static std::string	set_full_path(Server& server, std::string& path)
 static bool			check_path_permissions(std::string path, Request& request, Server& server)
 {
 	struct stat sfile;
-// path.find_last_of('/') != std::string::npos ||
-	// std::cout << "Original" << path << std::endl;
-	// std::cout << "ROOT : " << server.get_root() << std::endl;
 	while (path.compare(server.get_root()))
 	{
-		// std::cout << "Path :" << path << std::endl;
 		size_t n = path.find_last_of('/');
-		// std::cout << "n:" << n << std::endl;
 		path.resize(n);
-		// std::cout << "Path :" << path << std::endl;
 		if (!stat(path.c_str(), &sfile))
 		{
 			if (!request.get_type().compare("GET") && !(sfile.st_mode & S_IROTH))
@@ -220,26 +213,14 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	if ((this->_check_loc = server.check_location(path)))
 	{
 		full_path = set_full_path(server, path);
-		// std::cout << "STATCODE|" << this->get_status_code() << std::endl;
 		if (!stat(full_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 		{
-			// std::cout << "FULL PATH" << full_path << std::endl;
 			if (!request.get_type().compare("GET"))
 			{
-				// std::cout << "L" << std::endl;
 				if (!server.get_inlocation_index().empty())
-				{
-					// std::cout << "1" << std::endl;
 					add_index(full_path, server.get_inlocation_index()[0]);
-					// full_path += server.get_inlocation_index()[0];
-				}
 				else if (!server.get_index().empty())
-				{
-
-					// std::cout << "2" << std::endl;
 					add_index(full_path, server.get_index()[0]);
-					// full_path += server.get_index()[0];
-				}
 				else if (server.get_autoindex() == ON)
 				{
 					this->_autoindex = true;
@@ -259,15 +240,10 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 			if (!server.get_inlocation_return().empty())
 				set_status(301);
 			if (check_path_permissions(full_path, request, server))
-			{
-				// std::cout << "OUPS" << std::endl;
 				set_status(403);
-			}
 			//CHECK IF FOLDER IS FORBIDDEN OR IF PATH DOES NOT EXIST
-
 			set_status(404);
 		}
-		// std::cout << "request ret code: " << this->_status_code << std::endl;
 		return (full_path);
 	}
 	else
@@ -335,7 +311,6 @@ void	Response::fill_body_with_error_pages(Server& server)
 		std::cout << "there" << std::endl;
 		path = reconstruct_path(server.get_root(), server.get_error_page().find(this->_status_code)->second);
 		stream.open(path.c_str());
-		// std::cout << path << std::endl;
 		if (stream.is_open())
 		{
 			this->_content_type = set_content_type(path);
@@ -449,7 +424,6 @@ std::string	Response::construct_response(void)
 {
 	std::stringstream ss;
 
-	// ss << this->get_http_type() << " " << this->get_status_code() << " " << this->get_reason_phrase();
 	ss << this->get_http_type() << " ";
 	ss << this->get_status_code() << " ";
 	ss << this->get_reason_phrase();
@@ -462,7 +436,6 @@ std::string	Response::construct_response(void)
 	ss << "\r\n";
 	if (!(this->_body.empty())) {
 		ss << this->_body;
-		// std::cout << RED << this->_body.c_str() <<RESET<< std::endl; //comm--flo
 	}
 	return (ss.str());
 }
@@ -470,10 +443,8 @@ std::string	Response::construct_response(void)
 void	Response::set_get_response()
 {
 	struct stat					sfile;
-	// std::cout << "PATH|" << this->get_path() << "|" << std::endl;
 	if (this->_autoindex == true && !stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 	{
-		// std::cout << "here " << std::endl;
 		std::time_t result = std::time(NULL);
 		std::stringstream buffer;
 		std::string time_str;
@@ -497,14 +468,12 @@ void	Response::set_get_response()
 		std::string		line;
 		while (std::getline(tmp, line))
 			this->_body += line + "<br>";
-		// std::cout << "bodyyy" << this->_body << std::endl;
 		this->set_get_headers();
 		tmp.close();
 		std::remove(time_str.c_str());
 	}
 	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IROTH))
 	{
-		// std::cout << RED << "je suis path.c_str(): " << this->_path.c_str() <<RESET<< std::endl; //comm--flo
 		std::ifstream				file;
 		std::string					line;
 		std::vector<std::string>	all_lines;
@@ -524,12 +493,6 @@ void	Response::set_get_response()
 	else
 		set_status(404);
 }
-
-// static void	delete_cr(std::string& line)
-// {
-// 	if (line.find_first_of('\r') != std::string::npos && line.find_first_of('\r') == line.size() - 1)
-// 		line.erase(line.find_first_of('\r'));
-// }
 
 static bool fileExists(const std::string& filename)
 {
@@ -571,16 +534,11 @@ static std::vector<char>::iterator	find_iterator(std::vector<char>& buff, std::s
 	if (result.find(separator) == std::string::npos)
 		return (it);
 	std::string result2;
-	// std::cout << "it|" << *it << "|" << std::endl;
 	while (it != buff.begin() && (result2.find(separator) == std::string::npos))
 	{
-		// std::cout << "Result|" << result << "|" << std::endl;
 		result2.insert(result2.begin(), *it);
 		it--;
-		// std::cout << *it << std::ends;
 	}
-	// std::cout << "SEP|" << separator << "|" << std::endl;
-	// std::cout << "Result|" << result2 << "|" << std::endl;
 	while (it != buff.begin() && *it == '-')
 			it--;
 	if (it != buff.begin())
@@ -658,27 +616,18 @@ void	Response::set_post_response(Request& request)
 			if (line.compare(sep2))
 				this->set_status(400);
 		}
-		// request.print_headers();
-		// std::cout << "|";
-		// request.print_body();
-		// std::cout << "|" << std::endl;
 		std::ofstream file;
 		open_file(file, buff);
 		do {
 			line = get_buff_line(buff);
-			// std::cout << "|" << line << "|" << std::endl;
 		}
 		while (line.compare(""));
-		// for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
-		// 	std::cout << *it << std::ends;
-		// std::cout << "ENDHERE"<< std::endl;
 		std::vector<char>::iterator limit = find_iterator(buff, separator);
 		if (file.is_open())
 		{
 			for (std::vector<char>::iterator it = buff.begin(); it != limit; it++)
 				file << *it;
 		}
-		// std::cout << "SUCCESS" << std::endl;
 		if (this->_status_code == 0)
 		{
 			this->_body.append("File well uploaded");
