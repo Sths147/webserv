@@ -30,17 +30,20 @@ int main(int ac, char **av)
 
 
 	std::vector<Server *> vec_server;
-	if (ac == 2) {
-
+	if (ac < 3) {
 		epoll_fd = epoll_create(1);
 		if (epoll_fd < 0) {
 			std::cerr << "epoll_create failed" << std::endl;
 			return (1);
 		}
 		try {
-
+			std::string file_conf;
+			if (ac == 2)
+				file_conf = av[1];
+			else
+				file_conf = "conf/simconf.conf";
 			//First parsing of the config file to delete every empty and commentary line.
-			Config config(av[1]);
+			Config config(file_conf);
 
 			//Parsing of the config file.
 			config.pars();
