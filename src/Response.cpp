@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/16 11:12:39 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/16 11:25:30 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -595,32 +595,22 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 	std::string line = get_buff_line(buff);
 	if (line.find("filename=") == std::string::npos)
 	{
-		// to DEAL  EXCEPTION BAD REQUEST;
-		// this->set_status(400);
-		std::cout << "filename not found|" << line << "|" << std::endl;
+		this->set_status(400);
 		for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
 			std::cout << *it << std::ends;
 		std::cout << std::endl;
 		return ;
 	}
 	std::string filename = line.substr(line.find("filename="));
-	// std::cout << "FILENAME " << filename << "|" << "SIZE " << filename.size() << std::endl;
 	filename = filename.substr(filename.find_first_of("\"") + 1);
 	filename = filename.substr(0, filename.find_last_of("\""));
 	if (filename.empty())
-	{
-		//to DEAL  EXCEPTION BAD REQUEST;
-		// this->set_status(400);
-		std::cout << "filename empty" << std::endl;
-	}
-	// std::cout << "FILENAME 2|" << filename << "|" << std::endl;
-	// std::cout << this->_path << std::endl;
+		this->set_status(400);
 	std::string topen = this->_path + "/" + filename;
 	size_t i = 1;
 	std::string base = topen;
 	while (1)
 	{
-		// std::cout << "Nous y voila" << std::endl;
 		if (!fileExists(topen))
 		{
 			file.open(topen.c_str());
@@ -652,8 +642,6 @@ void	Response::set_post_response(Request& request)
 	{
 		std::string type = request.get_header("Content-Type");
 		std::vector<char> buff = request.get_body();
-		// std::cout << "|" << buff.size() << "|" << std::endl;
-		// std::cout << "||" << request.get_body().size() << "||" << std::endl;
 		if ((type.find_first_of(';') == std::string::npos) || type.find("boundary=") == std::string::npos || type.substr(0, type.find_first_of(';')).compare("multipart/form-data"))
 			this->set_status(400);
 		std::string separator;
