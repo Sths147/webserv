@@ -45,6 +45,10 @@ Config::Config( std::string nameFile )
 
 		throw(MyException("Error : The file wasn't totaly readed."));
 
+	} else if (sfile.eof() && this->_file.empty()) {
+
+		throw(MyException("Error : Empty file."));
+
 	}
 	sfile.close();
 }
@@ -90,7 +94,7 @@ void	Config::pars( void )
 				throw (MyException("Error : already in a location you can't get a location in a location"));
 			location++;
 			in_location = true;
-			std::cout << location << "\n";
+			// std::cout << location << "\n";
 			if (line[ConfigUtils::get_pos()] != ' ')
 				throw (MyException("Error : bad format on this line...", line));
 			try
@@ -117,6 +121,9 @@ void	Config::pars( void )
 
 		}
 	}
+	// if (in_server || in_location) {
+	// 	throw (MyException("Error : Unclose", line));
+	// }
 	// if (ss.eof())
 	// for (int i = 0; i <= server ; i++)
 	// {
@@ -135,6 +142,9 @@ void	Config::pars( void )
 
 static void	serverDirectiveParsing(std::string &line) {
 
+	if (ConfigUtils::get_pos() == line.size()) {
+		throw (MyException("Error : bad format on this line...", line));
+	}
 	for (size_t i = ConfigUtils::get_pos(); i < line.size(); i++) {
 		char c = line[i];
 

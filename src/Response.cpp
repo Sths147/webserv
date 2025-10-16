@@ -28,9 +28,7 @@ Response::~Response()
 {
 	if (this->_cgi_get != NULL) {
 		ClientCgi *ptr_cgi1 = dynamic_cast<ClientCgi *>(this->_cgi_get);
-		ptr_cgi1->del_epoll_and_close(this->_epoll_fd);
-		delete this->_cgi_get;
-		this->_fd_to_info.erase(ptr_cgi1->get_fd());
+		delete_client(this->_epoll_fd, ptr_cgi1->get_fd(), this->_fd_to_info, ptr_cgi1);
 	}
 
 	if (this->_cgi_post != NULL) {
@@ -391,14 +389,14 @@ static std::string	header405(Server& server, bool check_loc)
 		{
 			result += *it;
 			result += " ";
-		}		
+		}
 	}
 	else {
 		for (std::vector<std::string>::const_iterator it = server.get_allow_methods().begin(); it != server.get_allow_methods().end(); it++)
 		{
 			result += *it;
 			result += " ";
-		}		
+		}
 	}
 	return (result);
 }
@@ -664,7 +662,7 @@ void	Response::set_post_response(Request& request)
 		std::string line = get_buff_line(buff);
 		if (line.find_first_not_of('-') != std::string::npos)
 			line = line.substr(line.find_first_not_of('-'));
-		
+
 		std::string sep2;
 		if (separator.find_first_not_of('-') != std::string::npos)
 		{
