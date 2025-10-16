@@ -121,9 +121,9 @@ void	Config::pars( void )
 
 		}
 	}
-	// if (in_server || in_location) {
-	// 	throw (MyException("Error : Unclose", line));
-	// }
+	if (in_server || in_location) {
+		throw (MyException("Error : Unclosed braquet."));
+	}
 	// if (ss.eof())
 	// for (int i = 0; i <= server ; i++)
 	// {
