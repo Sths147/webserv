@@ -7,10 +7,7 @@ ConfigLocation::ConfigLocation() {}
 
 ConfigLocation::ConfigLocation( const std::string &perm , const bool &b) : _location(perm), _absolut(b), _autoindex(ON) {}
 
-
-
 void	ConfigLocation::set_absolut( const bool &b) { this->_absolut = b; }
-
 
 /* ------   _index   ------ */
 

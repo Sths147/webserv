@@ -97,10 +97,8 @@ void clean_for_cgi(std::map<int, Client *> &fd_to_info, std::vector<Server *> &v
 
 void clean_exit(std::map<int, Client *> &fd_to_info, const int &epoll_fd, std::vector<Server *> &vec_server) {
 
-	// std::cerr << "cgi child call clean_exit" << std::endl;
 	for (std::map<int, Client *>::iterator it = fd_to_info.begin(); it != fd_to_info.end();) {
 
-		// std::cerr << RED"for IN clean_exit"RESET- << std::endl;
 		if (dynamic_cast<ClientFd *>(it->second) != NULL) {
 			dynamic_cast<ClientFd *>(it->second)->del_epoll_and_close(epoll_fd);
 			delete it->second;
@@ -111,7 +109,6 @@ void clean_exit(std::map<int, Client *> &fd_to_info, const int &epoll_fd, std::v
 		}
 		fd_to_info.erase(it++);
 	}
-
 	for (size_t i = 0; i < vec_server.size(); i++) {delete vec_server[i];}
 	close(epoll_fd);
 }
@@ -147,7 +144,6 @@ void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_i
 }
 
 void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientFd* ptrClient) {
-		// ptrClient->clean_cgi(epoll_fd, fd_to_info);
 		ptrClient->del_epoll_and_close(epoll_fd);
 		delete fd_to_info[client_fd];
 		fd_to_info.erase(client_fd);

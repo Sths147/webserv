@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "ConfigServer.hpp"
 #include "ConfigLocation.hpp"
 #include "MyException.hpp"
@@ -19,9 +18,6 @@
 
 ConfigServer::~ConfigServer() {}
 ConfigServer::ConfigServer() : _client_max_body_size(500000) ,_autoindex(ON), _last_i_location(-1) {}
-
-
-
 
 /* ------   _listen   ------ */
 
@@ -34,6 +30,7 @@ void	ConfigServer::set_listen( const std::string &str)
 {
 	this->_listen.push_back(ConfigUtils::ip_host_parseur(str));
 }
+
 void	ConfigServer::set_listen_lunch_false( size_t index) {
 	this->_listen[index].to_lunch = false;
 }
@@ -103,7 +100,6 @@ void	ConfigServer::set_client_max_body_size( const std::string &str) {
 		throw (std::string("Error : failed client_max_body "));
 }
 
-
 /* ------   _root   ------ */
 
 void	ConfigServer::set_root( const std::string &str) { this->_root = str;}
@@ -141,10 +137,6 @@ void												ConfigServer::set_inlocation_return(const int &i, const std::str
 void												ConfigServer::set_inlocation_cgi_path(const int &i, const std::string &str ) { this->_vConfLocal[i].set_cgi_path(str); }
 void												ConfigServer::set_inlocation_cgi_extension(const int &i, const std::string &str ) { this->_vConfLocal[i].set_cgi_extension(str); }
 
-
-
-
-
 /* --- GET --- */
 
 const	std::vector<Listen>							&ConfigServer::get_listen( void ) const { return (this->_listen); }
@@ -156,10 +148,6 @@ const	size_t										&ConfigServer::get_client_max_body_size( void ) const { re
 const	std::string									&ConfigServer::get_root( void ) const { return (this->_root); }
 const	autoindexvalue								&ConfigServer::get_autoindex( void ) const { return (this->_autoindex); }
 const	std::string									&ConfigServer::get_return( void ) const { return (this->_return); }
-
-
-
-
 
 /* --- GET inlocation --- */
 

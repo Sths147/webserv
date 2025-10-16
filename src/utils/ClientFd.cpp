@@ -13,7 +13,6 @@ ClientFd::ClientFd(const Listen &listen , int fd, int epoll_fd) : _fd(fd), _host
 
 ClientFd &ClientFd::operator=( const ClientFd &other )
 {
-	// std::cout << BLUE << "Operator '=' is Called" << RESET << std::endl;
 	if (this != &other) {
 		this->_host_port = other._host_port;
 
@@ -46,18 +45,12 @@ void	ClientFd::clean_new_request( void ){
 #include "ClientCgi.hpp"
 #include "utils.hpp"
 
-
-// void	ClientFd::clean_cgi( const int &epoll_fd, std::map<int, Client *> &fd_to_info ){
-
-// }
-
 ClientFd::~ClientFd( void ) {
 	this->clean_new_request();
 
 }
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }
-
 
 const std::string		ClientFd::get_type() const { return(this->_request->get_type()); }
 bool					ClientFd::get_body_check( void ) { return(this->_body_saved); }
@@ -102,9 +95,6 @@ static bool	max_size_reached(std::vector<char>& body, Server *server, Request *r
 	}
 	return (0);
 }
-
-
-
 
 static bool	check_body(Request& request, Server *server, std::vector<char>& body)
 {
@@ -157,7 +147,6 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server, size_t
 			this->_request->add_header(this->_header);
 		}
 	}
-
 	if (this->_header_saved && this->_request->get_type() == "POST" && (max_size_reached(this->_buffer, this->_server, this->_request) || body_size_reached(this->_buffer.size(), this->_request->get_header("Content-Length")))) {
 		if(check_body(*this->_request, this->_server, this->_buffer)) {
 			this->_body_saved = true;
@@ -172,13 +161,11 @@ void		ClientFd::add_buffer( char *str, std::vector<Server *> &vec_server, size_t
 	}
 }
 
-
 void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server) {
 
 	if (!this->_header_saved) {
 		return;
 	}
-
 	for (size_t i = 0; i < vec_server.size(); i++) {
 
 		if (vec_server[i]->check_listen(this->_host_port) && this->_request->check_hosts(vec_server[i]->get_server_name())) {
@@ -196,7 +183,7 @@ void		ClientFd::find_server_from_map(std::vector<Server *> &vec_server) {
 	this->_server = vec_server[0];
 }
 
-bool				ClientFd::check_alive( void ) {
+bool			ClientFd::check_alive( void ) {
 	return (this->_alive);
 }
 
@@ -245,25 +232,6 @@ bool		ClientFd::send_response( int client_fd ) {
 	return false;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #include <unistd.h>
 #include <sys/epoll.h>
 void		ClientFd::del_epoll_and_close( int epoll_fd) {
@@ -274,6 +242,3 @@ void		ClientFd::del_epoll_and_close( int epoll_fd) {
 		this->_fd = -1;
 	}
 }
-
-
-

@@ -167,10 +167,7 @@ Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 	if (vecstring.size() == 0 || (vecstring.size() == 1 && vecstring[0] == "\0"))
 		throw (std::string("Error : No value on this line ")); // listen :;
 
-
-
 	if (vecstring[0] != "\0") {
-		// std::cout << "\tip = " << vecstring[0];
 		if (vecstring[0] == "localhost")
 			ip = 2130706433;
 		else
@@ -191,7 +188,6 @@ std::vector<std::string> ConfigUtils::split(const std::string &topars, char deli
 	std::vector<std::string> tokens;
 	std::stringstream ss(topars.c_str());
 	std::string str;
-
 
 	while (std::getline(ss, str, delim)) {
 		tokens.push_back(str);
