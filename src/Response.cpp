@@ -277,7 +277,6 @@ void	Response::fill_body_with_error_pages(Server& server)
 	if (this->_check_loc && !(server.get_inlocation_error_page().empty()) \
 		&& server.get_inlocation_error_page().find(this->_status_code) != server.get_inlocation_error_page().end())
 	{
-		std::cout << "here" << std::endl;
 		if (!server.get_inlocation_root().empty())
 			path = reconstruct_path(server.get_inlocation_root(), server.get_inlocation_error_page().find(this->_status_code)->second);
 		else
