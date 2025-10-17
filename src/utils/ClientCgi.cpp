@@ -93,11 +93,10 @@ bool					ClientCgi::read_cgi_output( void ) {
 	char				tmp[MAX_BUFFER + 1];
 	std::memset(&tmp, 0, sizeof(tmp));
 
-	std::cout << this->_fd_out << "\n";
-	ssize_t bytes = recv(this->_fd_out, &tmp, MAX_BUFFER, MSG_DONTWAIT);
+	ssize_t bytes = read(this->_fd_out, &tmp, MAX_BUFFER);
 
-	if (bytes < 0) {
-		throw (MyException("Error : read output cgi failed."));
+	if (bytes <= 0) {
+		throw (MyException("Error : read output cgi failed. ", strerror(errno)));
 	}
 	this->_output_cgi += tmp;
 	if (bytes <= MAX_BUFFER) {

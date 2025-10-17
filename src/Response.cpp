@@ -300,7 +300,6 @@ void	Response::fill_body_with_error_pages(Server& server)
 	}
 	else if (!(server.get_error_page().empty()) && (server.get_error_page().find(this->_status_code) != server.get_error_page().end()))
 	{
-		std::cout << "there" << std::endl;
 		path = reconstruct_path(server.get_root(), server.get_error_page().find(this->_status_code)->second);
 		stream.open(path.c_str());
 		if (stream.is_open())
@@ -1003,10 +1002,9 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 		if (second_pipe) {
 			close(pipe_in[0]);
 		}
-
+		set_nonblocking(pipe_out[0]);
 		Client * ptr1 = new ClientCgi(-1, pipe_out[0], client_fd);
 		if (!epollctl(epoll_fd, pipe_out[0], EPOLLIN, EPOLL_CTL_ADD)) {
-			// std::cout << "error\n";
 			close(pipe_out[0]);
 			delete ptr1;
 			return (-1);
@@ -1029,6 +1027,7 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 			}
 
 
+			set_nonblocking(pipe_in[1]);
 			ClientCgi *ptr_cgi2 = dynamic_cast<ClientCgi *>(ptr2);
 			ptr_cgi2->add_body_request(this->_req->get_body());
 			ptr_cgi2->set_pid(pid);

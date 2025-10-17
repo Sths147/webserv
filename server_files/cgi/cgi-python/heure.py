@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import datetime
 
-# Étape 1: Afficher l'en-tête HTTP obligatoire
-# print("Content-type: text/html\n")
 
 # Étape 2: Générer le contenu HTML
 now = datetime.datetime.now()

@@ -178,9 +178,6 @@ int main(int ac, char **av)
 								if (ptrClient->send_response(client_fd) == true) {
 
 									if (ptrClient->check_alive()) {
-										// if (!epollctl_error_gestion(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
-										// 	continue;
-										// }
 										ptrClient->clean_new_request();
 									} else {
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);

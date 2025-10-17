@@ -39,6 +39,7 @@ void	ClientFd::clean_new_request( void ){
 	}
 	this->_header_saved = false;
 	this->_body_saved = false;
+	this->_response_created = false;
 }
 #include <signal.h>
 #include <sys/wait.h>
