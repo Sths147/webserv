@@ -2,7 +2,7 @@
 
 
 Client::~Client( void ) {}
-Client::Client( void ) : _time_to_reset(std::time(NULL) + TIMEOUT) {}
+Client::Client( void ) :  _response_created(false), _time_to_reset(std::time(NULL) + TIMEOUT) {}
 
 Client::Client( const Client &other) : _time_to_reset(std::time(NULL) + TIMEOUT) {
 	this->_time_to_reset = other._time_to_reset;
@@ -28,3 +28,4 @@ bool	Client::check_timeout( void ) {
 }
 
 /*----timeout----*/
+bool	Client::check_response_created( void ) {return (this->_response_created); }

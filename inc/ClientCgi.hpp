@@ -47,6 +47,7 @@ class ClientCgi : public Client
 		bool						check_waitpid( pid_t &_pid );
 		bool						check_timeout(const int &epoll_fd, std::map<int, Client *> &fd_to_info );
 		int							get_fd();
+		int							get_from_clientfd();
 
 
 };

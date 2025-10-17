@@ -207,10 +207,12 @@ int				ClientFd::creat_response( std::map<int, Client *> &fd_to_info, std::vecto
 	}
 
 	this->_response = this->_res->construct_response();
+	this->_response_created = true;
 	return (0);
 }
 
 void		ClientFd::set_response_str( const std::string &str){
+	this->_response_created = true;
 	this->_response = str;
 }
 

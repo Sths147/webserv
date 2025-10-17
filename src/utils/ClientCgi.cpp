@@ -21,6 +21,7 @@ void				ClientCgi::set_response(Response *res) {
 #include <sys/epoll.h>
 
 int					ClientCgi::get_fd() { return ((this->_fd_in == -1) ? (this->_fd_out) : (this->_fd_in));}
+int					ClientCgi::get_from_clientfd() { return (this->_from_clientfd);}
 
 
 void				ClientCgi::del_epoll_and_close( int epoll_fd ) {
@@ -53,7 +54,6 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 	int	status;
 	if (_pid == -1)
 	{
-		std::cout << "Youhouuuu" << this->_fd_in << "|" << this->_fd_out << std::endl;
 		return (false);
 	}
 	pid_t rpid = waitpid(_pid, &status, WNOHANG);
@@ -87,12 +87,14 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 	}
 	return (true);
 }
-
+#include <sys/socket.h>
 bool					ClientCgi::read_cgi_output( void ) {
 
 	char				tmp[MAX_BUFFER + 1];
 	std::memset(&tmp, 0, sizeof(tmp));
-	ssize_t bytes = read(this->_fd_out, &tmp, MAX_BUFFER);
+
+	std::cout << this->_fd_out << "\n";
+	ssize_t bytes = recv(this->_fd_out, &tmp, MAX_BUFFER, MSG_DONTWAIT);
 
 	if (bytes < 0) {
 		throw (MyException("Error : read output cgi failed."));
@@ -135,9 +137,10 @@ void		ClientCgi::construct_response( const int &epoll_fd, std::map<int, Client *
 	ptrClient->set_response_str(this->_response->construct_response_cgi());
 
 	this->_response->null_cgi();
-	if (!epollctl_error_gestion(epoll_fd, this->_from_clientfd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
-		;
-	}
+	(void)epoll_fd;
+	// if (!epollctl_error_gestion(epoll_fd, this->_from_clientfd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
+	// 	;
+	// }
 }
 
 bool	ClientCgi::check_timeout( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {

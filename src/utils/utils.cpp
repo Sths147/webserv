@@ -58,7 +58,7 @@ bool check_add_new_connection(const std::vector<Server *> &vec_server, int &even
 				// Set client socket to non-blocking
 				set_nonblocking(client_fd);
 
-				if (!epollctl(epoll_fd, client_fd, EPOLLIN, EPOLL_CTL_ADD)) {
+				if (!epollctl(epoll_fd, client_fd, EPOLLIN | EPOLLOUT, EPOLL_CTL_ADD)) {
 					close(client_fd);
 					return (true);
 				}
