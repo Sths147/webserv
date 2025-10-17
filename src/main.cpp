@@ -122,11 +122,7 @@ int main(int ac, char **av)
 
 								ssize_t bytes = recv(client_fd, &tmp, MAX_BUFFER , MSG_DONTWAIT);
 
-								if (bytes < 0) {
-									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
-									continue;
-								}
-								else if (bytes == 0) {
+								if (bytes <= 0) {
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									continue;
 								}
@@ -193,11 +189,11 @@ int main(int ac, char **av)
 							ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
 
 							ptrClient->refresh();
+							if (ptrClient->check_response_created())
+								continue;
 							try
 							{
-								if (ptrClient->write_cgi_input()) {
-									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
-								}
+								ptrClient->write_cgi_input();
 							}
 							catch(const std::exception& e)
 							{

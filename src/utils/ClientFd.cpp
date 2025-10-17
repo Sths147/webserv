@@ -226,7 +226,7 @@ bool		ClientFd::send_response( int client_fd ) {
 
 	ssize_t bytes = send(client_fd, this->_response.c_str(), std::min(this->_response.length(), static_cast<size_t>(SSIZE_MAX)), MSG_DONTWAIT);
 
-	if (bytes < 0)
+	if (bytes <= 0)
 		throw (1);
 	if (static_cast<size_t>(bytes) == this->_response.length())
 		return true;

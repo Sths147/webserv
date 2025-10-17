@@ -1002,7 +1002,9 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 		if (second_pipe) {
 			close(pipe_in[0]);
 		}
+
 		set_nonblocking(pipe_out[0]);
+
 		Client * ptr1 = new ClientCgi(-1, pipe_out[0], client_fd);
 		if (!epollctl(epoll_fd, pipe_out[0], EPOLLIN, EPOLL_CTL_ADD)) {
 			close(pipe_out[0]);

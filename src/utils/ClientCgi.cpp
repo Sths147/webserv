@@ -87,7 +87,7 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 	}
 	return (true);
 }
-#include <sys/socket.h>
+
 bool					ClientCgi::read_cgi_output( void ) {
 
 	char				tmp[MAX_BUFFER + 1];
@@ -96,7 +96,7 @@ bool					ClientCgi::read_cgi_output( void ) {
 	ssize_t bytes = read(this->_fd_out, &tmp, MAX_BUFFER);
 
 	if (bytes <= 0) {
-		throw (MyException("Error : read output cgi failed. ", strerror(errno)));
+		throw (MyException("Error : read output cgi failed."));
 	}
 	this->_output_cgi += tmp;
 	if (bytes <= MAX_BUFFER) {
@@ -115,7 +115,7 @@ bool					ClientCgi::write_cgi_input( void ) {
 
 	ssize_t bytes = write(this->_fd_in, this->_body_request.c_str(), std::min(this->_body_request.length(), static_cast<size_t>(SSIZE_MAX)));
 
-	if (bytes < 0) {
+	if (bytes <= 0) {
 		throw (MyException("Error : write in cgi failed."));
 	}
 	if (static_cast<size_t>(bytes) == this->_body_request.length()){
