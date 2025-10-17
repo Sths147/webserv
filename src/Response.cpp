@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/17 07:33:11 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/17 07:34:40 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,7 +234,6 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 				set_status(301);
 			if (check_path_permissions(full_path, request, server))
 				set_status(403);
-			//CHECK IF FOLDER IS FORBIDDEN OR IF PATH DOES NOT EXIST
 			set_status(404);
 		}
 		return (full_path);
