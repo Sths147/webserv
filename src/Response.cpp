@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/16 11:37:34 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/17 07:33:11 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ void Response::null_cgi( void) {
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
 : _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _body(""), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd)
 {
-	// std::cout << "client fd : " << client_fd << " request path: " << request.get_target() << " final path : " << this->_path << " \n_status_code: " << request.get_return_code() << std::endl;
 	this->_header["Server"] = "42WEBSERV";
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
@@ -62,11 +61,8 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		this->_cgi_started = true;
 		return;
 	}
-	//check if client max body size and implement return code accordingly
-	// std::cout << "Path :" << this->_path << std::endl;
 	if (this->_status_code == 0 && !server.get_inlocation_return().empty())
 		this->set_status(301);
-	// std::cout << "PAAATH " << this->_path << std::endl;
 	if (this->_status_code == 0  && !request.get_type().compare("GET"))
 		this->set_get_response();
 	else if (this->_status_code == 0  && !request.get_type().compare("POST"))
@@ -82,9 +78,6 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		this->set_redirect(server);
 	else
 		this->set_error_response(server);
-	// std::cout << "-------response header ------------" << std::endl;
-	// this->print_headers();
-	// std::cout << "-------------------------" << std::endl;
 }
 
 
