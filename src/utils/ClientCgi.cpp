@@ -81,6 +81,7 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 
 	} else {
 
+		std::cout <<"waitpid: " << rpid << std::endl;
 		this->_response->set_status(500);
 		return (false);
 	}
@@ -127,7 +128,7 @@ bool					ClientCgi::write_cgi_input( void ) {
 
 
 
-void		ClientCgi::construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {
+void		ClientCgi::construct_response(std::map<int, Client *> &fd_to_info ) {
 
 	ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[this->_from_clientfd]);
 
@@ -135,10 +136,6 @@ void		ClientCgi::construct_response( const int &epoll_fd, std::map<int, Client *
 	ptrClient->set_response_str(this->_response->construct_response_cgi());
 
 	this->_response->null_cgi();
-	(void)epoll_fd;
-	// if (!epollctl_error_gestion(epoll_fd, this->_from_clientfd, EPOLLOUT, EPOLL_CTL_MOD, fd_to_info, ptrClient)) {
-	// 	;
-	// }
 }
 
 bool	ClientCgi::check_timeout( const int &epoll_fd, std::map<int, Client *> &fd_to_info ) {
@@ -149,7 +146,7 @@ bool	ClientCgi::check_timeout( const int &epoll_fd, std::map<int, Client *> &fd_
 	}
 
 	if (!check_waitpid(this->_pid)) {
-		this->construct_response(epoll_fd, fd_to_info);
+		this->construct_response(fd_to_info);
 		return (false);
 	}
 

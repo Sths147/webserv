@@ -144,7 +144,7 @@ int main(int ac, char **av)
 								{
 									int rv = ptrClient->read_cgi_output();
 									if (rv == true) {
-										ptrClient->construct_response(epoll_fd, fd_to_info);
+										ptrClient->construct_response(fd_to_info);
 										delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 										continue;
 									}
@@ -190,7 +190,9 @@ int main(int ac, char **av)
 								continue;
 							try
 							{
-								ptrClient->write_cgi_input();
+								if (ptrClient->write_cgi_input()) {
+									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
+								}
 							}
 							catch(const std::exception& e)
 							{

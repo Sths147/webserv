@@ -42,7 +42,7 @@ class ClientCgi : public Client
 		void						add_body_request(const std::vector<char> & tmp);
 
 		void						set_response(Response *res);
-		void						construct_response( const int &epoll_fd, std::map<int, Client *> &fd_to_info );
+		void						construct_response( std::map<int, Client *> &fd_to_info );
 		virtual void				del_epoll_and_close( int epoll_fd );
 		bool						check_waitpid( pid_t &_pid );
 		bool						check_timeout(const int &epoll_fd, std::map<int, Client *> &fd_to_info );
