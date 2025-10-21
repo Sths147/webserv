@@ -27,10 +27,6 @@ Config::Config( std::string nameFile )
 		if (first_char_pos != std::string::npos && tmp[first_char_pos] != '#') {
 				this->_file += tmp + "\n";
 		}
-		// that the commentary or the empty line
-		// else {
-		// 	std::cout << tmp << std::endl;
-		// }
 	}
 
 	// Debug Print all the content stocked
@@ -73,10 +69,6 @@ void	Config::pars( void )
 	while (std::getline(ss, line)) {
 
 		std::string directive = ConfigUtils::parse_token(line, 0);
-		// if (directive != "\0") // without the close bracket line
-		// 	std::cout << "\ndirective == " << directive << "\nin location : "<< in_location << std::endl;
-
-
 		if (directive == "server") {
 
 			if (in_server)
@@ -94,7 +86,6 @@ void	Config::pars( void )
 				throw (MyException("Error : already in a location you can't get a location in a location"));
 			location++;
 			in_location = true;
-			// std::cout << location << "\n";
 			if (line[ConfigUtils::get_pos()] != ' ')
 				throw (MyException("Error : bad format on this line...", line));
 			try
@@ -124,19 +115,6 @@ void	Config::pars( void )
 	if (in_server || in_location) {
 		throw (MyException("Error : Unclosed braquet."));
 	}
-	// for (int i = 0; i <= server ; i++)
-	// {
-	// 	std::cout << YELLOW <<"\nPrint all content of the server n" << i << RESET << std::endl;
-	// 	this->_vConfServer[i].print_listen();
-	// 	// this->_vConfServer[i].print_index();
-	// 	// this->_vConfServer[i].print_error_page();
-	// 	// this->_vConfServer[i].print_server_name();
-	// 	// this->_vConfServer[i].print_allow_methods();
-	// 	// this->_vConfServer[i].print_client_max_body_size();
-	// 	// this->_vConfServer[i].print_root();
-	// 	// this->_vConfServer[i].print_location();
-	// }
-
 }
 
 static void	serverDirectiveParsing(std::string &line) {
@@ -243,7 +221,6 @@ void			Config::_set_in_location( std::string &directive, std::string &line, int 
 	} else if (directive == "cgi_extension") {
 
 		std::string arg = ConfigUtils::get_one_token(line);
-		// std::cout << "cgi_extension : "<< arg << std::endl;
 		this->_vConfServer[server].set_inlocation_cgi_extension(location, arg);
 
 	} else { // here we got "}" or error

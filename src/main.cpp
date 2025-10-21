@@ -52,7 +52,6 @@ int main(int ac, char **av)
 			config.check_lunch();
 			for (size_t i = 0; i < config.nb_of_server(); i++)
 			{
-				// std::cout << "server n*" << i <<std::endl; //Creat every server with his config file added.
 				Server *ptr = new Server(config.copy_config_server(i), epoll_fd);
 				vec_server.push_back(ptr);
 			}
@@ -71,8 +70,6 @@ int main(int ac, char **av)
 	}
 
 	//----------------------------main loop event epoll add a new connection read a request response to his resquest----------------------------
-
-	// std::cout << YELLOW <<"\n\tMain loop\n" << RESET << std::endl;
 
 	int nfds;
 	struct epoll_event events[MAX_EVENTS];

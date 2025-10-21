@@ -13,7 +13,6 @@ void ConfigUtils::check_after_bracket_semicolon(const std::string &str, size_t p
 	if (ConfigUtils::find_first_not_of_space(str, pos) != std::string::npos) {
 		if (str[_pos] == '#')
 			return ;
-		// std::cout << "pos : " << pos << "_pos : " << _pos << std::endl;
 		throw (MyException("Error : extra charater... ", str));
 	}
 	return  ;
@@ -134,8 +133,6 @@ static unsigned int	ipconvert(std::string& str)
 		|| vecstring[0].size() > 3|| vecstring[1].size() > 3|| vecstring[2].size() > 3|| vecstring[3].size() > 3)
 		throw (std::string("Error : bad format on IP of this line "));
 
-	// std::cout << "\na = " << a << ", b = " << b << ", c = " << c << ", d = " << d <<std::endl;
-
 	unsigned int	a = std::atoi(vecstring[0].c_str());
 	unsigned int	b = std::atoi(vecstring[1].c_str());
 	unsigned int	c = std::atoi(vecstring[2].c_str());
@@ -174,7 +171,6 @@ Listen	ConfigUtils::ip_host_parseur( const std::string &str)
 			ip = ipconvert(vecstring[0]);
 	}
 	if (vecstring.size() == 2 &&vecstring[1] != "\0") {
-		// std::cout << "\tport = " << vecstring[1];
 		for (size_t i = 0; i < vecstring[1].size(); i++)
 			if (!std::isdigit(vecstring[1][i]))
 				throw(std::string("Error : the port on this line doesnt have onlydigit "));

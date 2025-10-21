@@ -82,7 +82,6 @@ bool					ClientCgi::check_waitpid( pid_t &_pid ) {
 	} else {
 
 		this->_response->set_status(500);
-		std::cout <<"waitpid: " << rpid << std::endl;
 		return (false);
 	}
 	return (true);

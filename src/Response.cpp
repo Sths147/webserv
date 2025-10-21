@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/17 07:34:40 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/21 09:49:04 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,10 +171,7 @@ static bool			check_path_permissions(std::string path, Request& request, Server&
 		if (!stat(path.c_str(), &sfile))
 		{
 			if (!request.get_type().compare("GET") && !(sfile.st_mode & S_IROTH))
-			{
-				std::cout << "path : " << path << std::endl;
 				return (1);
-			}
 			else if ((!request.get_type().compare("POST") || !request.get_type().compare("DELETE")) && !(sfile.st_mode & S_IWOTH))
 				return (1);
 		}
@@ -542,9 +539,6 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 	if (line.find("filename=") == std::string::npos)
 	{
 		this->set_status(400);
-		for (std::vector<char>::iterator it = buff.begin(); it != buff.end(); it++)
-			std::cout << *it << std::ends;
-		std::cout << std::endl;
 		return ;
 	}
 	std::string filename = line.substr(line.find("filename="));
@@ -963,14 +957,12 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 		}
 	}
 	pid = fork();
-	// std::cout << "pid = fork(): " << pid <<" \n";
 	if (pid == -1) {
 
 		close(pipe_out[0]);
 		close(pipe_out[1]);
 		if (second_pipe) {
 
-			std::cout << "error3\n";
 			close(pipe_in[0]);
 			close(pipe_in[1]);
 		}
@@ -1020,7 +1012,6 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 
 			Client *ptr2 = new ClientCgi(pipe_in[1], -1, client_fd);// client fd pas besoin
 			if (!epollctl(epoll_fd, pipe_in[1], EPOLLOUT, EPOLL_CTL_ADD)) {
-				// std::cout << "error2\n";
 				close(pipe_out[0]);
 				delete ptr2;
 				delete ptr1;

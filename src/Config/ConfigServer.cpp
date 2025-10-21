@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigServer.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fcretin <fcretin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 14:11:35 by fcretin           #+#    #+#             */
-/*   Updated: 2025/09/10 16:34:49 by fcretin          ###   ########.fr       */
+/*   Updated: 2025/10/21 09:48:08 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,6 @@ bool						ConfigServer::check_location( std::string key )
 	{
 		for (size_t i = 0; i < this->_vConfLocal.size() ; i++)
 		{
-			// std::cout << key <<std::endl;
 			if (this->_vConfLocal[i].check_location(key) && !this->_vConfLocal[i].get_absolut()) {
 				this->_last_i_location = i;
 				return (true);
