@@ -27,6 +27,10 @@ ClientFd &ClientFd::operator=( const ClientFd &other )
 	return	*this;
 }
 
+void	ClientFd::change_new_cgi_to_null(int fd) {
+	this->_res->change_new_cgi_to_null(fd);
+}
+
 void	ClientFd::clean_new_request( void ){
 
 	if (this->_request != NULL){

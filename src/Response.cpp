@@ -44,6 +44,26 @@ void Response::null_cgi( void) {
 	this->_cgi_post = NULL;
 }
 
+void	Response::change_new_cgi_to_null(int fd) {
+
+	if (this->_cgi_get){
+		ClientCgi* ptrClientCgi = dynamic_cast<ClientCgi *>(this->_cgi_get);
+
+		if (ptrClientCgi->get_fd() == fd) {
+			this->_cgi_get = NULL;
+			return;
+		}
+	}
+
+	if (this->_cgi_post){
+		ClientCgi* ptrClientCgi = dynamic_cast<ClientCgi *>(this->_cgi_post);
+
+		if (ptrClientCgi->get_fd() == fd) {
+			this->_cgi_post = NULL;
+		}
+	}
+}
+
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
 : _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _body(""), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd)
 {

@@ -85,6 +85,7 @@ class Response
 		void				set_redirect(Server& server);
 		void				open_file(std::ofstream& file, std::vector<char>& buff);
 		void 				print_headers() const ;
+		void				change_new_cgi_to_null(int fd);
 		int					exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
 		int					cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
 		void				null_cgi( void);

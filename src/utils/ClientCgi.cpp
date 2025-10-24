@@ -110,6 +110,7 @@ bool					ClientCgi::write_cgi_input( void ) {
 	int	status;
 	pid_t rpid = waitpid(this->_pid, &status, WNOHANG);
 	if (rpid != 0) {
+		std::cout << "1\n";
 		return (true);
 	}
 
@@ -118,7 +119,7 @@ bool					ClientCgi::write_cgi_input( void ) {
 	if (bytes <= 0) {
 		throw (MyException("Error : write in cgi failed."));
 	}
-	if (static_cast<size_t>(bytes) == this->_body_request.length()){
+	if (static_cast<size_t>(bytes) == this->_body_request.length()) {
 		return (true);
 	}
 	this->_body_request.erase(0, bytes);

@@ -33,10 +33,6 @@ class ClientFd : public Client
 		std::string			_response;
 		int					_epoll_fd;
 
-		// ClientCgi			*_cgi_fd1;
-		// ClientCgi			*_cgi_fd2;
-
-
 		void			find_server_from_map(std::vector<Server *> &vec_server);
 
 	public:
@@ -45,12 +41,11 @@ class ClientFd : public Client
 		ClientFd &operator=( const ClientFd &other );
 		~ClientFd( void );
 		void				clean_new_request( void );
-		// void				clean_cgi( const int &epoll_fd, std::map<int, Client *> &fd_to_info );
 		void				del_epoll_and_close( int epoll_fd );
 
 		Listen				get_listen( void );
 
-
+		void				change_new_cgi_to_null(int fd);
 
 		const std::string	get_type() const;
 		bool				get_body_check( void );

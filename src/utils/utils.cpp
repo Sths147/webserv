@@ -121,7 +121,6 @@ void check_all_timeout( const int &epoll_fd, std::map<int, Client *> &fd_to_info
 		ClientCgi* ptrClientCgi = dynamic_cast<ClientCgi *>(it->second);
 
 		if (ptrClientFd && !ptrClientFd->check_timeout()) {
-			// ptrClientFd->clean_cgi(epoll_fd, fd_to_info);
 			ptrClientFd->del_epoll_and_close(epoll_fd);
 			delete it->second;
 			fd_to_info.erase(it++);
@@ -138,6 +137,9 @@ void check_all_timeout( const int &epoll_fd, std::map<int, Client *> &fd_to_info
 }
 
 void	delete_client(int epoll_fd, int client_fd, std::map<int, Client *> &fd_to_info, ClientCgi* ptrClient) {
+		
+		ClientFd* ptrClientFd = dynamic_cast<ClientFd *>(fd_to_info[ptrClient->get_from_clientfd()]);
+		ptrClientFd->change_new_cgi_to_null(ptrClient->get_fd());
 		ptrClient->del_epoll_and_close(epoll_fd);
 		delete fd_to_info[client_fd];
 		fd_to_info.erase(client_fd);

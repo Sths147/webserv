@@ -41,7 +41,7 @@ int main(int ac, char **av)
 			if (ac == 2)
 				file_conf = av[1];
 			else
-				file_conf = "conf/simconf.conf";
+				file_conf = "conf/default.conf";
 			//First parsing of the config file to delete every empty and commentary line.
 			Config config(file_conf);
 
