@@ -123,6 +123,8 @@ int main(int ac, char **av)
 									delete_client(epoll_fd, client_fd, fd_to_info, ptrClient);
 									continue;
 								}
+								if (ptrClient->check_response_created())
+									continue;
 								ptrClient->add_buffer(tmp, vec_server, bytes);
 								if (ptrClient->get_header_saved() && !(ptrClient->get_type() == "POST")) {
 
@@ -136,6 +138,7 @@ int main(int ac, char **av)
 										continue;
 									}
 								}
+
 							} else if (typeclient == CLIENTCGI) {
 
 								ClientCgi* ptrClient = dynamic_cast<ClientCgi *>(fd_to_info[client_fd]);
@@ -163,6 +166,7 @@ int main(int ac, char **av)
 						if (typeclient == CLIENTFD) {
 
 							ClientFd* ptrClient = dynamic_cast<ClientFd *>(fd_to_info[client_fd]);
+
 							if (!ptrClient->check_response_created())
 								continue;
 							ptrClient->refresh();

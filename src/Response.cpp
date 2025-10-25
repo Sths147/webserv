@@ -19,6 +19,8 @@
 #include <dirent.h>
 #include <ctime>
 #include "utils.hpp"
+#include <sys/wait.h>
+
 
 static std::string		reason_phrase(unsigned short int& code);
 static std::string		reconstruct_path(std::string s1, std::string s2);
@@ -33,6 +35,13 @@ Response::~Response()
 	if (this->_cgi_post != NULL) {
 		ClientCgi *ptr_cgi2 = dynamic_cast<ClientCgi *>(this->_cgi_post);
 		delete_client(this->_epoll_fd, ptr_cgi2->get_fd(), this->_fd_to_info, ptr_cgi2);
+	}
+	if (this->_pid > 0) {
+		int	status = 0;
+		pid_t rpid = waitpid(this->_pid, &status, WNOHANG);
+		if (rpid == 0) {
+			kill(this->_pid, SIGTERM);
+		}
 	}
 }
 
@@ -65,7 +74,7 @@ void	Response::change_new_cgi_to_null(int fd) {
 }
 
 Response::Response(Request &request, Server &server, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server)
-: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _body(""), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd)
+: _server(&server), _req(&request), _status_code(request.get_return_code()), _path(determine_final_path(request, server)), _http_type("HTTP/1.1"), _body(""), _type(request.get_type()), _cgi_started(false), _cgi_get(NULL), _cgi_post(NULL), _fd_to_info(fd_to_info), _epoll_fd(epoll_fd), _pid(-42)
 {
 	this->_header["Server"] = "42WEBSERV";
 	if (this->_status_code == 0)
@@ -205,7 +214,7 @@ static bool			check_path_permissions(std::string path, Request& request, Server&
 		{
 			return (1);
 		}
-		
+
 	}
 	return (0);
 }
@@ -976,7 +985,6 @@ int				Response::exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_
 // Cookie=qwe
 int				Response::cgi(const char *path, const char **script, const char **envp, std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server) {
 
-	pid_t	pid;
 	int		pipe_in[2];
 	int		pipe_out[2];
 	const bool	second_pipe = this->_type == "POST";
@@ -998,8 +1006,8 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 			return (-1);
 		}
 	}
-	pid = fork();
-	if (pid == -1) {
+	this->_pid = fork();
+	if (this->_pid == -1) {
 
 		close(pipe_out[0]);
 		close(pipe_out[1]);
@@ -1010,7 +1018,7 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 		}
 		return (-1);
 
-	} else if (pid == 0) { //child
+	} else if (this->_pid == 0) { //child
 
 		dup2(pipe_out[1], 1);
 		close(pipe_out[0]);
@@ -1047,7 +1055,7 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 
 		ClientCgi *ptr_cgi1 = dynamic_cast<ClientCgi *>(ptr1);
 		ptr_cgi1->set_response(this);
-		ptr_cgi1->set_pid(pid);
+		ptr_cgi1->set_pid(this->_pid);
 
 
 		if (second_pipe) {
@@ -1064,7 +1072,7 @@ int				Response::cgi(const char *path, const char **script, const char **envp, s
 			set_nonblocking(pipe_in[1]);
 			ClientCgi *ptr_cgi2 = dynamic_cast<ClientCgi *>(ptr2);
 			ptr_cgi2->add_body_request(this->_req->get_body());
-			ptr_cgi2->set_pid(pid);
+			ptr_cgi2->set_pid(this->_pid);
 			this->_cgi_post = ptr2;
 			fd_to_info[pipe_in[1]] = ptr2;
 		}
