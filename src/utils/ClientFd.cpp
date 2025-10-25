@@ -52,7 +52,6 @@ void	ClientFd::clean_new_request( void ){
 
 ClientFd::~ClientFd( void ) {
 	this->clean_new_request();
-
 }
 
 Listen	ClientFd::get_listen( void ) { return (this->_host_port); }

@@ -45,6 +45,7 @@ class Response
 		Client												*_cgi_post;
 		std::map<int, Client *> 							&_fd_to_info;
 		const int											&_epoll_fd;
+		pid_t												_pid;
 
 		Response();
 		void						_creat_envp(Request &req);
