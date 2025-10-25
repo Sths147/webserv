@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/25 08:57:34 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/25 08:59:21 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -489,7 +489,7 @@ void	Response::set_get_response()
 		tmp.close();
 		std::remove(time_str.c_str());
 	}
-	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IROTH))
+	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IRUSR))
 	{
 		std::ifstream				file;
 		std::string					line;
@@ -608,7 +608,7 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 void	Response::set_post_response(Request& request)
 {
 	struct stat					sfile;
-	if (!stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode) && (sfile.st_mode & S_IWOTH))
+	if (!stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode) && (sfile.st_mode & S_IWUSR))
 	{
 		std::string type = request.get_header("Content-Type");
 		std::vector<char> buff = request.get_body();
@@ -675,7 +675,7 @@ void	Response::set_post_response(Request& request)
 void	Response::set_delete_response(Request& request)
 {
 	struct stat					sfile;
-	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
+	if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWUSR))
 	{
 		if (std::remove(this->_path.c_str()))
 			set_status(500);
