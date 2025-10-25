@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/21 09:49:04 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/25 08:57:34 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,6 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 	this->_header["Server"] = "42WEBSERV";
 	if (this->_status_code == 0)
 		this->check_allowed_method(request.get_type(), server);
-
-
 	if (this->_is_cgi(request, server))
 	{
 		this->_creat_envp(request);
@@ -91,8 +89,12 @@ Response::Response(Request &request, Server &server, std::map<int, Client *> &fd
 		this->set_delete_response(request);
 	if (this->_status_code == 0)
 	{
-		this->_status_code = 200;
-		this->_reason_phrase = "OK";
+		this->set_status(200);
+		// this->_reason_phrase = "OK";
+	}
+	else if (this->_status_code > 199 && this->_status_code < 300)
+	{
+		;
 	}
 	else if (this->_status_code > 299 &&  this->_status_code < 399)
 		this->set_redirect(server);
@@ -184,17 +186,26 @@ static std::string	set_full_path(Server& server, std::string& path)
 static bool			check_path_permissions(std::string path, Request& request, Server& server)
 {
 	struct stat sfile;
+	std::string path2 = path;
 	while (path.compare(server.get_root()))
 	{
 		size_t n = path.find_last_of('/');
 		path.resize(n);
 		if (!stat(path.c_str(), &sfile))
 		{
-			if (!request.get_type().compare("GET") && !(sfile.st_mode & S_IROTH))
-				return (1);
-			else if ((!request.get_type().compare("POST") || !request.get_type().compare("DELETE")) && !(sfile.st_mode & S_IWOTH))
-				return (1);
+			if (!(sfile.st_mode & S_IXUSR))
+			return (1);
 		}
+	}
+	if (stat(path2.c_str(), &sfile) <= 0)
+	{
+		if (!request.get_type().compare("GET") && (!(sfile.st_mode & S_IRUSR)))
+			return (1);
+		else if ((!request.get_type().compare("POST") || !request.get_type().compare("DELETE"))  && (!(sfile.st_mode & S_IWUSR)))
+		{
+			return (1);
+		}
+		
 	}
 	return (0);
 }
@@ -214,12 +225,10 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 	std::string		full_path;
 	struct stat		sfile;
 
-	if (request.get_body().size() > server.get_client_max_body_size())
-		this->set_status(413);
 	path = request.get_target().substr(0, request.get_target().find_first_of('?'));
 	this->_autoindex = false;
 	if (path.length() < request.get_target().length())
-		this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
+	this->_arguments = request.get_target().substr(request.get_target().find_first_of('?'));
 	if ((this->_check_loc = server.check_location(path)))
 	{
 		full_path = set_full_path(server, path);
@@ -264,7 +273,7 @@ const std::string	Response::determine_final_path(Request& request, Server& serve
 
 void				Response::set_status(const unsigned short int& code)
 {
-	if (this->_status_code == 0)
+	if (this->_status_code == 0 || (this->_status_code > 199 && this->_status_code < 300))
 		this->_status_code = code;
 }
 
@@ -460,8 +469,9 @@ void	Response::set_get_response()
 		std::fstream tmp;
 		tmp.open(time_str.c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
 		if (!tmp.is_open())
-			this->set_status(500);
-		else
+		{
+			set_status(500);
+		}		else
 		{
 			tmp << "<html><body><h1> You are in a directory : \n</h1><p>";
 			DIR*	dir = opendir(this->_path.c_str());
@@ -634,11 +644,13 @@ void	Response::set_post_response(Request& request)
 		}
 		if (this->_status_code == 0)
 		{
+			this->set_status(201);
+			// this
 			this->_body.append("File well uploaded");
 			this->set_post_headers();
 		}
 	}
-	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWOTH))
+	else if (!stat(this->_path.c_str(), &sfile) && (sfile.st_mode & S_IWUSR))
 	{
 		std::fstream				file;
 
