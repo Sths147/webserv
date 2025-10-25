@@ -6,7 +6,7 @@
 /*   By: sithomas <sithomas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 14:43:37 by sithomas          #+#    #+#             */
-/*   Updated: 2025/10/25 09:21:45 by sithomas         ###   ########.fr       */
+/*   Updated: 2025/10/25 10:00:59 by sithomas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -470,6 +470,11 @@ void	Response::set_get_response()
 	struct stat					sfile;
 	if (this->_autoindex == true && !stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode))
 	{
+		if (!(sfile.st_mode & S_IRUSR))
+		{
+			this->set_status(403);
+			return ;
+		}
 		std::time_t result = std::time(NULL);
 		std::stringstream buffer;
 		std::string time_str;
