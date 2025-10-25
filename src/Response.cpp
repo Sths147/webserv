@@ -40,7 +40,7 @@ Response::~Response()
 		int	status = 0;
 		pid_t rpid = waitpid(this->_pid, &status, WNOHANG);
 		if (rpid == 0) {
-			kill(this->_pid, SIGKILL);
+			kill(this->_pid, SIGTERM);
 		}
 	}
 }
@@ -566,25 +566,28 @@ static std::vector<char>::iterator	find_iterator(std::vector<char>& buff, std::s
 		it--;
 	}
 	while (it != buff.begin() && *it == '-')
-			it--;
+		it--;
 	if (it != buff.begin())
 		it--;
 	return (it);
 }
 
-void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
+std::string	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 {
 	std::string line = get_buff_line(buff);
 	if (line.find("filename=") == std::string::npos)
 	{
 		this->set_status(400);
-		return ;
+		return ("");
 	}
 	std::string filename = line.substr(line.find("filename="));
 	filename = filename.substr(filename.find_first_of("\"") + 1);
 	filename = filename.substr(0, filename.find_last_of("\""));
 	if (filename.empty())
+	{
 		this->set_status(400);
+		return ("");
+	}
 	std::string topen = this->_path + "/" + filename;
 	size_t i = 1;
 	std::string base = topen;
@@ -612,12 +615,13 @@ void	Response::open_file(std::ofstream& file, std::vector<char>& buff)
 			break ;
 		}
 	}
+	return (filename);
 }
 
 void	Response::set_post_response(Request& request)
 {
 	struct stat					sfile;
-	if (!stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode) && (sfile.st_mode & S_IWOTH))
+	if (!stat(this->_path.c_str(), &sfile) && S_ISDIR(sfile.st_mode) && (sfile.st_mode & S_IWUSR))
 	{
 		std::string type = request.get_header("Content-Type");
 		std::vector<char> buff = request.get_body();
@@ -640,7 +644,7 @@ void	Response::set_post_response(Request& request)
 				this->set_status(400);
 		}
 		std::ofstream file;
-		open_file(file, buff);
+		std::string filename = open_file(file, buff);
 		do {
 			line = get_buff_line(buff);
 		}
@@ -654,7 +658,13 @@ void	Response::set_post_response(Request& request)
 		if (this->_status_code == 0)
 		{
 			this->set_status(201);
-			// this
+			std::string my_header = "http://";
+			my_header += request.get_header("Host");
+			my_header += request.get_target();
+			if (my_header.find_last_of('/') != (my_header.length() - 1))
+				my_header += "/";
+			my_header += filename;
+			this->_header["Location"] = my_header;
 			this->_body.append("File well uploaded");
 			this->set_post_headers();
 		}

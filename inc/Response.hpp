@@ -84,7 +84,7 @@ class Response
 		void				set_post_headers();
 		void				check_allowed_method(const std::string& _method_requested, Server& server);
 		void				set_redirect(Server& server);
-		void				open_file(std::ofstream& file, std::vector<char>& buff);
+		std::string			open_file(std::ofstream& file, std::vector<char>& buff);
 		void 				print_headers() const ;
 		void				change_new_cgi_to_null(int fd);
 		int					exec_cgi(std::map<int, Client *> &fd_to_info, const int &epoll_fd, const int &client_fd, std::vector<Server *> &vec_server);
